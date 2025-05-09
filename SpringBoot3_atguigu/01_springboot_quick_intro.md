@@ -105,3 +105,9 @@ linux服务器上有java环境就行。
 
 ### 5. 简化运维
 修改配置(外部放一个application.properties文件)、监控、健康检查。
+
+# 005 SpringBoot3 快速入门 Spring Initializr
+
+## 3. Spring Initializr 创建向导
+
+![Spring Initializr](./images/005_a_spring_initialzr.png)
