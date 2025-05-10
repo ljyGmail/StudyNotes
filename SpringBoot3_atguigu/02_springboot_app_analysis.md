@@ -129,3 +129,15 @@ SpringBoot 摒弃了 XML 配置方式，改为全注解驱动。
 - 否则，就给容器中放一个`Dog`组件，名为`dog01`
 - 如果系统中有`dog01`这个组件，就给容器中放一个`User`组件，名为`zhangsan`
 - 否则，就放一个`User`组件，名为`lisi`
+
+#### 3. 属性绑定
+
+`@ConfigurationProperties`: 声明组件的属性和配置文件哪些前缀开始的项进行绑定
+`@EnableConfigurationProperties`: 快速注册注解
+
+- 场景: SpringBoot 默认只扫描自己主程序所在的包。如果导入第三方包，即使组件上标注了`@Component`、`@ConfigurationProperties`注解，也没用。因为组件都扫描不进来。
+
+> 将容器中任意**组件(Bean)**的**属性值**和**配置文件**的配置项的值**进行绑定**
+
+1. 给容器中注册组件(`@Component`、`@Bean`)
+1. 使用@ConfigurationProperties 声明组件和配置文件的哪些配置项进行绑定
