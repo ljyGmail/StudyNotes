@@ -112,3 +112,20 @@ SpringBoot 摒弃了 XML 配置方式，改为全注解驱动。
 1. `@Configuration`编写一个配置类
 1. 在配置类中，自定义方法给容器中注册组件、配合@Bean
 1. 或使用`@Import`导入第三方的组件
+
+#### 2. 条件注解
+
+> 如果注解指定的条件成立，则触发指定行为
+
+<span style="color: red">@ConditionOnXxx</span>
+<span style="color: purple; font-weight: bold">@ConditionOnClass: 如果类路径中存在这个类，则触发指定行为</span>
+<span style="color: blue; font-weight: bold">@ConditionOnMissingClass: 如果类路径中不存在这个类，则触发指定行为</span>
+<span style="color: purple; font-weight: bold">@ConditionOnBean: 如果容器中存在这个 Bean(组件)，则触发指定行为</span>
+<span style="color: blue; font-weight: bold">@ConditionOnMissingBean: 如果容器中不存在这个 Bean(组件)，则触发指定行为</span>
+
+> 场景:
+
+- 如果存在`FastsqlException`这个类，给容器中放一个`Cat`组件，名为`cato01`
+- 否则，就给容器中放一个`Dog`组件，名为`dog01`
+- 如果系统中有`dog01`这个组件，就给容器中放一个`User`组件，名为`zhangsan`
+- 否则，就放一个`User`组件，名为`lisi`
