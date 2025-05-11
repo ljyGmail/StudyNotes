@@ -252,17 +252,18 @@ SpringBoot 摒弃了 XML 配置方式，改为全注解驱动。
 1. 给容器中注册组件(`@Component`、`@Bean`)
 1. 使用@ConfigurationProperties 声明组件和配置文件的哪些配置项进行绑定
 
-# 013 SpringBoot3 Yaml配置文件 基本用法
+# 013 SpringBoot3 Yaml 配置文件 基本用法
 
 ### 1. 基本语法
 
 - **大小写敏感**
 - 使用**缩进**表示层级关系，k: v，使用**空格分割**k，v
-- 缩进时不允许使用Tab键，只允许**使用空格**。换行。
+- 缩进时不允许使用 Tab 键，只允许**使用空格**。换行。
 - 缩进的空格个数不重要，只用**相同层级**的元素**左侧对齐**即可。
 - **#表示注释**，从这个字符一直到行尾，都会被解析器忽略。
 
 支持的写法:
+
 - 对象: 键值对的集合，如: 映射(map) / 哈希(hash) / 字典(dictionary)
 - 数组: 一组按次序排列的值，如: 序列(sequence) / 列表(list)
 - 纯量: 单个的、不可再分的值，如: 字符串、数字、bool、日期
@@ -283,7 +284,7 @@ spring:
     url: aaa
 ```
 
-# 014 SpringBoot3 复杂对象表示 使用properties文件
+# 014 SpringBoot3 复杂对象表示 使用 properties 文件
 
 ```java
 @Component
@@ -348,7 +349,7 @@ person.cats.c2.age=6
 person: Person(name=张三, age=18, birthday=Tue Oct 12 12:12:12 KST 2010, like=true, child=Child(name=李四, age=12, birthday=Fri Oct 12 00:00:00 KST 2018, text=[abc, def]), dogs=[Dog(name=小黑, age=3), Dog(name=小白, age=2)], cats={c1=Cat(name=小蓝, age=5), c2=Cat(name=小灰, age=6)})
 ```
 
-# 015 SpringBoot3 复杂对象表示 使用yaml文件
+# 015 SpringBoot3 复杂对象表示 使用 yaml 文件
 
 ```yaml
 person:
@@ -360,7 +361,7 @@ person:
     name: 李四
     age: 20
     birthday: 2018/10/10
-#    text: ["abc", "def"]
+    #    text: ["abc", "def"]
     text:
       - abc
       - def
@@ -373,5 +374,32 @@ person:
     c1:
       name: 小蓝
       age: 2
-    c2: {name: 小绿, age: 2} # 对象也可以用{}表示
+    c2: { name: 小绿, age: 2 } # 对象也可以用{}表示
+```
+
+# 016 SpringBoot3 复杂对象表示 yaml 语法细节
+
+### 3. 细节
+
+- `birthDay` 推荐写为 `birth-day`
+- **文本**:
+  - 单引号不会转义(\n 以普通字符串显示)
+  - 双引号会转义(\n 会显示为换行符)
+- **大文本**:
+  - `|`开头，大文本下写在下层，保留文本格式，换行符正确显示
+  - `>`开头，大文本下写在下层，折叠换行符
+- **多文档合并**:
+  - 使用`---`可以把多个 yaml 文档合并在一个文档中，每个文档区依然认为内容独立
+
+### 4. 小技巧: lombok
+
+简化 JavaBean 开发、自动生成构造器、getter/setter、自动生成 Builder 模式等
+
+```xml
+<dependency>
+    <groupId>org.projectlombok</groupId>
+    <artifactId>lombok</artifactId>
+    <version>1.18.30</version>
+    <scope>compile</scope>
+</dependency>
 ```
