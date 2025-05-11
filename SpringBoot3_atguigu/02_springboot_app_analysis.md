@@ -141,6 +141,66 @@
 
 效果： 导入`starter`，修改配置文件，就能修改底层行为。
 
+# 012 SpringBoot3 整合 Redis 为例 理解如何学好 SpringBoot
+
+框架的整合、底层基于 Spring。能调整每一个场景的底层行为。100%的项目一定用到**底层自定义**。
+摄影:
+
+- 傻瓜: 自动配置好
+- **单反**: 焦距、光圈、快门、感光度...
+- 傻瓜+**单反**
+
+1. 理解**自动配置原理**
+
+- a. **导入 starter** -> **生效 xxxAutoConfiguration** -> **组件** -> **xxxProperties** -> **配置文件**
+
+2. 理解**其他框架底层**
+
+- a. 拦截器
+
+3. 可以随时**定制化任何组件**
+
+- a. 配置文件
+- b. 自定义组件
+
+普通开发: 导入`starter`，`Controller`、`Service`、`Mapper`、偶尔修改配置文件
+高级开发: 自定义组件、自定义配置、自定义 starter
+
+核心:
+
+- 这个场景自动配置导入了哪些组件，我们能不能 Autowired 进来使用
+- 能不能通过修改配置改变组件的一些默认参数
+- 需不需要自己完全定义这个组件
+- <span style="color: red; font-weight: bold">场景定制化</span>
+
+最佳实践:
+
+- 选场景，导入项目
+  - 官方: starter
+  - 第三方: 去仓库搜
+- 写配置，修改配置文件关键项
+  - 数据库参数(连接地址，账号密码...)
+- 分析这个场景给我们导入了哪些能用的组件
+  - 自动装配这些组件进行后续使用
+  - 不满意 SpringBoot 提供的自动配好的默认组件
+    - 定制化
+      - 改配置
+      - 自定义组件
+
+整合 redis:
+
+- [选场景](https://docs.spring.io/spring-boot/reference/using/build-systems.html#using.build-systems.starters) `spring-boot-starter-data-redis`
+  - 场景的 AutoConfiguration 就是这个场景的自动配置类
+- 写配置:
+  - 分析到这个场景的自动配置类开启了哪些属性绑定关系
+  - `@EnableConfigurationProperties(RedisProperties.class)`
+  - 修改 Redis 相关的配置
+- 分析组件:
+  - 分析到`RedisAutoConfiguration`给容器中放了`StringRedisTemplate`
+- 定制化：
+  - 修改配置文件
+  - 自定义组件，自己给容器中放一个`StringRedisTemplate`
+
 # 008 SpringBoot3 常用注解 组件注册
 
 ## 4. 核心技能
