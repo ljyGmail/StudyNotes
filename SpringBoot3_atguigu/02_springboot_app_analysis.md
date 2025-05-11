@@ -403,3 +403,23 @@ person:
     <scope>compile</scope>
 </dependency>
 ```
+
+# 017 SpringBoot3 日志 整合原理
+
+![logging](./images/017_a_logging.png)
+
+## 1. 简介
+
+1. Spring 使用`commons-logging`作为内部日志，但底层日志实现是开放的。可对接其他日志框架。
+1. 支持`jul`、`log4j2`、`logback`。SpringBoot 提供了默认的控制台输出配置，也可以配置输出为文件。
+1. `logback`是默认使用的。
+1. 虽然**日志框架很多**，但是我们不用担心，该用 SpringBoot 的**默认配置**就能很好的工作。
+
+**SpringBoot 是怎么把日志默认配置好的?**
+
+1. 每个`starter`场景，都会导入一个核心场景`spring-boot-starter`。
+1. 核心场景引入了日志的所有功能`spring-boot-starter-logging`
+1. 默认使用了`logback + slf4j`组合作为默认底层日志
+1. **日志是系统一启动就要用的**，`xxxAutoConfiguration`是系统启动好了以后放的组件，后来用的。
+1. 日志是利用**监听器机制**配置好的。`ApplicationListener`。
+1. 日志所有的配置都是可以通过配置文件实现的。以`logging`开始的所有配置。
