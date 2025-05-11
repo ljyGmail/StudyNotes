@@ -254,11 +254,20 @@ SpringBoot 摒弃了 XML 配置方式，改为全注解驱动。
 
 # 013 SpringBoot3 Yaml配置文件 基本用法
 
-```yaml
-# 1. k: v # k v之间是空格区分
-# 2. 属性有层级关系，使用下一行，空两格空格
-# 3. 左侧对齐的代表同一层级的属性
+### 1. 基本语法
 
+- **大小写敏感**
+- 使用**缩进**表示层级关系，k: v，使用**空格分割**k，v
+- 缩进时不允许使用Tab键，只允许**使用空格**。换行。
+- 缩进的空格个数不重要，只用**相同层级**的元素**左侧对齐**即可。
+- **#表示注释**，从这个字符一直到行尾，都会被解析器忽略。
+
+支持的写法:
+- 对象: 键值对的集合，如: 映射(map) / 哈希(hash) / 字典(dictionary)
+- 数组: 一组按次序排列的值，如: 序列(sequence) / 列表(list)
+- 纯量: 单个的、不可再分的值，如: 字符串、数字、bool、日期
+
+```yaml
 server:
   port: 9999
 
@@ -272,4 +281,69 @@ spring:
       port: 6379
   datasource:
     url: aaa
+```
+
+# 014 SpringBoot3 复杂对象表示 使用properties文件
+
+```java
+@Component
+@ConfigurationProperties(prefix = "person") // 和配置文件person前缀的所有配置进行绑定
+@Data // 自动生成JavaBean属性的getter/setter
+@NoArgsConstructor // 自动生成无参构造器
+@AllArgsConstructor // 自动生成全参构造器
+public class Person {
+    private String name;
+    private Integer age;
+    private Date birthday;
+    private Boolean like;
+    private Child child; // 嵌套对象
+    private List<Dog> dogs; // 数组(里面是对象)
+    private Map<String, Cat> cats; // 表示Map
+}
+
+@Data
+public class Child {
+    private String name;
+    private Integer age;
+    private Date birthday;
+    private List<String> text;
+}
+
+@Data
+public class Dog {
+    private String name;
+    private Integer age;
+}
+
+@Data
+public class Dog {
+    private String name;
+    private Integer age;
+}
+```
+
+```properties
+# properties表示复杂对象
+person.name=张三
+person.age=18
+person.birthday=2010/10/12 12:12:12
+person.like=true
+person.child.name=李四
+person.child.age=12
+person.child.birthday=2018/10/12
+person.child.text[0]=abc
+person.child.text[1]=def
+person.dogs[0].name=小黑
+person.dogs[0].age=3
+person.dogs[1].name=小白
+person.dogs[1].age=2
+person.cats.c1.name=小蓝
+person.cats.c1.age=5
+person.cats.c2.name=小灰
+person.cats.c2.age=6
+```
+
+```
+绑定结果:
+person: Person(name=张三, age=18, birthday=Tue Oct 12 12:12:12 KST 2010, like=true, child=Child(name=李四, age=12, birthday=Fri Oct 12 00:00:00 KST 2018, text=[abc, def]), dogs=[Dog(name=小黑, age=3), Dog(name=小白, age=2)], cats={c1=Cat(name=小蓝, age=5), c2=Cat(name=小灰, age=6)})
 ```
