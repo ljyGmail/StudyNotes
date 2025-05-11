@@ -482,3 +482,15 @@ log.info("xxx");
 1. 在`application.properties/yaml`中配置`logging.level.<logger-name>=<level>`指定日志级别
 1. level 可取值范围: `TRACE`, `DEBUG`, `INFO`, `WARN`, `ERROR`, `FATAL`, or `OFF`，定义在`LogLevel`类中。
 1. root 的`logger-name`叫`root`，以配置`logging-level-root=warn`，代表所有未指定日志级别都使用 root 的 warn 级别。
+
+# 020 SpringBoot3 日志 日志分组
+
+比较有用的技巧是:
+将相关的`logger`分组在一起，统一配置。SpringBoot也支持。比如: Tomcat相关的日志统一设置。
+
+```properties
+logging.group.tomcat=org.apache.catalina,org.apache.coyote,org.apache.tomcat
+logging.level.tomcat=trace
+```
+
+![预定义组](./images/020_a_pre_defined_groups.png)
