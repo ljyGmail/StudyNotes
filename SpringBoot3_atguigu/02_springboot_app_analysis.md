@@ -424,7 +424,7 @@ person:
 1. 日志是利用**监听器机制**配置好的。`ApplicationListener`。
 1. 日志所有的配置都是可以通过配置文件实现的。以`logging`开始的所有配置。
 
-# 020 SpringBoot3 日志 日志格式
+# 018 SpringBoot3 日志 日志格式
 
 ## 2. 日志格式
 
@@ -459,3 +459,26 @@ Logger logger = LoggerFactory.getLogger(getClass());
 ```java
 log.info("xxx");
 ```
+
+# 019 SpringBoot3 日志 日志级别
+
+## 4. 日志级别
+
+- 由低到高: `ALL`, `TRACE`, `DEBUG`, `INFO`, `WARN`, `ERROR`, `FATAL`, `OFF`。
+
+  - 只会打印指定级别及以上级别的日志
+  - ALL: 打印所有日志
+  - TRACE: 追踪框架详细流程日志，一般不使用
+  - DEBUG: 开发调试细节日志
+  - INFO: 关键、感兴趣的信息日志
+  - WARN: 警告但不是错误的信息日志，比如: 版本过时
+  - ERROR: 业务错误日志，比如出现的各种异常
+  - FATAL: 致命错误日志，比如 jvm 系统崩溃
+  - OFF: 关闭所有日志记录
+
+- 不指定级别的所有类，都使用**root**指定的级别作为默认的级别
+- SpringBoot 日志的**默认级别**是<font color="red">INFO</font>
+
+1. 在`application.properties/yaml`中配置`logging.level.<logger-name>=<level>`指定日志级别
+1. level 可取值范围: `TRACE`, `DEBUG`, `INFO`, `WARN`, `ERROR`, `FATAL`, or `OFF`，定义在`LogLevel`类中。
+1. root 的`logger-name`叫`root`，以配置`logging-level-root=warn`，代表所有未指定日志级别都使用 root 的 warn 级别。
