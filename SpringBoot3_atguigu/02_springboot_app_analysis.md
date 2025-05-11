@@ -423,3 +423,39 @@ person:
 1. **日志是系统一启动就要用的**，`xxxAutoConfiguration`是系统启动好了以后放的组件，后来用的。
 1. 日志是利用**监听器机制**配置好的。`ApplicationListener`。
 1. 日志所有的配置都是可以通过配置文件实现的。以`logging`开始的所有配置。
+
+# 020 SpringBoot3 日志 日志格式
+
+## 2. 日志格式
+
+```sh
+2025-05-11T17:59:50.346+09:00  INFO 27825 --- [           main] c.a.logging.Boot303LoggingApplication    : Starting Boot303LoggingApplication using Java 17.0.14 with PID 27825 (/Users/liangjinyong/Desktop/Playground/spring_boot_playground/atguigu_springboot3/boot3-03-logging/target/classes started by liangjinyong in /Users/liangjinyong/Desktop/Playground/spring_boot_playground/atguigu_springboot3)
+2025-05-11T17:59:50.347+09:00  INFO 27825 --- [           main] c.a.logging.Boot303LoggingApplication    : No active profile set, falling back to 1 default profile: "default"
+```
+
+默认输出格式:
+
+- 时间和日期: 毫秒级精度
+- 日志级别: <span style="color: red">ERROR、WARN、INFO、DEBUG or TRACE</span>
+- 进程 ID
+- ---: 消息分隔符
+- 线程名: 使用[]包含
+- Logger 名: 通常是产生日志的类名
+- 消息: 日志记录的内容
+
+**注意**: `logback`没有**FATAL**级别，对应的是**ERROR**。
+
+默认值: 参照`spring-boot`包下的`additional-configuration-metadata.json`文件
+默认输出格式: `%clr(%d{${LOG_DATEFORMAT_PATTERN:-yyyy-MM-dd'T'HH:mm:ss.SSSXXX}}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}`
+
+## 3. 记录日志
+
+```java
+Logger logger = LoggerFactory.getLogger(getClass());
+```
+
+或者在类上使用 Lombok 的@Slf4j 注解
+
+```java
+log.info("xxx");
+```
