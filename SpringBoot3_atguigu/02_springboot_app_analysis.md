@@ -251,3 +251,25 @@ SpringBoot 摒弃了 XML 配置方式，改为全注解驱动。
 
 1. 给容器中注册组件(`@Component`、`@Bean`)
 1. 使用@ConfigurationProperties 声明组件和配置文件的哪些配置项进行绑定
+
+# 013 SpringBoot3 Yaml配置文件 基本用法
+
+```yaml
+# 1. k: v # k v之间是空格区分
+# 2. 属性有层级关系，使用下一行，空两格空格
+# 3. 左侧对齐的代表同一层级的属性
+
+server:
+  port: 9999
+
+spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  datasource:
+    url: aaa
+```
