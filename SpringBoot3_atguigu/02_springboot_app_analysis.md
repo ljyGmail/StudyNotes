@@ -347,3 +347,31 @@ person.cats.c2.age=6
 绑定结果:
 person: Person(name=张三, age=18, birthday=Tue Oct 12 12:12:12 KST 2010, like=true, child=Child(name=李四, age=12, birthday=Fri Oct 12 00:00:00 KST 2018, text=[abc, def]), dogs=[Dog(name=小黑, age=3), Dog(name=小白, age=2)], cats={c1=Cat(name=小蓝, age=5), c2=Cat(name=小灰, age=6)})
 ```
+
+# 015 SpringBoot3 复杂对象表示 使用yaml文件
+
+```yaml
+person:
+  name: 张三
+  age: 18
+  birthday: 2010/10/10 12:12:12
+  like: true
+  child:
+    name: 李四
+    age: 20
+    birthday: 2018/10/10
+#    text: ["abc", "def"]
+    text:
+      - abc
+      - def
+  dogs:
+    - name: 小黑
+      age: 3
+    - name: 小白
+      age: 4
+  cats:
+    c1:
+      name: 小蓝
+      age: 2
+    c2: {name: 小绿, age: 2} # 对象也可以用{}表示
+```
