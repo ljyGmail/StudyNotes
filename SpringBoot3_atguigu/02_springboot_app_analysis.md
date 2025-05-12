@@ -494,3 +494,20 @@ logging.level.tomcat=trace
 ```
 
 ![预定义组](./images/020_a_pre_defined_groups.png)
+
+# 021 SpringBoot3 日志 文件输出
+
+## 6.文件输出
+SpringBoot默认只把日志写在控制台上，如果想额外记录到文件中，可以在`application.properties`中添加`logging.file.name`或`logging.file.path`配置项。
+
+![文件输出](./images/021_a_logging_file.png)
+
+```properties
+# 指定日志文件的路径，日志文件默认名叫spring.log
+#logging.file.path=/Users/ljy/Desktop/
+# 指定日志文件名，logging.file.name和logging.file.path的配置同时存在时，只看logging.file.name
+# 1. 只写名字，就生成到当前项目同位置的demo.log
+# 1. 写路径+名字，生成到指定位置的指定文件
+#logging.file.name=/Users/ljy/Desktop/demo.log
+logging.file.name=haha.log
+```
