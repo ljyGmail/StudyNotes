@@ -486,7 +486,7 @@ log.info("xxx");
 # 020 SpringBoot3 日志 日志分组
 
 比较有用的技巧是:
-将相关的`logger`分组在一起，统一配置。SpringBoot也支持。比如: Tomcat相关的日志统一设置。
+将相关的`logger`分组在一起，统一配置。SpringBoot 也支持。比如: Tomcat 相关的日志统一设置。
 
 ```properties
 logging.group.tomcat=org.apache.catalina,org.apache.coyote,org.apache.tomcat
@@ -498,7 +498,8 @@ logging.level.tomcat=trace
 # 021 SpringBoot3 日志 文件输出
 
 ## 6.文件输出
-SpringBoot默认只把日志写在控制台上，如果想额外记录到文件中，可以在`application.properties`中添加`logging.file.name`或`logging.file.path`配置项。
+
+SpringBoot 默认只把日志写在控制台上，如果想额外记录到文件中，可以在`application.properties`中添加`logging.file.name`或`logging.file.path`配置项。
 
 ![文件输出](./images/021_a_logging_file.png)
 
@@ -511,3 +512,14 @@ SpringBoot默认只把日志写在控制台上，如果想额外记录到文件�
 #logging.file.name=/Users/ljy/Desktop/demo.log
 logging.file.name=haha.log
 ```
+
+# 022 SpringBoot3 日志 归档与切割
+
+> 归档: 每天到日志单独存到一个文档中。  
+> 切割: 每个文件 10MB，超过这个大小就切割成另外一个文件。
+
+1. 每天到日志应该独立分割出来存档。如果使用`logback`(SpringBoot 默认整合)，可以通过`application.properties/yaml`文件指定日志滚动规则。
+1. 如果使用其它日志系统，需要自行配置。(添加`log4j2.xml`或`log4j2-spring.xml`)
+1. 支持的滚动规则如下:
+
+   ![log rolling policy](./images/022_a_logging_rolling_policy.png)
