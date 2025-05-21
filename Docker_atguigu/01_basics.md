@@ -17,3 +17,11 @@
 # 05 传统虚拟机和容器的对比
 
 ![img.png](images/05_vm_docker_compare.png)
+
+# 06 docker能干嘛解决什么问题
+
+# 07 docker官网介绍
+
+![img.png](images/06_a_docker_installation.png)
+
+![img.png](images/06_b_check_linux_version.png)
