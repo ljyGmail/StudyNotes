@@ -25,3 +25,9 @@
 ![img.png](images/06_a_docker_installation.png)
 
 ![img.png](images/06_b_check_linux_version.png)
+
+# 08 docker三要素
+
+- 镜像、容器、仓库
+
+![img.png](images/08_docker_three_concepts.png)
