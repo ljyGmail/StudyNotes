@@ -45,3 +45,46 @@
 ![img.png](images/10_b_docker_architect_graph.png)
 ![img_1.png](images/10_c_docker_architect_graph.png)
 ![img_2.png](images/10_c_docker_architect_graph.png)
+
+# 11 CentOS7上安装docker
+
+```bash
+# Remove old versions
+sudo yum remove docker \
+                docker-client \
+                docker-client-latest \
+                docker-common \
+                docker-latest \
+                docker-latest-logrotate \
+                docker-logrotate \
+                docker-engine
+                
+# Setup the Docker repository
+# 使用阿里云替换 CentOS 7 源（推荐）
+
+# 1. 备份原有配置
+sudo mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup
+
+# 2. 下载阿里云的 repo 文件
+sudo curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo
+
+# 3. 清理缓存并更新
+sudo yum clean all
+sudo yum makecache
+
+sudo yum install -y yum-utils
+sudo yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+
+sudo yum makecache fast
+
+# Install Docker Engine
+sudo yum install -y docker-ce docker-ce-cli containerd.io
+
+# Start and enable Docker
+sudo systemctl start docker
+sudo systemctl enable docker
+
+# Verify Docker installation
+docker version
+docker run hello-world
+```
