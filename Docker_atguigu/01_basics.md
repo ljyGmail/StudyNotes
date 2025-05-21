@@ -31,3 +31,17 @@
 - 镜像、容器、仓库
 
 ![img.png](images/08_docker_three_concepts.png)
+
+# 09 docker平台入门图解
+
+![img.png](images/09_a_flow_graph.png)
+
+![img.png](images/09_b_mysql_working_example.png)
+
+# 10 docker平台架构图解
+
+![img.png](images/10_a_docker_architect.png)
+
+![img.png](images/10_b_docker_architect_graph.png)
+![img_1.png](images/10_c_docker_architect_graph.png)
+![img_2.png](images/10_c_docker_architect_graph.png)
