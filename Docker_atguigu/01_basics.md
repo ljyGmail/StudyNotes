@@ -88,3 +88,12 @@ sudo systemctl enable docker
 docker version
 docker run hello-world
 ```
+
+# 12 镜像加速器配置
+
+- 略
+
+# 13 Hello World分析介绍3要素配合
+
+![img.png](images/13_a_hello_world.png)
+![img_1.png](images/13_b_what_did_run_do.png)
