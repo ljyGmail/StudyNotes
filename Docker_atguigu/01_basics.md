@@ -129,3 +129,19 @@ docker run hello-world
 # 17 ubuntu容器说明
 
 ![img.png](images/17_docker_ubuntu.png)
+
+# 18 容器命令A
+
+- docker run [OPTIONS] IMAGE [COMMAND] [ARG...]:
+  ![img.png](images/18_docker_run_options.png)
+
+- 运行一个ubuntu的容器: `docker run -it ubuntu /bin/bash`
+
+- 列出当前所有**正在运行**的容器: `docker ps [OPTIONS]`
+
+# 19 容器命令B
+
+`docker ps`的常用参数:
+![img_1.png](images/19_docker_ps_options.png)
+
+
