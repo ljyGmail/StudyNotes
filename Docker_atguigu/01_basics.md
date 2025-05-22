@@ -97,3 +97,8 @@ docker run hello-world
 
 ![img.png](images/13_a_hello_world.png)
 ![img_1.png](images/13_b_what_did_run_do.png)
+
+# 14 为什么Docker比VM虚拟机快
+
+![img.png](images/14_why_docker_is_faster_than_vm.png)
+
