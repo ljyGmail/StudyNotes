@@ -144,4 +144,16 @@ docker run hello-world
 `docker ps`的常用参数:
 ![img_1.png](images/19_docker_ps_options.png)
 
+# 20 容器命令C
 
+- 退出容器:
+    - `exit`: run进去容器，exit退出，容器停止
+    - `Ctrl+P Ctrl+Q`: run进去容器，Ctrl+P Ctrl+Q退出，容器不停止
+- 启动已经停止运行的容器: `docker start 容器ID或者容器名`
+- 重启容器: `docker restart 容器ID或者容器名`
+- 停止容器: `docker stop 容器ID或者容器名`
+- 强制停止容器: `docker kill 容器ID或者容器名`
+- 删除停止的容器: `docker rm 容器ID或者容器名`
+- 一次性删除多个容器实例:
+    - `docker rm -f $(docker ps -qa)`
+    - `docker ps -qa | xargs docker rm`
