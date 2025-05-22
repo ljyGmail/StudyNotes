@@ -105,3 +105,24 @@ docker run hello-world
 # 15 帮助启动类命令
 
 ![img.png](images/15_docker_help_commands.png)
+
+# 16 镜像命令
+
+- `docker images`: 列出本地的镜像
+    - `-a`: 列出本地所有的镜像(含历史映像层)
+    - `-q`: 只显示镜像ID
+      ![img.png](images/16_a_docker_images.png)
+- `docker search 某个XXX镜像的名字`: 搜索指定镜像
+    - `--limit n`: 只列出n个镜像，默认25个。 例: `docker search --limit 5 redis`
+- `docker pull 某个XXX镜像的名字`: 下载指定镜像
+    - `docker pull 镜像名字[:TAG]`: 指定特定版本的镜像，若不指定TAG，则默认下载最新版本。例: `docker pull redis:6.0.8`
+- `docker system df`: 查看镜像/容器/数据卷所占的空间
+- `docker rmi 某个XXX镜像的名字`: 删除指定镜像
+    - 删除单个: `docker rmi -f 镜像ID`
+    - 删除多个: `docker rmi -f 镜像名1:TAG 镜像名2:TAG`
+    - 删除全部: `docker rmi -f $(docker images -qa)`
+
+- 谈谈docker虚悬镜像是什么？
+    - 仓库名、标签都是<none>的镜像，俗称虚悬镜像(dangling image)。
+      ![img_1.png](images/16_b_dangling_image.png)
+
