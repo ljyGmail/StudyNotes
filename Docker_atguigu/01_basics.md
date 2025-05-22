@@ -126,3 +126,6 @@ docker run hello-world
     - 仓库名、标签都是<none>的镜像，俗称虚悬镜像(dangling image)。
       ![img_1.png](images/16_b_dangling_image.png)
 
+# 17 ubuntu容器说明
+
+![img.png](images/17_docker_ubuntu.png)
