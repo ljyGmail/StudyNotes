@@ -157,3 +157,17 @@ docker run hello-world
 - 一次性删除多个容器实例:
     - `docker rm -f $(docker ps -qa)`
     - `docker ps -qa | xargs docker rm`
+
+# 21 容器命令D
+
+- 启动守护式容器: `docker run -d 容器ID`
+- 查看容器的日志: `docker logs 容器ID`
+- 查看容器内运行的进程: `docker top 容器ID`
+- 查看容器内部细节: `docker inspect 容器ID`
+- **进入正在运行的容器并以命令行交互**:
+    - `docker exec -it 容器ID bashShell`
+    - `docker attach 容器ID`
+      ![img.png](images/21_a_docker_exec.png)
+      ![img_1.png](images/21_b_exec_redis.png)
+      ![img.png](images/21_c_tec_trend.png)
+
