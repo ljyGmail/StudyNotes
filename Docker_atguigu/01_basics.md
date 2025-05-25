@@ -223,3 +223,10 @@ unpause   Unpause a paused container                    # 取消暂停容器
 version   Show the docker version information           # 查看 docker 版本号
 wait      Block until a container stops, then print its exit code   # 截取容器停止时的退出状态值
 ```
+
+# 23 镜像的分层概念
+
+- Docker镜像层都是只读的，容器层是可写的
+- 当容器启动时，一个新的可写层被加载到镜像的顶部。
+- 这一层通常被称作“容器层”，“容器层”之下的都叫“镜像层”。
+  ![img.png](images/23_layered_image.png)
