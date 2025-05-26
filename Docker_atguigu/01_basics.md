@@ -241,3 +241,20 @@ wait      Block until a container stops, then print its exit code   # 截取容�
 
 ![img.png](images/25_extended_layers.png)
 
+# 26 本地镜像发布到Docker Hub
+```bash
+# 登录 Docker Hub
+docker login
+
+# 打标签（将本地镜像改为 dockerhub 格式）
+docker tag atguigu/myvim:1.5 mydocker881/myvim:1.5
+
+# 推送
+docker push mydocker881/myvim:1.5
+
+# 下载镜像
+docker pull mydocker881/myvim:1.5
+
+# 运行下载的镜像
+docker run -it [镜像ID] /bin/bash
+```
