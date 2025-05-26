@@ -230,3 +230,14 @@ wait      Block until a container stops, then print its exit code   # 截取容�
 - 当容器启动时，一个新的可写层被加载到镜像的顶部。
 - 这一层通常被称作“容器层”，“容器层”之下的都叫“镜像层”。
   ![img.png](images/23_layered_image.png)
+
+# 24 commit命令上集
+
+- `docker commit`: 提交容器的副本使之成为一个新的镜像。
+- `docker commit -m="提交的描述信息" -a="作者" 容器ID 要创建的目标镜像名[:表签名]`
+- `docker commit -m="vim added" -a="ljy" f4473ca2e614 atguigu/myvim:1.5`
+
+# 25 commit命令下集
+
+![img.png](images/25_extended_layers.png)
+
