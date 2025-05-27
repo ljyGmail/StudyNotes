@@ -278,3 +278,7 @@ docker run -it [镜像ID] /bin/bash
 # 29 容器数据卷是什么
 
 ![img.png](images/29_docker_volumn.png)
+
+# 30 容器数据卷能干嘛
+
+![img.png](images/30_what_can_volumn_do.png)
