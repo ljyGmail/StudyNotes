@@ -242,6 +242,7 @@ wait      Block until a container stops, then print its exit code   # 截取容�
 ![img.png](images/25_extended_layers.png)
 
 # 26 本地镜像发布到Docker Hub
+
 ```bash
 # 登录 Docker Hub
 docker login
@@ -258,3 +259,18 @@ docker pull mydocker881/myvim:1.5
 # 运行下载的镜像
 docker run -it [镜像ID] /bin/bash
 ```
+
+# 27 Docker私有库简介
+
+`docker pull registry`: registry镜像专门用于搭建私服版的仓库。
+
+# 28 新镜像推送私服库案例
+
+1. 运行私服仓库: `docker run -d -p 5678:5000 -v /Users/ljy/Desktop/myregistry/:/tmp/registry --privileged=true registry`
+2. 运行原始的ubuntu容器后，安装`ifconfig`命令，`apt-get update && apt-get install net-tools`
+3. commit新的镜像: `docker commit -m "ifconfig cmd added" -a="ljy" [容器ID]:1.2`
+4. 确认私服仓库中有哪些镜像: `curl -XGET http://localhost:5678/v2/_catalog`
+5. 将新的镜像修改为符合私服规范的Tag: `docker tag ubuntu-ipconfig:1.2 localhost:5678/ubuntu-ipconfig:1.2`
+6. 推送到私服库: `docker push localhost:5678/ubuntu-ipconfig:1.2`
+7. 再次确认私服仓库中有哪些镜像
+8. 将私服库中的镜像pull到本地进行确认: `docker pull localhost:5678/ubuntu-ipconfig:1.2`
