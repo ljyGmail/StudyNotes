@@ -274,3 +274,7 @@ docker run -it [镜像ID] /bin/bash
 6. 推送到私服库: `docker push localhost:5678/ubuntu-ipconfig:1.2`
 7. 再次确认私服仓库中有哪些镜像
 8. 将私服库中的镜像pull到本地进行确认: `docker pull localhost:5678/ubuntu-ipconfig:1.2`
+
+# 29 容器数据卷是什么
+
+![img.png](images/29_docker_volumn.png)
