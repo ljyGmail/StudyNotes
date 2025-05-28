@@ -282,3 +282,11 @@ docker run -it [镜像ID] /bin/bash
 # 30 容器数据卷能干嘛
 
 ![img.png](images/30_what_can_volumn_do.png)
+
+# 31 容器卷和主机互通互联
+
+- 命令: `docker run -it --privileged=true -v /宿主机绝对路径目录:/容器内目录 镜像名`
+- `docker run -it --privileged=true -v ~/Desktop/docker_volumn/:/tmp/docker_data --name=u1 ubuntu /bin/bash`
+- 查看数据卷是否挂载成功: `docker inspect 容器ID`
+  ![img.png](images/31_docker_inspect_mounts.png)
+
