@@ -318,4 +318,22 @@ docker run -it [镜像ID] /bin/bash
     - 此时即可访问猫首页
 - 无需修改容器内文件的版本
   `docker run -d -p 8080:8080 --name mytomcat8 billygoo/tomcat8-jdk8`
-  
+
+# 37 38 mysql安装
+
+- 拉取镜像: `docker pull mysql:5.7`
+- 启动镜像:
+  `docker run -d -p 3310:3306 --privileged=true -v ~/Desktop/mysql_volume/log:/var/log/mysql -v ~/Desktop/mysql_volume/data:/var/lib/mysql -v ~/Desktop/mysql_volume/conf:/etc/mysql/conf.d -e MYSQL_ROOT_PASSWORD=123456 --name mysql mysql:5.7`
+- `MySQL5.7`有编码问题，在宿主机的`conf`目录中创建`my.cnf`配置文件，加入以下内容:
+
+```
+[client]
+default_character_set=utf8
+[mysqld]
+collation_server = utf8_general_ci
+character_set_server = utf8
+```
+
+- 重启容器: `docker restart mysql`
+- 由于配置了数据卷，即使容器被删除也无所谓，因为数据已经在宿主机中有备份。
+
