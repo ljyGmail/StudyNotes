@@ -337,3 +337,16 @@ character_set_server = utf8
 - 重启容器: `docker restart mysql`
 - 由于配置了数据卷，即使容器被删除也无所谓，因为数据已经在宿主机中有备份。
 
+# 39 redis常规安装
+
+- 命令:
+  `docker run -p 6379:6379 --name myr3 --privileged=true -v ~/Desktop/redis_volume/redis.conf:/etc/redis/redis.conf -v ~/Desktop/redis_volume/data:/data -d redis:6.0.8 redis-server /etc/redis/redis.conf`
+
+```redis
+redis-cli # 进入客户端
+set k1 v1
+get k1
+ping
+select 10 # 选库
+```
+
