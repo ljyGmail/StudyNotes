@@ -295,4 +295,8 @@ docker run -it [镜像ID] /bin/bash
 - 容器卷和主机挂载时默认是`rw`(可读可写)的，如果需要容器实例内部被限制，只能读取不能写，需要在挂载的命令中加上`:ro`。
 - `docker run -it --privileged=true -v /宿主机绝对路径目录:/容器内目录:ro 镜像名`
 
+# 33 容器卷之间的继承
+
+- 继承其他容器映射的规则: `docker run -it --privileged=true --volumes-from 容器ID --name u2 ubuntu`
+- 继承了其他容器的映射规则后，即使被继承的容器停止运行或者被删除，对现有的映射规则也没有任何影响。
 
