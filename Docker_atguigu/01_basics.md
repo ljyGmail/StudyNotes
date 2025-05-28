@@ -304,3 +304,18 @@ docker run -it [镜像ID] /bin/bash
 
 ![img.png](images/34_a_microservice.png)
 ![img.png](images/34_b_installation_steps.png)
+
+# 35 36 tomcat安装
+
+- 搜索镜像: `docker search tomcat`
+- 拉取镜像: `docker pull tomcat`
+- 查看镜像: `docker images tomcat`
+- 启动镜像: `docker run -d -p 8080:8080 --name t1 tomcat`
+- 访问猫首页: `http://localhost:8080`，会返回404页面。
+    - 进入容器: `docker exec -it t1 /bin/bash`
+    - 删除webapp目录: `rmdir webapp`
+    - 修改webapp.dist目录的名称: `mv webapp.dist webapp`
+    - 此时即可访问猫首页
+- 无需修改容器内文件的版本
+  `docker run -d -p 8080:8080 --name mytomcat8 billygoo/tomcat8-jdk8`
+  
