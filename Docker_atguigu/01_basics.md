@@ -300,3 +300,7 @@ docker run -it [镜像ID] /bin/bash
 - 继承其他容器映射的规则: `docker run -it --privileged=true --volumes-from 容器ID --name u2 ubuntu`
 - 继承了其他容器的映射规则后，即使被继承的容器停止运行或者被删除，对现有的映射规则也没有任何影响。
 
+# 34 Docker上安装常用软件说明
+
+![img.png](images/34_a_microservice.png)
+![img.png](images/34_b_installation_steps.png)
