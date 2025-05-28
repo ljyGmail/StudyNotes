@@ -290,3 +290,9 @@ docker run -it [镜像ID] /bin/bash
 - 查看数据卷是否挂载成功: `docker inspect 容器ID`
   ![img.png](images/31_docker_inspect_mounts.png)
 
+# 32 容器卷ro和rw读写规则
+
+- 容器卷和主机挂载时默认是`rw`(可读可写)的，如果需要容器实例内部被限制，只能读取不能写，需要在挂载的命令中加上`:ro`。
+- `docker run -it --privileged=true -v /宿主机绝对路径目录:/容器内目录:ro 镜像名`
+
+
