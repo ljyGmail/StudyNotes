@@ -257,3 +257,7 @@ docker ps
 - 检查集群情况第3次: `redis-cli --cluster check 10.0.2.15:6382`
   ![img_1.png](images/53_f_cluster_check_3rd.png)
 
+# 54 主从缩容需求分析
+
+![img.png](images/54_cluster_reduce.png)
+
