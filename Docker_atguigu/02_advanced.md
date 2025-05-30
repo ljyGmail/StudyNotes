@@ -225,3 +225,35 @@ docker start redis-node-4
 # 52 主从扩容需求分析
 
 ![img.png](images/52_extend_cluster.png)
+
+# 53 主从扩容案例演示
+
+- 新建6387、6388两个节点+新建后启动+查看是否是8个节点
+
+```Bash
+docker run -d --name redis-node-7 --net host --privileged=true -v ~/redis-volume/redis-node-7:/data redis:6.0.8 --cluster-enabled yes --appendonly yes --port 6387
+docker run -d --name redis-node-8 --net host --privileged=true -v ~/redis-volume/redis-node-8:/data redis:6.0.8 --cluster-enabled yes --appendonly yes --port 6388
+docker ps
+```
+
+- 进入6387容器实例内部: `docker exec -it redis-node-7 /bin/bash`
+- 将新增的6387节点(空槽号)作为master节点加入原集群
+  `redis-cli --cluster add-node 10.0.2.15:6387 10.0.2.15:6381`
+  ![img.png](images/53_a_add_6387_to_cluster.png)
+
+- 检查集群情况第1次: `redis-cli --cluster check 10.0.2.15:6381`
+  ![img.png](images/53_b_cluster_check_1st.png)
+
+- 重新分配槽位: `redis-cli --cluster reshard 10.0.2.15:6381`
+  ![img.png](images/53_c_cluster_reshard.png)
+
+- 检查集群情况第2次: `redis-cli --cluster check 10.0.2.15:6381`
+  ![img.png](images/53_d_cluster_check_2nd.png)
+
+- 为主节点6387分配从节点6388:
+  `redis-cli --cluster add-node 10.0.2.15:6388 10.0.2.15:6387 --cluster-slave --cluster-master-id [6387的ID]`
+  ![img.png](images/53_e_add_6388_as_slave.png)
+
+- 检查集群情况第3次: `redis-cli --cluster check 10.0.2.15:6382`
+  ![img_1.png](images/53_f_cluster_check_3rd.png)
+
