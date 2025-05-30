@@ -190,3 +190,36 @@ cluster nodes
 
 ![img.png](images/50_cluster_check.png)
 
+# 51 主从容错切换迁移
+
+- 主6381和从机切换，先停止主机6381: `docker stop redis-node-1`
+- 再次查看集群信息:
+
+```Bash
+docker exec -it redis-node-2 /bin/bash
+
+redis-cli -p 6382 -c
+
+clster nodes
+```
+
+可以看到6381挂了，6384上位称为master。之前存储的数据没有丢失。
+![img.png](images/51_a_after_stop_6381.png)
+
+还原之前的3主3从:
+
+- 重新启动6381主机: `docker start redis-node-1`
+- 查看集群信息，可以看到6384还是master，6381称为slave。
+  ![img_1.png](images/51_b_after_restart_6381.png)
+- 为了恢复原状，让6381成为master，6384成为slave，先停止6384容器，再启动6384容器。
+
+```Bash
+docker stop redis-node-4
+docker start redis-node-4
+```
+
+![img.png](images/51_after_restart_6384.png)
+
+可以看到已经恢复最初的架构: `redis-cli --cluster check 宿主机IP:6381`
+
+
