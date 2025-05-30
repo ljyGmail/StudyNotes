@@ -174,7 +174,9 @@ cluster nodes
 
 ![img.png](images/46_c_redis_cluster_3m_3s.png)
 
+# 48 redis集群读写error说明
 
+- 对redis集群进行操作时，不能采用操作单机的方式。
 
-
+![img.png](images/48_redis_cluster_write_error.png)
 
