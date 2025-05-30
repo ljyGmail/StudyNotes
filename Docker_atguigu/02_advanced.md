@@ -186,4 +186,7 @@ cluster nodes
 
 ![img.png](images/49_enter_cluster_mode.png)
 
+# 50 查看集群信息cluster check
+
+![img.png](images/50_cluster_check.png)
 
