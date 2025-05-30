@@ -133,3 +133,48 @@ hash(key) % N个机器台数，计算出哈希值，用来决定数据映射到�
 
 ![img.png](images/44_hash_slot_algorithm.png)
 
+# 45 46 47 3主3从redis集群配置
+
+* 此实验在MacOS和Windows的Docker中没有成功，必须在Linux中进行。
+
+- 新建6个docker容器实例。
+
+```bash
+docker run -d --name redis-node-1 --net host --privileged=true -v ~/redis-volume/redis-node-1:/data redis:6.0.8 --cluster-enabled yes --appendonly yes --port 6381
+docker run -d --name redis-node-2 --net host --privileged=true -v ~/redis-volume/redis-node-2:/data redis:6.0.8 --cluster-enabled yes --appendonly yes --port 6382
+docker run -d --name redis-node-3 --net host --privileged=true -v ~/redis-volume/redis-node-3:/data redis:6.0.8 --cluster-enabled yes --appendonly yes --port 6383
+docker run -d --name redis-node-4 --net host --privileged=true -v ~/redis-volume/redis-node-4:/data redis:6.0.8 --cluster-enabled yes --appendonly yes --port 6384
+docker run -d --name redis-node-5 --net host --privileged=true -v ~/redis-volume/redis-node-5:/data redis:6.0.8 --cluster-enabled yes --appendonly yes --port 6385
+docker run -d --name redis-node-6 --net host --privileged=true -v ~/redis-volume/redis-node-6:/data redis:6.0.8 --cluster-enabled yes --appendonly yes --port 6386
+```
+
+![img_1.png](images/45_redis_cluster_command.png)
+
+- 进入容器`redis-node-1`并为6台机器构建集群关系。
+
+```bash
+docker exec -it redis-node-1 /bin/bash
+# 下面的IP是宿主机的IP
+redis-cli --cluster create 10.0.2.15:6381 10.0.2.15:6382 10.0.2.15:6383 10.0.2.15:6384 10.0.2.15:6385 10.0.2.15:6386 --cluster-replicas 1
+```
+
+![img.png](images/46_a_redis_cli_cluster.png)
+
+- 链接进入`6381`作为切入点，查看节点状态。
+
+```bash
+redis-cli -p 6381
+
+cluster info
+
+cluster nodes
+```
+
+![img.png](images/46_b_cluster_info_nodes.png)
+
+![img.png](images/46_c_redis_cluster_3m_3s.png)
+
+
+
+
+
