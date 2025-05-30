@@ -180,3 +180,10 @@ cluster nodes
 
 ![img.png](images/48_redis_cluster_write_error.png)
 
+# 49 redis集群读写路由增强正确案例
+
+- 使用`-c`参数在集群模式下进行数据操作。
+
+![img.png](images/49_enter_cluster_mode.png)
+
+
