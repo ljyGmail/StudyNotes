@@ -222,4 +222,6 @@ docker start redis-node-4
 
 可以看到已经恢复最初的架构: `redis-cli --cluster check 宿主机IP:6381`
 
+# 52 主从扩容需求分析
 
+![img.png](images/52_extend_cluster.png)
