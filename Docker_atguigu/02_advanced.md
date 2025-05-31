@@ -261,3 +261,18 @@ docker ps
 
 ![img.png](images/54_cluster_reduce.png)
 
+# 55 主从缩容案例演示
+
+- 目的: 6387和6388下线
+- 查看集群情况，获得6388的节点ID: `redis-cli --cluster check 10.0.2.15:6382`
+- 从集群中将4号从节点6388删除: `redis-cli --cluster del-node 10.0.2.15:6388 [6388的节点ID]`
+- 查看集群情况
+  ![img.png](55_a_delete_6388.png)
+- 将6387的槽位清空，本例将清出来的槽位都给6381: `redis-cli --cluster reshard 10.0.2.15:6381`
+  ![img_2.png](55_b_clean_6387_slots.png)
+- 查看集群情况
+  ![img.png](55_c_cluster_check_after_cleaning_slots.png)
+- 将6387从集群中删除: `redis-cli --cluster del-node 10.0.2.15:6387 [6387的节点ID]`
+- 查看集群情况
+  ![img.png](55_d_delete_6387.png)
+
