@@ -398,7 +398,90 @@ CMD /bin/bash
 - 查看虚悬镜像: `docker images -f dangling=true`
 - 删除所有的虚悬镜像: `docker image prune`
 
+# 63 新建微服务工程并形成jar包
 
+- 新建一个Spring Boot项目
+- 修改`pom.xml`:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.5.6</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.atguigu.docker</groupId>
+    <artifactId>docker_boot</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+
+    <properties>
+        <java.version>8</java.version>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.1.0</version>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+```
+
+- 编写Controller:
+
+```java
+
+@RestController
+public class OrderController {
+
+    @Value("${server.port}")
+    private String port;
+
+    @RequestMapping("/order/docker")
+    public String helloDocker() {
+        return "hello docker\t" + port + "\t" + UUID.randomUUID();
+    }
+
+    @RequestMapping("/order/index")
+    public String index() {
+        return "服务端口号:\t" + port + "\t" + UUID.randomUUID();
+    }
+}
+```
+
+- 编写`application.yml`:
+
+```yml
+server:
+  port: 6001
+```
+
+- 确认Controller在本地可以正常访问。
+- 使用Maven的`package`
 
 
 
