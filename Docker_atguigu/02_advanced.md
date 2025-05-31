@@ -348,5 +348,46 @@ Dockerfile面向开发，Docker镜像成为交付标准，Docker容器则涉及�
 - 写一个Dockerfile，使CentOS7镜像具备`Vim + ifconfig + JDK8`
 - JDK的下载地址: `https://mirrors.yangxingzhen.com/jdk/`
 
+# 61 CentOS之Dockerfile案例演示
 
+* 由于CentOS7有网络问题，改用`almalinux:8`的Linux镜像。
+
+- 编写Dockerfile文件:
+
+```dockerfile
+FROM almalinux:8
+MAINTAINER ljy<liangjy881@gmail.com>
+
+ENV MYPATH /usr/local
+WORKDIR $MYPATH
+
+RUN yum -y update
+#安装vim编辑器
+RUN yum -y install vim
+#安装ifconfig命令查看网络IP
+RUN yum -y install net-tools
+RUN yum clean all
+#安装java8及lib库
+RUN yum -y install glibc.i686
+RUN mkdir /usr/local/java
+#ADD 是相对路径jar,把jdk-8u171-linux-x64.tar.gz添加到容器中,安装包必须要和Dockerfile文件在同一位置
+ADD jdk-8u221-linux-x64.tar.gz /usr/local/java/
+#配置java环境变量
+ENV JAVA_HOME /usr/local/java/jdk1.8.0_221
+ENV JRE_HOME $JAVA_HOME/jre
+ENV CLASSPATH $JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar:$JRE_HOME/lib:$CLASSPATH
+ENV PATH $JAVA_HOME/bin:$PATH
+
+EXPOSE 80
+
+CMD echo $MYPATH
+CMD echo "success--------------ok"
+CMD /bin/bash
+```
+
+- 构建: `docker build -t 新镜像名称:TAG .`
+    - 例如: `docker build -t almalinux-java8:1.5`
+
+- 运行: `docker run -it 新镜像名称:TAG`
+    - 例如: `docker run -it almalinux-java8:1.5 /bin/bash`
 
