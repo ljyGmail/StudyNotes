@@ -305,6 +305,42 @@ Dockerfile面向开发，Docker镜像成为交付标准，Docker容器则涉及�
 2. Docker镜像，在用Dockerfile定义一个文件之后，`docker build`时会产生一个Docker镜像，当运行Docker镜像时会真正开始提供服务。
 3. Docker容器，容器是直接提供服务的。
 
+# 59 Dockerfile保留字简介
+
+- `FROM`: 基础镜像，当前镜像是基于哪个镜像的，指定一个已经存在的镜像作为模板，第一句必须是`FROM`。
+- `MAINTAINER`: 镜像维护者的姓名和邮箱地址。
+- `RUN`: 容器构建时需要运行的命令。
+    - 两种格式
+        - shell格式: `RUN <命令行命令>` 例如: `RUN yum -y install vim`
+        - exec格式: `RUN ["可执行文件", "参数1", "参数2" ...]` 例如: `RUN ["./test.php", "dev", "offline"]`等价于
+          `RUN ./test.php dev offline`
+- `EXPOSE`: 当前容器对外暴露出的端口。
+- `WORKDIR`: 指定在创建容器后，终端默认登录进来的工作目录，一个落脚点。
+- `USER`: 指定该镜像以什么用户去执行命令，如果不指定，默认是`root`。
+- `ENV`: 用来在构建镜像过程中设置环境变量。例如:
+    ```dockerfile
+    ENV MY_PATH /usr/mytest
+    WORKDIR $MY_PATH
+    ```
+- `ADD`: 将宿主机目录下的文件复制进镜像且会自动处理URL和解压tar压缩包。相当于`COPY` + `解压`的合体。
+- `COPY`: 类似于`ADD`，复制文件和目录到镜像中。  
+  将从构建上下文目录中<源文件>的文件/目录复制到新的一层的镜像内的<目标路径>位置
+    - `COPY src desc`
+    - `COPY ["src", "dest"]`
+    - <src源路径>: 元文件或者源目录
+    - <dest目标路径>: 容器内的指定路径，该路径不用事先建好，路径如果不存在，会自动创建。
+- `VOLUME`: 容器数据卷，用于数据保存和持久化工作。
+- `CMD`: 指定容器启动后要做的事情。
+    - Dockerfile中可以有多个`CMD`指令，但只有最后一个生效，`CMD`会被`docker run`之后的参数替换。
+      ![img.png](images/59_a_dockerfile_cmd.png)
+    - 它和`RUN`命令的区别:
+        - `CMD`是在`docker run`时运行。
+        - `RUN`是在`docker build`时运行。
+- `ENTRYPOINT`: 也是用来指定一个容器启动时要运行的命令。
+    - 类似于`CMD`命令，但是`ENTRYPOINT`不会被`docker run`后面的命令覆盖，  
+      而且这些命令行参数会被当作参数送给`ENTRYPOINT`指令指定的程序。
+      ![img.png](images/59_b_dockerfile_entrypoint.png)
+
 
 
 
