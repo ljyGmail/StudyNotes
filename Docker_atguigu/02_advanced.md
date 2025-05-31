@@ -287,6 +287,23 @@ docker ps
     2. `docker build`命令构建镜像
     3. `docker run`运行容器实例
 
+# 58 Dockerfile构建过程解析
+
+从应用软件的角度来看，Dockerfile、Docker镜像与Docker容器分别代表软件的三个不同阶段:
+
+- Dockerfile是软件的原材料
+- Docker镜像是软件的交付品
+- Docker容器则可以认为是软件镜像的运行态，也即依照镜像运行的容器实例
+
+![img.png](images/59_build_process.png)
+
+Dockerfile面向开发，Docker镜像成为交付标准，Docker容器则涉及部署与运维，三者缺一不可，合力充当Docker体系的基石。
+
+1. Dockerfile，需要定义一个Dockerfile，Dockerfile定义了进程需要的一切东西。  
+   Dockerfile涉及的内容包括执行代码或者是文件、环境变量、依赖包、运行时环境、动态链接库、操作系统的发行版、  
+   服务进程和内核进程(当应用进程需要和系统服务和内核进程打交道，这时需要考虑如何设计namespace的权限控制)等等。
+2. Docker镜像，在用Dockerfile定义一个文件之后，`docker build`时会产生一个Docker镜像，当运行Docker镜像时会真正开始提供服务。
+3. Docker容器，容器是直接提供服务的。
 
 
 
