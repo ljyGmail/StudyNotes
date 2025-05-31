@@ -267,12 +267,27 @@ docker ps
 - 查看集群情况，获得6388的节点ID: `redis-cli --cluster check 10.0.2.15:6382`
 - 从集群中将4号从节点6388删除: `redis-cli --cluster del-node 10.0.2.15:6388 [6388的节点ID]`
 - 查看集群情况
-  ![img.png](55_a_delete_6388.png)
+  ![img.png](images/55_a_delete_6388.png)
 - 将6387的槽位清空，本例将清出来的槽位都给6381: `redis-cli --cluster reshard 10.0.2.15:6381`
-  ![img_2.png](55_b_clean_6387_slots.png)
+  ![img_2.png](images/55_b_clean_6387_slots.png)
 - 查看集群情况
-  ![img.png](55_c_cluster_check_after_cleaning_slots.png)
+  ![img.png](images/55_c_cluster_check_after_cleaning_slots.png)
 - 将6387从集群中删除: `redis-cli --cluster del-node 10.0.2.15:6387 [6387的节点ID]`
 - 查看集群情况
-  ![img.png](55_d_delete_6387.png)
+  ![img.png](images/55_d_delete_6387.png)
+
+# 56 分布式存储案例小总结
+
+# 57 Dockerfile简介
+
+- 是什么? Dockerfile是用来构建Docker镜像的文本文件，是由一条条构建镜像所需的指令和参数构成的脚本。
+  ![img.png](images/57_dockerfile.png)
+- 构建三部曲:
+    1. 编写Dockerfile文件
+    2. `docker build`命令构建镜像
+    3. `docker run`运行容器实例
+
+
+
+
 
