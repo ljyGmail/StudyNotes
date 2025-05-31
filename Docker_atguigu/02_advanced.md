@@ -341,6 +341,12 @@ Dockerfile面向开发，Docker镜像成为交付标准，Docker容器则涉及�
       而且这些命令行参数会被当作参数送给`ENTRYPOINT`指令指定的程序。
       ![img.png](images/59_b_dockerfile_entrypoint.png)
 
+# 60 CentOS之Dockerfile需求说明
+
+![img.png](images/60_original_centos7.png)
+
+- 写一个Dockerfile，使CentOS7镜像具备`Vim + ifconfig + JDK8`
+- JDK的下载地址: `https://mirrors.yangxingzhen.com/jdk/`
 
 
 
