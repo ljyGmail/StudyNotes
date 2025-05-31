@@ -391,3 +391,15 @@ CMD /bin/bash
 - 运行: `docker run -it 新镜像名称:TAG`
     - 例如: `docker run -it almalinux-java8:1.5 /bin/bash`
 
+# 62 虚悬镜像
+
+- 是什么? 仓库名、标签都是<none>的镜像，俗称dangling image。
+- 使用Dockerfile构建时，如果不指定镜像名和标签，就会产生虚悬镜像。
+- 查看虚悬镜像: `docker images -f dangling=true`
+- 删除所有的虚悬镜像: `docker image prune`
+
+
+
+
+
+
