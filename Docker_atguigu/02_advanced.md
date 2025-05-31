@@ -505,6 +505,10 @@ EXPOSE 6001
 - 构建镜像: `docker build -t ljy_docker:1.6 .`
 - 运行容器: `docker run -d -p 6001:6001 ljy_docker:1.6`
 
+# 65 测试容器上的微服务
+
+- `curl 127.0.0.1:6001/order/docker`
+- `curl 127.0.0.1:6001/order/index`
 
 
 
