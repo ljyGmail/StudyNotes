@@ -483,6 +483,29 @@ server:
 - 确认Controller在本地可以正常访问。
 - 使用Maven的`package`
 
+# 64 Dockerfile发布微服务部署到Docker容器
+
+- 编写Dockerfile:
+
+```dockerfile
+# Specify basic layer
+FROM openjdk:8-jdk-alpine
+# Specify author
+MAINTAINER ljy
+# Specify volume
+VOLUME /tmp
+# Copy jar file to the container
+ADD docker_boot-0.0.1-SNAPSHOT.jar ljy_docker.jar
+# Run the jar
+ENTRYPOINT ["java", "-jar", "/ljy_docker.jar"]
+# Expose port 6001
+EXPOSE 6001
+```
+
+- 构建镜像: `docker build -t ljy_docker:1.6 .`
+- 运行容器: `docker run -d -p 6001:6001 ljy_docker:1.6`
+
+
 
 
 
