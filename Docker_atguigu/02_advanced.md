@@ -532,5 +532,9 @@ EXPOSE 6001
 - `none`模式: 使用`--network none`指定。
 - `container`模式: 使用`--network container:NAME或者容器ID`指定。
 
+# 70 Docker network底层IP和容器映射变化
+
+- 通过实验说明docker容器内部的IP是有可能发生改变的，因此要规划好网络服务。
+
 
 
