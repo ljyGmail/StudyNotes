@@ -551,3 +551,20 @@ EXPOSE 6001
           ![img.png](images/71_c_tomcat81_ip_addr.png)
           ![img.png](images/71_d_tomcat82_ip_addr.png)
 
+# 72 Docker network之host
+
+- 直接使用宿主机的IP地址与外界进行通信，不再需要额外进行NAT转换。
+  ![img.png](images/72_a_docker_network_host.png)
+
+- 案例
+    - 警告: `docker run -d -p 8083:8080 --network host --name tomcat83 billygoo/tomcat8-jdk8`
+        - `WARNING: Published ports are discarded when using host network mode`
+    - 正确: `docker run -d --network host --name tomcat83 billygoo/tomcat8-jdk8`
+    - 查看tomcat的信息: `docker inspect tomcat83`
+      ![img.png](images/72_b_inspect_tomcat83.png)
+    - 可以看到tomcat83容器没有自己的网关和IP地址。
+    - 进入容器查看`ip addr`后也可以看到网络情况和宿主机的网络情况一致。
+    - 没有设置`-p`的端口映射，如何访问启动的tomcat83?
+        - `http://宿主机IP:8080/`
+
+
