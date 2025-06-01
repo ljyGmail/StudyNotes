@@ -523,8 +523,14 @@ EXPOSE 6001
 - 容器间的互联和通信以及端口映射。
 - 容器IP变动时可以通过服务名直接网络通信而不受到影响。
 
+# 69 Docker network网络模式有几种
 
+![img.png](69_docker_network_modes.png)
 
+- `bridge`模式: 使用`--network bridge`指定，默认使用`docker0`。
+- `host`模式: 使用`--network host`指定。
+- `none`模式: 使用`--network none`指定。
+- `container`模式: 使用`--network container:NAME或者容器ID`指定。
 
 
 
