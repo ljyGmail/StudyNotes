@@ -87,6 +87,12 @@ sudo systemctl enable docker
 # Verify Docker installation
 docker version
 docker run hello-world
+
+# Add current user to docker group
+sudo usermod -aG docker $USER
+sudo systemctl start docker
+
+# 如果使用的是Vagrant，先退出当前连接，再重新进入。
 ```
 
 # 12 镜像加速器配置

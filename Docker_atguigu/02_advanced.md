@@ -510,6 +510,17 @@ EXPOSE 6001
 - `curl 127.0.0.1:6001/order/docker`
 - `curl 127.0.0.1:6001/order/index`
 
+# 66 Docker network简介
+
+# 67 Docker network常用命令
+
+- 查看网络: `docker network ls`
+- 查看网络数据源: `docker network inspect xxx网络名字`
+- 删除网络数: `docker network rm xxx网络名字`
+
+
+
+
 
 
 
