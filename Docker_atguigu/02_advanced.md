@@ -525,7 +525,7 @@ EXPOSE 6001
 
 # 69 Docker network网络模式有几种
 
-![img.png](69_docker_network_modes.png)
+![img.png](images/69_docker_network_modes.png)
 
 - `bridge`模式: 使用`--network bridge`指定，默认使用`docker0`。
 - `host`模式: 使用`--network host`指定。
@@ -536,5 +536,18 @@ EXPOSE 6001
 
 - 通过实验说明docker容器内部的IP是有可能发生改变的，因此要规划好网络服务。
 
+# 71 Docker network之bridge
 
+![img.png](images/71_a_docker_network_bridge.png)
+
+- 案例
+    - 运行2个tomcat容器
+        - `docker run -d -p 8081:8080 --name tomcat81 billygoo/tomcat8-jdk8`
+        - `docker run -d -p 8082:8080 --name tomcat82 billygoo/tomcat8-jdk8`
+    - 验证两两匹配
+        - 宿主机 `ip addr`
+          ![img.png](images/71_b_host_ip_addr.png)
+        - 容器内 `ip addr`
+          ![img.png](images/71_c_tomcat81_ip_addr.png)
+          ![img.png](images/71_d_tomcat82_ip_addr.png)
 
