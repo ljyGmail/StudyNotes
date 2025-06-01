@@ -518,6 +518,10 @@ EXPOSE 6001
 - 查看网络数据源: `docker network inspect xxx网络名字`
 - 删除网络数: `docker network rm xxx网络名字`
 
+# 68 Docker network能干嘛
+
+- 容器间的互联和通信以及端口映射。
+- 容器IP变动时可以通过服务名直接网络通信而不受到影响。
 
 
 
