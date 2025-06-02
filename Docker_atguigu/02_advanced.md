@@ -597,6 +597,13 @@ EXPOSE 6001
     - `docker run -d -p 8082:8080 --network my_network --name tomcat82 tomcat`
 - 结论: 自定义网络本身就维护好了主机名和IP的对应关系(IP和域名都能通)。
 
+# 78 Docker compose是什么能干嘛
+
+- Docker-Compose负责实现对Docker容器集群的快速编排。
+- 需要定义一个YAML格式的配置文件`docker-compose.yml`，写好多个容器之间的调用关系。
+  然后，只要一个命令，就能同时启动/关闭这些容器。
+
+
 
 
 
