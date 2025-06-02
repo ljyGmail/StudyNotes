@@ -603,6 +603,26 @@ EXPOSE 6001
 - 需要定义一个YAML格式的配置文件`docker-compose.yml`，写好多个容器之间的调用关系。
   然后，只要一个命令，就能同时启动/关闭这些容器。
 
+# 79 Docker compose下载安装步骤
+
+- 略
+
+# 80 Docker compose核心概念
+
+- Compose核心概念
+    - 一文件: `docker-compose.yml`
+    - 两要素:
+        - 服务(Service): 一个个的应用容器实例，比如订单微服务、库存微服务、mysql容器、nginx容器或redis容器。
+        - 工程(Project): 由一组关联的应用容器组成的一个*完整业务单元*，在`docker-compose.yml`文件中定义。
+
+- Compose使用的三个步骤:
+    - 编写`Dockerfile`定义各个微服务应用并构建出对应的镜像文件。
+    - 使用`docker-compose.yml`定义一个完整的业务单元，安排好整体应用中的各个容器服务。
+    - 最后，执行`docker-compose up`命令来启动并运行整个应用程序，完成一键部署上线。等价于一次性执行了多个`docker run ...`
+      命令。
+
+- Compose常用命令
+  ![img.png](images/80_docker_compose_commands.png)
 
 
 
