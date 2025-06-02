@@ -567,4 +567,18 @@ EXPOSE 6001
     - 没有设置`-p`的端口映射，如何访问启动的tomcat83?
         - `http://宿主机IP:8080/`
 
+# 72 Docker network之none
+
+- 是什么?
+    - 禁用网络功能，只有lo标识(就是127.0.0.1表示本地回环)。
+- 案例
+    - `docker run -d -p 8084:8080 --network none --name tomcat84 billygoo/tomcat8-jdk8`
+    - `docker inspect tomcat84`
+      ![img.png](images/73_a_docker_network_none.png)
+    - 进入容器，`ip addr`
+      ![img.png](images/73_b_none_ip_addr.png)
+
+
+
+
 
