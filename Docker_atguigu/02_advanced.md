@@ -587,6 +587,16 @@ EXPOSE 6001
     - `docker run -it --network container:alpine1 --name alpine2 alpine /bin/sh`
     - 此时查看两个容器的`ip addr`可以看到结果相同。
     - 此时关闭`alpine1`，在进入`aline2`可以看到之前的网络信息也消失了。
-    
+
+# 75 76 77 自定义网络
+
+- 案例before: 使用不指定network的`docker run`命令运行两个容器后，可以使用IP地址PING到对方，但无法使用服务名PING到对方。
+- 案例after: 先创建一个网络，然后在运行容器时指定该网络后，就可以使用服务名PING到对方。
+    - `docker network create my_network`
+    - `docker run -d -p 8081:8080 --network my_network --name tomcat81 tomcat`
+    - `docker run -d -p 8082:8080 --network my_network --name tomcat82 tomcat`
+- 结论: 自定义网络本身就维护好了主机名和IP的对应关系(IP和域名都能通)。
+
+
 
 
