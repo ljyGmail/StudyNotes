@@ -567,7 +567,7 @@ EXPOSE 6001
     - 没有设置`-p`的端口映射，如何访问启动的tomcat83?
         - `http://宿主机IP:8080/`
 
-# 72 Docker network之none
+# 73 Docker network之none
 
 - 是什么?
     - 禁用网络功能，只有lo标识(就是127.0.0.1表示本地回环)。
@@ -578,7 +578,15 @@ EXPOSE 6001
     - 进入容器，`ip addr`
       ![img.png](images/73_b_none_ip_addr.png)
 
+# 74 Docker network之container
 
-
+- 是什么?
+  ![img.png](images/74_docker_network_container.png)
+- 案例: 此案例不再使用tomcat，而是使用alpine，一个轻量级的Linux发行版。
+    - `docker run -it --name alpine1 alpine /bin/sh`
+    - `docker run -it --network container:alpine1 --name alpine2 alpine /bin/sh`
+    - 此时查看两个容器的`ip addr`可以看到结果相同。
+    - 此时关闭`alpine1`，在进入`aline2`可以看到之前的网络信息也消失了。
+    
 
 
