@@ -732,6 +732,14 @@ networks:
 - 再次进入mysql容器内部建表。
 - 再次进入swagger-ui中进行结果的确认。
 
+# 87 Portainer简介和安装
+
+- 安装:
+  `docker run -d -p 8000:8000 -p 9000:9000 --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer`
+- 第一次登录需要创建admin，访问地址: `xxx.xxx.xxx.xxx:9000`
+- 设置admin用户和密码后首次登录
+- 选择local选项卡后查看本地Docker详细信息
+- 图形界面展示的内容对应的命令: `docker system df`
 
 
 
