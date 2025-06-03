@@ -624,6 +624,14 @@ EXPOSE 6001
 - Compose常用命令
   ![img.png](images/80_docker_compose_commands.png)
 
+# 81 微服务改造升级并生成新镜像
+
+- 根据课件修改源代码后，已更新到如下代码仓库。
+  `git@github.com:ljyGmail/docker_boot.git`
+
+- 使用Maven进行package操作后，将构建好的jar包上传到Linux虚拟机的`/mydocker`目录下。
+
+- 构建镜像: 还是使用之前的Dockerfile来构建，`docker build -t ljy_docker:1.7 .`
 
 
 
