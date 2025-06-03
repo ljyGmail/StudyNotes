@@ -741,5 +741,11 @@ networks:
 - 选择local选项卡后查看本地Docker详细信息
 - 图形界面展示的内容对应的命令: `docker system df`
 
+# 88 89 Portainer简介和安装
+
+- 可以在Portainer中下载镜像并运行容器。
+- 上面运行Portainer的命令中的`restart=always`表示该容器会随着Docker的启动而自动运行。
+
+
 
 
