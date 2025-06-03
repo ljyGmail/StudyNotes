@@ -666,5 +666,72 @@ EXPOSE 6001
 - swagger测试
   `http://192.168.127.150:6001/swagger-ui.html`
 
+# 84 85  86 使用compose编排服务
+
+- 编写`docker-compose.yml`文件
+
+```yml
+version: "3"
+
+services:
+  microService:
+    image: ljy_docker:1.9
+    container_name: ms01
+    ports:
+      - "6001:6001"
+    volumes:
+      - /root/docker-volume/microService:/data
+    networks:
+      - atguigu_net
+    depends_on:
+      - redis
+      - mysql
+
+  redis:
+    image: redis:6.0.8
+    ports:
+      - "6379:6379"
+    volumes:
+      - /root/docker-volume/redis/redis.conf:/etc/redis/redis.conf
+      - /root/docker-volume/redis/data:/data
+    networks:
+      - atguigu_net
+    command: redis-server /etc/redis/redis.conf
+
+  mysql:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: '123456'
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'no'
+      MYSQL_DATABASE: 'db2021'
+      MYSQL_USER: 'ljy'
+      MYSQL_PASSWORD: 'ljy123'
+    ports:
+      - "3306:3306"
+    volumes:
+      - /root/docker-volume/mysql/db:/var/lib/mysql
+      - /root/docker-volume/mysql/conf:/etc/mysql/conf.d
+      - /root/docker-volume/mysql/init:/docker-entrypoint-initdb.d
+    networks:
+      - atguigu_net
+    command: --default-authentication-plugin=mysql_native_password # 解决外部无法访问
+
+networks:
+  atguigu_net:
+```
+
+- 第二次修改微服务工程
+  ![img.png](images/83_change_ip_to_service_name.png)
+
+- 重新打包工程，将jar包和docker-compose.yml文件上传到Linux虚拟机中。
+- 重新构建微服务的镜像
+- 检查docker-compose配置，没有输出则表示编写的语法格式没有问题: `docker-compose config -q`
+- 执行`docker-compose up -d`
+- 执行`docker network ls`可看到有新的网络生成。
+- 在`docker-compose.yml`中如果不指定容器或网络的名字，Docker会自动为其生成名字，格式:`目录名_服务名_数字`。
+- 再次进入mysql容器内部建表。
+- 再次进入swagger-ui中进行结果的确认。
+
+
 
 
