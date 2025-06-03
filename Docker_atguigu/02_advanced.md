@@ -633,5 +633,38 @@ EXPOSE 6001
 
 - 构建镜像: 还是使用之前的Dockerfile来构建，`docker build -t ljy_docker:1.7 .`
 
+# 82 83 不用compose编排服务
+
+- 单独的mysql容器实例
+    - 新建mysql容器实例
+      `docker run -p 3306:3306 --name mysql57 --privileged=true -v /root/docker-volume/mysql/conf:/etc/mysql/conf.d -v /root/docker-volume/mysql/logs:/logs -v /root/docker-volume/mysql/data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=123456 -d mysql:5.7`
+    - 进入mysql容器实例并新建数据库`db2021`并新建表`t_user`
+    ```sql
+    CREATE TABLE `t_user`
+    (
+    `id`          int(10) unsigned NOT NULL AUTO_INCREMENT,
+    `username`    varchar(50) NOT NULL DEFAULT '' COMMENT '用户名',
+    `password`    varchar(50) NOT NULL DEFAULT '' COMMENT '密码',
+    `sex`         tinyint(4) NOT NULL DEFAULT '0' COMMENT '性别 0=女 1=男 ',
+    `deleted`     tinyint(4) unsigned NOT NULL DEFAULT '0' COMMENT '删除标志，默认0不删除，1删除',
+    `update_time` timestamp   NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `create_time` timestamp   NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='用户表';
+    ```
+
+- 单独的redis容器实例
+  `docker run -p 6379:6379 --name redis608 --privileged=true -v /root/docker-volume/redis/redis.conf:/etc/redis/redis.conf -v /root/docker-volume/redis/data:/data -d redis:6.0.8 redis-server /etc/redis/redis.conf`
+    - 进入redis容器确认一下数据
+        - `docker exec -it redis608 bash`
+        - `redis-cli -p 6379`
+        - `keys *`
+
+- 微服务工程
+  `docker run -d -p 6001:6001 ljy_docker:1.7`
+
+- swagger测试
+  `http://192.168.127.150:6001/swagger-ui.html`
+
 
 
