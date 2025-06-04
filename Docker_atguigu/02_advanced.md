@@ -605,7 +605,13 @@ EXPOSE 6001
 
 # 79 Docker compose下载安装步骤
 
-- 略
+```bash
+# CentOS7中安装docker-compose
+sudo curl -L "https://github.com/docker/compose/releases/download/v2.23.3/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+docker-compose --version
+# 应输出类似：Docker Compose version v2.23.3
+```
 
 # 80 Docker compose核心概念
 
