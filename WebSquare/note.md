@@ -69,3 +69,30 @@ scwin.btn_select_onclick = function(e) {
 * `DataCollection`에 있는 데이터 항목을 화면에 데이터를 보여줄 컴포넘트와 바인팅시킨다.
 
 * `DataCollection`만들 때 텍스트로 복사 가능하다.
+
+## 5. DataCollection 과 gridView연동
+
+* gridView과 td에게 동일한 속성에게 다른 값을 줄 때 td의 우선순위가 높다.
+* gridView의 열 너비를 조정하는 방법
+    - 화면에서 바로 드래그
+    - gridView를 더블 클릭하고 다이어로그창에서 width값을 조절하면된다
+* gridView의 열 너비를 자동으로 전체 너비를 채울려면 `autoFit`속성값을 `allColumn`으로 설정한다
+* `autoFixMinWidth`를 설정하면 자동 너비 조절의 최소 너비를 지정할 수 있다
+* `fixedColumn`속성의 값을 설정하여 틀고정할 컴럼을 지정한다
+* `columnMove`속성의 값을 `true`로 설정하여 컬럼을 이동할 수 있게 한다
+* `sortable`속성의 값을 `true`로 설정하여 정렬할 수 있게 한다
+* `sortEvent`속성의 값은 2가지가 있다 (onclick, ondbclick)
+* gridView의 헤더에게 `useFilter`의 값을 `true`로 설정하여 해당 컬럼에게 필터링 기능을 적용한다
+* gridView에게 `useFilterList`의 값을 `true`로 설정하여 더욱 편리하게 체크박스를 선택해서 필터링하는 기능이 적용된다
+* gridView의 `rowNumVisible`속성의 값을 `true`로 설정하면 순번이 자동으로 표시된다 
+* 순번 Label를 표시할려면 직접적으로 설정이 안되고 `rowNumHeaderValue`속성으로 설정해야한다
+* Row의 데이터가 변경될 때 표시할려면 `rowStatusVisible`의 값을 `true`로 설정한다.  
+해당 설정 후, 상태를 표시하는 열이 하나 추가된다. 마찬가지로 헤더Label은 `rowStatusHeaderValue`속성으로 설정한다
+* 셀 편집할려면 디폴트로 마우스 더블클릭해야하는데, 이 설정을 바꿀려면 `editModeEvent`속설을 설정한다.
+* 탭 키로 커서 이동하면서 바로 편집할려면 `keyMoveEditMode`속성의 값을 `true`로 설정한다
+* 탭 이동을 자동으로 아래 행으로 가게할려면 `focusFlow`의 값을 `linear`로 설정한다
+* 셀 안에 있는 내용은 여러 타입으로 설정 가능하다. `inputType`으로 변경할 수 있다. 예: `select`, `calendar`
+* 셀 내용의 타입이 `select`라는건 현재는 편집모드여야 선택할 수 있다는걸 알 수 있다.  
+ 편집 상태가 아니어도 선택할 수 있다는걸 알 수 있을려면 `셀`의 `viewType`속성을 `icon`으로 설정해야 한다.
+* 셀 내용을 형식을 지정할려면, 간단한 방식은 `displayFormat`속성에서 `###-###`식으로 지정할 수 있다
+* 약간 복잡하고 로직이 필요한 형식을 지정할려면, `displayFormatter`속성에서 함수를 지정하고, `Script`탭에서 해당 함수를 구현하면된다.
