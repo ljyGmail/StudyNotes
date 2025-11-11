@@ -96,3 +96,93 @@ scwin.btn_select_onclick = function(e) {
  편집 상태가 아니어도 선택할 수 있다는걸 알 수 있을려면 `셀`의 `viewType`속성을 `icon`으로 설정해야 한다.
 * 셀 내용을 형식을 지정할려면, 간단한 방식은 `displayFormat`속성에서 `###-###`식으로 지정할 수 있다
 * 약간 복잡하고 로직이 필요한 형식을 지정할려면, `displayFormatter`속성에서 함수를 지정하고, `Script`탭에서 해당 함수를 구현하면된다.
+
+## 6. gridView의 Event 및 API
+* gridVew의 속성은 gridView전체, 헤더, 셀 별로 설정할 수 있지만, `Event`는 gridView전체에게만 적용가능하다.
+* gridView관련 이벤트 처리 시 컴럼 인덴스를 사용하기 보다 컬럼ID를 사용하는 것을 권장한다.
+* 하지만 컬럼ID를 바로 사용할 수 있는 이벤트는 `oncellclick`과 `oncelldbclick`밖에 없다.
+* 그중 어떤 이빈테는 `info`파라미터가 있는데, 여기서 컴럼ID를 찾아볼 수 있다.
+* 혹은 gridView에서 제공한 API`getColumnId(col)`를 사용할 수도 있다. 
+```js
+scwin.ui_memberList_oncelldblclick = function (row, col, colId) {
+    // 사번일 경우에만
+    if (colId === 'EMP_CD') {
+        alert('사번');
+    }
+};
+
+scwin.ui_memberList_onafteredit = function (row, col, value) {
+    const _colId = this.getColumnID(col);
+    // 이름일 경우에만
+    if (_colId === 'EMP_NM') {
+        this.setCellColor(row, col, 'red');
+    }
+};
+```
+
+* gridView뿐만 아니라 그와 연결된 `dataList`에도 이벤트가 있다.  
+주로 gridView안에 있는 데이터와 관련된 이벤트다.
+```js
+scwin.dc_userInfoList_ondataload = function () {
+    // 건수 구하기
+    span1.setValue(dc_userInfoList.getRowCount());
+};
+
+scwin.dc_userInfoList_oninsertrow = function (info) {
+    // 건수 구하기
+    span1.setValue(dc_userInfoList.getRowCount());
+};
+
+scwin.btnInsert_onclick = function (e) {
+    // 첫째 행에 추가
+    // dc_userInfoList.insertRow(0);
+    const rowIdx = dc_userInfoList.insertRow();
+};
+
+scwin.btnDelete_onclick = function (e) {
+    const focusIdx = ui_memberList.getFocusedRowIndex();
+    dc_userInfoList.deleteRow(focusIdx);
+};
+
+scwin.btnRemove_onclick = function (e) {
+    const focusIdx = ui_memberList.getFocusedRowIndex();
+    const obj = dc_userInfoList.removeRow(focusIdx);
+};
+
+scwin.btnDeleteRows_onclick = function (e) {
+    const chkidxArr = ui_memberList.getCheckedIndex('CHK');
+    dc_userInfoList.deleteRows(chkidxArr);
+};
+
+scwin.btnRemoveRows_onclick = function (e) {
+    const chkidxArr = ui_memberList.getCheckedIndex('CHK');
+    const obj = dc_userInfoList.removeRows(chkidxArr);
+};
+
+scwin.btnInit_onclick = function (e) {
+    //const obj = dc_userInfoList.removeAll();
+    dc_userInfoList.setData([]);
+};
+
+scwin.btnExcelDown_onclick = function (e) {
+    ui_memberList.advancedExcelDownload([]);
+};
+
+scwin.btnExcelUpload_onclick = function (e) {
+    var options = {};
+    options.headerExist = "1";
+    options.type = "1";
+    ui_memberList.advancedExcelUpload(options);
+};
+
+```
+
+* `customFormatter`속성으로 필요한 서식 로직을 지정할 수 있다.
+```js
+scwin.cus = function (data, formattedData, rowIdx, colIdx) {
+    if (data === "F") {
+        ui_memberList.setCellColor(rowIdx, "EMP_CD", "orange");
+    }
+    return formattedData;
+}
+```
