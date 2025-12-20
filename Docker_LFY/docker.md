@@ -30,7 +30,7 @@
 
 ## 04. 基础 - 停机不收费
 
-![停机不收费](image.png)
+![停机不收费](./images/04_01_shutdown_no_charge.png)
 
 ## 05. 基础 - 安装 Docker
 
@@ -59,3 +59,148 @@ docker ps
 # 每次重启服务器时自动启动Docker
 sudo systemctl enable docker
 ```
+
+## 06. 命令 - 镜像操作
+
+- 实验要求: 启动一个 nginx，并将它的首页改为自己的页面，发布出去，让所有人都能使用。
+
+![镜像相关命令](./images/06_01_docker_image_commands.png)
+
+- `docker search`
+
+  ![docker search](./images/06_02_docker_search.png)
+
+- `docker pull`
+
+  ![docker pull](./images/06_03_docker_pull.png)
+
+- `docker pull [specified tag]`: 在 docker hub 上查找需要的版本
+
+  ![docker pull specified tag](./images/06_04_docker_pull_specified_tag.png)
+
+- `docker rmi`
+
+  ![docker rmi](./images/06_05_docker_rmi.png)
+
+## 07. 命令 - 容器操作
+
+![容器相关命令](./images/07_01_docker_run_commands.png)
+
+- 直接执行`docker run [image]`命令， 如果本地没有此镜像，会自动下载。容器启动后，会阻塞控制台:
+
+![运行容器](./images/07_02_container_run.png)
+
+- 再打开一个新的控制台，执行`docker ps`，查看容器的运行状态。
+- 回到之前的控制台，按下`Ctr+C`让容器停止运行后，再执行`docker ps`， 可以看到没有运行中的容器了。
+- 想要看到包括停止运行的容器，需要执行`docker ps -a`。
+- 打开，停止，重启容器可以使用`docker start [容器ID]`，`docker stop [容器ID]`，`docker restart [容器ID]`命令
+
+![运行停止重启容器](./images/07_03_container_start_stop.png)
+
+- 执行`docker stats [容器ID]`，查看容器的运行状态。
+
+![查看容器状态](./images/07_04_container_status.png)
+
+- 执行`docker logs [容器ID]`，查看容器的运行日志。
+
+![查看容器日志](./images/07_05_container_log.png)
+
+- 执行`docker rm [容器ID]`，可以删除指定的容器。但删除容器之前，要先停掉该容器，或者进行强制删除(`-f`)。
+
+![删除容器](./images/07_06_container_remove.png)
+
+- 目前启动容器的方式会阻塞控制台，而且启动后无法通过浏览器访问该`nginx`的页面。
+- 下面需要学习如何让容器在后台默默启动，而且如何可以通过浏览器访问`nginx`的页面。
+
+## 08. 命令 - run 细节
+
+- 在后台启动容器，并为容器指定名称: `docker run -d --name mynginx nginx`
+
+![后台启动容器](./images/08_01_container_run_daemon.png)
+
+- 此时依然无法从外界访问容器中的内容。原因在与容器只是运行在主机的内部，需要做端口映射才能向外部提供访问容器内容的接口。
+
+![端口映射](./images/08_02_port_mapping.png)
+
+![指定端口启动容器](./images/08_03_docker_run_port.png)
+
+- 此时就可以使用浏览器访问 nginx 中的页面了。
+
+![默认页面](./images/08_04_default_page.png)
+
+- 思考: 上面的端口映射示意图中的 88 能不能重复？ 80 能不能重复？
+- 回答: 88 不可以，80 可以。
+
+- 如果需要修改 ngnix 默认提供的页面，需要进入到 nginx 容器中，修改里面的页面内容。
+- nginx 的默认页面保存在`/usr/share/nginx/html`路径中。
+- 想要知道这个路径不是靠猜的，而是需要参考`Docker Hub`的文档。
+
+![nginx镜像说明](./images/08_05_index_file_path.png)
+
+![修改容器内文件](./images/08_06_modify_page.png)
+
+- 进入容器内部: `docker exec -it mynginx /bin/bash`
+
+![进入容器](./images/08_07_docker_exec.png)
+
+- 可以看到即使是`vi`这种普遍的软件，为了最小化，都是没有的。
+- 修改`index.html`内容后，再次访问页面，可以看到已经发生改变。
+
+![修改后页面](./images/08_08_modified_page.png)
+
+- 目前修改页面的方式是进入容器后修改文件，这种方式比较麻烦。
+- 以后会学习将内部的文件夹映射到外部的方法，就比较方便了。
+- 下面学习如何将修改后的容器发布到应用市场。
+
+## 09. 命令 - 保存镜像
+
+![保存镜像](./images/09_01_save_image.png)
+
+- 将当前运行到容器提交成一个镜像: `docker commit -m "message" [容器ID] [镜像名]:[TAG]`
+
+![提交容器为镜像](./images/09_02_docker_commit.png)
+
+- 保存镜像: `docker save -o [文件名] [镜像名]:[TAG]`
+
+![保存镜像文件](./images/09_03_docker_save.png)
+
+- 加载镜像: `docker load -i [文件名]`
+- 使用加载到镜像运行容器
+
+![加载镜像文件并运行容器](./images/09_04_docker_load.png)
+
+## 10. 命令 - 分享镜像
+
+![分享社区](./images/10_01_share_image.png)
+
+- 登录到 Docker Hub: `docker login`
+
+![登录](./images/10_02_docker_login.png)
+
+- 为了让推送到 Docker Hub 到镜像保证唯一，需要将镜像改成`用户名/镜像名:TAG`
+
+![修改镜像名](./images/10_03_docker_tag.png)
+
+- 推送镜像到 Docker Hub:`docker push 用户名/镜像名:TAG`
+
+![推送镜像](./images/10_04_docker_push.png)
+
+- 可以为推送到镜像写一些说明:
+
+![写镜像说明](./images/10_05_write_description.png)
+
+- 为例能够让使用镜像的人不指定版本也可以正常下载使用镜像，标准到做法是再推送一个版本为`latest`到镜像:
+
+![推送最新版本](./images/10_06_push_latest.png)
+
+## 11. 命令 - 实验小结
+
+![小结](./images/11_01_container_summary.png)
+
+- 另外需要在云服务器上配置的是防火墙的配置，比如，现在启动一个`88`端口的 myngnix 容器的话，在外界是无法访问的。
+
+![防火墙配置](./images/11_02_fw_config.png)
+
+![防火墙配置](./images/11_03_fw_config.png)
+
+![防火墙配置](./images/11_04_fw_config.png)
