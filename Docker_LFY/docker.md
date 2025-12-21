@@ -306,3 +306,15 @@ sudo systemctl enable docker
 - 验证效果
 
 ![验证效果](./images/15_07_verify_result.png)
+
+## 16. 最佳实践
+
+![alt text](./images/16_01_best_practice.png)
+
+- 根据最佳实践，查找文档后，运行`mysql`的容器:
+
+![alt text](./images/16_02_run_mysql_following_best.png)
+
+- 测试效果:
+
+![alt text](./images/16_03_verify_connection.png)
