@@ -247,3 +247,62 @@ sudo systemctl enable docker
 - 关于`docker volume`的一些命令:
 
 ![volumn命令](./images/13_05_volume_commands.png)
+
+## 14. 网络 - 自定义网络
+
+- 想要实现多个容器之间的网络通信:
+
+![实现容器间通信](./images/14_01_container_communicating.png)
+
+- 下面这种方式效率很低，明明在一个 Docker 环境中，还要通过外部的 IP 和端口访问其他容器:
+
+![低效率方式](./images/14_02_external_access.png)
+
+- Docker 每启动一个容器，都相当于加入了`docker0`这个网络环境，Docker 会为每一个容器分配唯一的 IP。
+
+![docker0](./images/14_03_docker0.png)
+
+- 但是这种使用 IP 访问的方式也会有一些弊端，比如，IP 可能会因为某种原因发生变化。
+- 可以使用一种稳定的访问方式，那就是采用域名访问。
+- 但`docker0`默认不支持主机域名，需要我们创建一个自定义网络。
+- 创建自定义网络后，容器名就可以当作域名来使用。
+
+![自定义网络](./images/14_04_network.png)
+
+- 运行容器时指定自定义网络:
+
+![指定自定义网络](./images/14_05_applying_network.png)
+
+- 直接使用容器名访问:
+
+![使用容器名作为域名](./images/14_06_container_name_as_domain.png)
+
+## 15. 网络 - Redis 主从集群
+
+![redis主从集群](./images/15_01_redis_cluster.png)
+
+- 为了方便配置，这里使用`bitnami`提供的`redis`镜像，里面的环境变量名和数据存储路径需要参考 docker hub 上的文档。
+
+![运行主机容器](./images/15_02_run_master.png)
+
+- 但是执行`主机`的运行容器的命令后，发现没有正常启动。查看日志，可以看到是因为映射目录的权限不够，需要修改目录的权限。
+
+![修改数据目录权限](./images/15_03_modify_mode.png)
+
+- 运行`从机`容器:
+
+![运行主机容器](./images/15_04_run_slave.png)
+
+- 使用客户端进行验证:
+
+- 主机连接配置
+
+![主机连接配置](./images/15_05_master_db_config.png)
+
+- 从机连接配置
+
+![从机连接配置](./images/15_06_slave_db_config.png)
+
+- 验证效果
+
+![验证效果](./images/15_07_verify_result.png)
