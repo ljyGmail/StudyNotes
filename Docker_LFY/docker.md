@@ -416,3 +416,66 @@ networks:
 - 要想在关掉容器组时，删除掉镜像和数据卷，则需要在`down`命令后面指定参数 `--rmi all  -v`:
 
 ![docker compose down](./images/19_01_docker_compose_down.png)
+
+## 20. Dockerfile - 制作镜像
+
+- 构建自定义镜像
+
+![构建镜像](./images/20_01_docker_build.png)
+
+- `Dockerfil`的常见命令:
+
+![构建镜像到命令](./images/20_02_dockerfle_commands.png)
+
+- 将实现准备好的一个用 SpringBoot 开发的 app.jar 使用`rz`命令上传到服务器中。
+- 编写`Dockerfile`文件:
+
+```Dockerfile
+FROM openjdk:17
+
+LABEL author=ljy
+
+COPY app.jar /app.jar
+
+EXPOSE 8080
+
+ENTRYPOINT ["java", "-jar", "/app.jar"]
+```
+
+- 构建镜像:
+
+![执行构建](./images/20_03_run_build.png)
+
+- 运行容器:
+
+![运行容器](./images/20_04_run_container.png)
+
+- 验证结果:
+
+![验证结果](./images/20_05_verify_result.png)
+
+## 21. Dockerfile - 镜像分层机制
+
+![Docker分层](./images/21_01_image_cache.png)
+
+- 对于共有到部分，不同到镜像是可以共享的。
+
+![分层示例](./images/21_02_cache_example.png)
+
+- 可以使用`docker image history`命令查看镜像构建的历史，可以看到我们自己构建的镜像比官方的镜像只多最上面的那一行，其他都是一样的。
+
+![查看镜像历史](./images/21_03_image_history.png)
+
+![查看镜像历史](./images/21_04_image_history.png)
+
+- 或者可以通过`docker image inspect`命令查看差异。
+
+![查看镜像详情](./images/21_05_image_inspect.png)
+
+![读写分离单](./images/21_06_rw_single.png)
+
+![读写分离多](./images/21_07_rw_multiple.png)
+
+![查看读写容量](./images/21_08_ps_size.png)
+
+- 结论: Docker 能公用则公用。
