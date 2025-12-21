@@ -318,3 +318,101 @@ sudo systemctl enable docker
 - 测试效果:
 
 ![alt text](./images/16_03_verify_connection.png)
+
+## 17. Docker Compose - 安装 wordpress
+
+- `Docker Compose`是 Docker 用来批量管理容器的工具。
+
+![Docker Compose](./images/17_01_docker_compose.png)
+
+- 使用目前学过的命令来分别运行`mysql`和`wordpress`的容器:
+
+![wordpress创建流程](./images/17_02_wordpress_process.png)
+
+- 创建`网络`，并创建`mysql`容器:
+
+![创建网络和mysql](./images/17_03_create_network_mysql.png)
+
+- 创建`wordpress`容器:
+
+![创建wordpress](./images/17_04_create_wordpress.png)
+
+- 访问`wordpress`进行测试:
+
+![wordpress界面](./images/17_05_wordpress_page.png)
+
+![wordpress界面](./images/17_06_wordpress_page.png)
+
+![wordpress界面](./images/17_07_wordpress_page.png)
+
+- 当前运行容器的方法，显得比较繁琐。将来如果在其他的机器上安装，还要记住每个单独的`docker`命令。
+- 下面学习如何使用`docker compose`工具一次性安装需要的容器。
+
+## 18. Docker Compose - 语法
+
+![Docker Compose语法](./images/18_01_docker_compose.png)
+
+- 编写`compose.yaml`文件:
+
+```yaml
+name: myblog
+
+services:
+  mysql:
+    container_name: mysql
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=123456
+      - MYSQL_DATABASE=wordpress
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - /app/myconf:/etc/mysql/conf.d
+    restart: always
+    networks:
+      - blog
+
+  wordpress:
+    image: wordpress
+    ports:
+      - "8080:80"
+    environment:
+      WORDPRESS_DB_HOST: mysql
+      WORDPRESS_DB_USER: root
+      WORDPRESS_DB_PASSWORD: 123456
+      WORDPRESS_DB_NAME: wordpress
+    volumes:
+      - wordpress:/var/www/html
+    restart: always
+    networks:
+      - blog
+    depends_on:
+      - mysql
+
+volumes:
+  mysql-data:
+  wordpress:
+
+networks:
+  blog:
+```
+
+- 删除相关的资源
+
+![删除卷](./images/18_02_remove_volume.png)
+
+![删除网络](./images/18_03_remove_network.png)
+
+- 运行`docker compose`:
+
+![运行Docker Compose](./images/18_04_run_compose.png)
+
+- 验证安装效果
+
+## 19. Docker Compose - 其他
+
+- 使用`docker compose down`命令来关掉容器组时，容器和网路资源会被删除，但处于安全的考虑，数据卷不会被删除。
+- 要想在关掉容器组时，删除掉镜像和数据卷，则需要在`down`命令后面指定参数 `--rmi all  -v`:
+
+![docker compose down](./images/19_01_docker_compose_down.png)
