@@ -181,24 +181,53 @@ CREATE TABLE IF NOT EXISTS goods
 ```
 
 - 测试类
+- 方式一
 
 ```java
 public class ConnectionTest {
 
     @Test
     public void testConnection1() throws SQLException {
+        // 获取Driver实现类对象
         Driver driver = new com.mysql.cj.jdbc.Driver();
         // jdbc:mysql: 协议
         // localhost: IP地址
         // 3310: 数据库端口号
         // jdbc_learn: 数据库名称
         String url = "jdbc:mysql://localhost:3310/jdbc_learn";
+        // 将用户名和密码封装在Properties中
         Properties info = new Properties();
         info.setProperty("user", "root");
         info.setProperty("password", "123456");
 
         Connection conn = driver.connect(url, info);
-        System.out.println(conn);
+        System.out.println("方式一: " + conn);
     }
+
 }
+```
+
+- 方式二: 对方式一的迭代
+- 为了让上面的程序能有更好的移植性，不能在程序里看到直接使用第三方类的代码(com.mysql.cj.jdbc.Driver)。
+
+```java
+    @Test
+    public void testConnection2() throws Exception {
+        // 1. 获取Driver实现类对象
+        Class clazz = Class.forName("com.mysql.cj.jdbc.Driver");
+        Driver driver = (Driver) clazz.newInstance();
+
+        // 2. 提供要连接的数据库
+        String url = "jdbc:mysql://localhost:3310/jdbc_learn";
+
+        // 3. 提供连接需要的用户名和密码
+        Properties info = new Properties();
+        info.setProperty("user", "root");
+        info.setProperty("password", "123456");
+
+        // 4. 获取连接
+        Connection conn = driver.connect(url, info);
+        System.out.println("方式二: " + conn);
+    }
+
 ```
