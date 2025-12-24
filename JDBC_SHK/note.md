@@ -5,6 +5,7 @@
 ```bash
 docker volume create mysql-volume
 
+# 需要注意下面的配置文件目录的挂载配置需要根据不同的电脑设置合适的路径
 docker run -d -p3310:3306  -v mysql-volume:/var/lib/mysql -v /Users/liangjinyong/Desktop/Playground/test:/etc/mysql/conf.d -e MYSQL_ROOT_PASSWORD=123456 --name mysql01 mysql:8.0
 ```
 
@@ -186,24 +187,23 @@ CREATE TABLE IF NOT EXISTS goods
 ```java
 public class ConnectionTest {
 
-    @Test
-    public void testConnection1() throws SQLException {
-        // 获取Driver实现类对象
-        Driver driver = new com.mysql.cj.jdbc.Driver();
-        // jdbc:mysql: 协议
-        // localhost: IP地址
-        // 3310: 数据库端口号
-        // jdbc_learn: 数据库名称
-        String url = "jdbc:mysql://localhost:3310/jdbc_learn";
-        // 将用户名和密码封装在Properties中
-        Properties info = new Properties();
-        info.setProperty("user", "root");
-        info.setProperty("password", "123456");
+  @Test
+  public void testConnection1() throws SQLException {
+      // 获取Driver实现类对象
+      Driver driver = new com.mysql.cj.jdbc.Driver();
+      // jdbc:mysql: 协议
+      // localhost: IP地址
+      // 3310: 数据库端口号
+      // jdbc_learn: 数据库名称
+      String url = "jdbc:mysql://localhost:3310/jdbc_learn";
+      // 将用户名和密码封装在Properties中
+      Properties info = new Properties();
+      info.setProperty("user", "root");
+      info.setProperty("password", "123456");
 
-        Connection conn = driver.connect(url, info);
-        System.out.println("方式一: " + conn);
-    }
-
+      Connection conn = driver.connect(url, info);
+      System.out.println("方式一: " + conn);
+  }
 }
 ```
 
@@ -211,23 +211,119 @@ public class ConnectionTest {
 - 为了让上面的程序能有更好的移植性，不能在程序里看到直接使用第三方类的代码(com.mysql.cj.jdbc.Driver)。
 
 ```java
-    @Test
-    public void testConnection2() throws Exception {
-        // 1. 获取Driver实现类对象
-        Class clazz = Class.forName("com.mysql.cj.jdbc.Driver");
-        Driver driver = (Driver) clazz.newInstance();
+  @Test
+  public void testConnection2() throws Exception {
+      // 1. 获取Driver实现类对象
+      Class clazz = Class.forName("com.mysql.cj.jdbc.Driver");
+      Driver driver = (Driver) clazz.newInstance();
 
-        // 2. 提供要连接的数据库
-        String url = "jdbc:mysql://localhost:3310/jdbc_learn";
+      // 2. 提供要连接的数据库
+      String url = "jdbc:mysql://localhost:3310/jdbc_learn";
 
-        // 3. 提供连接需要的用户名和密码
-        Properties info = new Properties();
-        info.setProperty("user", "root");
-        info.setProperty("password", "123456");
+      // 3. 提供连接需要的用户名和密码
+      Properties info = new Properties();
+      info.setProperty("user", "root");
+      info.setProperty("password", "123456");
 
-        // 4. 获取连接
-        Connection conn = driver.connect(url, info);
-        System.out.println("方式二: " + conn);
-    }
+      // 4. 获取连接
+      Connection conn = driver.connect(url, info);
+      System.out.println("方式二: " + conn);
+  }
+```
 
+- 方式三: 使用DriverManager替代Driver
+
+```java
+  @Test
+  public void testConnection3() throws Exception {
+      // 1. 获取Driver实现类对象
+      Class clazz = Class.forName("com.mysql.cj.jdbc.Driver");
+      Driver driver = (Driver) clazz.newInstance();
+
+      // 2. 提供另外三个连接的基本信息
+      String url = "jdbc:mysql://localhost:3310/jdbc_learn";
+      String user = "root";
+      String password = "123456";
+
+      // 注册驱动
+      DriverManager.registerDriver(driver);
+
+      // 获取连接
+      Connection conn = DriverManager.getConnection(url, user, password);
+      System.out.println("方式三: " + conn);
+  }
+```
+
+- 方式四: 使用DriverManager替代Driver
+- 可以只是加载驱动，不用显式地注册驱动了。
+
+```java
+  @Test
+  public void testConnection4() throws Exception {
+      // 1. 提供三个连接的基本信息
+      String url = "jdbc:mysql://localhost:3310/jdbc_learn";
+      String user = "root";
+      String password = "123456";
+
+      // 2. 获取Driver实现类对象 --> 该步骤可以优化 -> 加载Driver
+      // 对于MySQL数据库，甚至下面这一行也可以省略 -> mysql-connector-j-9.1.0.jar > META-INF > services > java.sql.Driver
+      // 但是建议不要省略，因为如果换成其他数据库，省略这一行可能就不能正常运行了
+      Class.forName("com.mysql.cj.jdbc.Driver");
+      // 相较于方式三，可以省略如下的操作:
+      // Driver driver = (Driver) clazz.newInstance();
+      // 注册驱动
+      // DriverManager.registerDriver(driver);
+
+      /*
+      此代码块是MySql驱动的源码，可以看到Driver的静态代码块中已经注册了驱动，所以注册的步骤可以省略
+      static {
+          try {
+              java.sql.DriverManager.registerDriver(new com.mysql.cj.jdbc.Driver());
+          } catch (SQLException E) {
+              throw new RuntimeException("Can't register driver!");
+          }
+      }
+        */
+
+      // 3. 获取连接
+      Connection conn = DriverManager.getConnection(url, user, password);
+      System.out.println("方式四: " + conn);
+  }
+```
+
+- 方式五(final版): 将数据库连接需要的4个基本信息声明在配置文件中，通过读取配置文件的方式获取连接
+- 此种方式的好处?
+1. 实现了数据与代码的分离，实现了解耦。
+2. 如果需要修改配置文件信息，可以避免程序重新打包。
+
+- 目前使用`JUnit`测试时，`properties`配置文件的位置是在`resources`下
+
+```properties
+user=root
+password=123456
+url=jdbc:mysql://localhost:3310/jdbc_learn
+driverClass=com.mysql.cj.jdbc.Driver
+```
+
+```java
+  @Test
+  public void getConnection5() throws Exception {
+      // 1. 读取配置文件中的4个基本信息
+      InputStream is = ConnectionTest.class.getClassLoader().getResourceAsStream("jdbc.properties");
+
+      Properties props = new Properties();
+      props.load(is);
+
+      String user = props.getProperty("user");
+      String password = props.getProperty("password");
+      String url = props.getProperty("url");
+      String driverClass = props.getProperty("driverClass");
+
+      // 2. 加载驱动
+      Class.forName(driverClass);
+
+      // 3. 获取连接
+      Connection conn = DriverManager.getConnection(url, user, password);
+      System.out.println(conn);
+  }
 ```
