@@ -181,6 +181,8 @@ CREATE TABLE IF NOT EXISTS goods
 
 ```
 
+## 第 2 章 获取数据库的连接
+
 - 测试类
 - 方式一
 
@@ -231,7 +233,7 @@ public class ConnectionTest {
   }
 ```
 
-- 方式三: 使用DriverManager替代Driver
+- 方式三: 使用 DriverManager 替代 Driver
 
 ```java
   @Test
@@ -254,7 +256,7 @@ public class ConnectionTest {
   }
 ```
 
-- 方式四: 使用DriverManager替代Driver
+- 方式四: 使用 DriverManager 替代 Driver
 - 可以只是加载驱动，不用显式地注册驱动了。
 
 ```java
@@ -291,8 +293,9 @@ public class ConnectionTest {
   }
 ```
 
-- 方式五(final版): 将数据库连接需要的4个基本信息声明在配置文件中，通过读取配置文件的方式获取连接
+- 方式五(final 版): 将数据库连接需要的 4 个基本信息声明在配置文件中，通过读取配置文件的方式获取连接
 - 此种方式的好处?
+
 1. 实现了数据与代码的分离，实现了解耦。
 2. 如果需要修改配置文件信息，可以避免程序重新打包。
 
@@ -325,5 +328,183 @@ driverClass=com.mysql.cj.jdbc.Driver
       // 3. 获取连接
       Connection conn = DriverManager.getConnection(url, user, password);
       System.out.println(conn);
+  }
+```
+
+## 第 3 章 使用 PreparedStatement 实现 CRUD 操作
+
+- 使用 Statement 操作数据表存在弊端:
+  1. 存在拼串操作，繁琐
+  2. 存在 SQL 注入问题: 利用某些系统没有对用户输入的数据进行充分的检查，而在用户输入的数据中注入非法的 SQL 语句段或命令，从而利用系统的SQL引擎完成恶意行为的做法。
+
+![alt text](./images/12_01_sql_injection.png)
+
+- 如何避免出现SQL注入? 只要用`PreparedStatement`(从`Statement`扩展而来)取代`Statement`。
+
+---
+
+- 使用`PreparedStatement`
+
+```java
+package com.atguigu3.preparedstatement.crud;
+
+import org.junit.jupiter.api.Test;
+
+import java.io.InputStream;
+import java.sql.*;
+import java.text.SimpleDateFormat;
+import java.util.Properties;
+
+/**
+ * 使用PreparedStatement来替换Statement，实现对数据表的增删改操作。
+ * 增删改; 查
+ */
+public class PreparedStatementUpdateTest {
+    // 向customers表中添加一条记录
+    @Test
+    public void testInsert() {
+        Connection conn = null;
+        PreparedStatement ps = null;
+
+        try {
+            // 1. 读取配置文件中的4个基本信息
+            InputStream is = ClassLoader.getSystemClassLoader().getResourceAsStream("jdbc.properties");
+
+            Properties props = new Properties();
+            props.load(is);
+
+            String user = props.getProperty("user");
+            String password = props.getProperty("password");
+            String url = props.getProperty("url");
+            String driverClass = props.getProperty("driverClass");
+
+            // 2. 加载驱动
+            Class.forName(driverClass);
+
+            // 3. 获取连接
+            conn = DriverManager.getConnection(url, user, password);
+
+            // 4. 预编译SQL语句，返回PreparedStatement的实例
+            String sql = "insert into customers(name, email, birth) values(?, ?, ?)"; // ?: 占位符
+            ps = conn.prepareStatement(sql);
+
+            // 5. 填充占位符
+            ps.setString(1, "哪吒");
+            ps.setString(2, "nezha@gmail.com");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            java.util.Date date = sdf.parse("1942-04-22");
+            ps.setDate(3, new Date(date.getTime()));
+
+            // 6. 执行SQL
+            ps.execute();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            // 7. 资源的关闭
+            try {
+                if (ps != null)
+                    ps.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            try {
+                if (conn != null)
+                    conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+```
+
+--- 
+
+- 对于`增删改`操作，有一些固定的步骤，比如`获取连接`，`关闭资源`。
+- 可以把这些固定的操作封装到`工具类`中。
+
+```java
+/**
+ * 操作数据库的工具类
+ */
+public class JDBCUtils {
+
+    /**
+     * 获取数据库连接
+     *
+     * @return
+     * @throws Exception
+     */
+    public static Connection getConnection() throws Exception {
+        // 1. 读取配置文件中的4个基本信息
+        InputStream is = ClassLoader.getSystemClassLoader().getResourceAsStream("jdbc.properties");
+
+        Properties props = new Properties();
+        props.load(is);
+
+        String user = props.getProperty("user");
+        String password = props.getProperty("password");
+        String url = props.getProperty("url");
+        String driverClass = props.getProperty("driverClass");
+
+        // 2. 加载驱动
+        Class.forName(driverClass);
+
+        // 3. 获取连接
+        return DriverManager.getConnection(url, user, password);
+    }
+
+    /**
+     * 关闭连接和Statement
+     *
+     * @param conn
+     * @param stmt
+     */
+    public static void closeResources(Connection conn, Statement stmt) {
+        try {
+            if (stmt != null)
+                stmt.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            if (conn != null)
+                conn.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+---
+
+- 使用封装好的工具类来执行一个修改的操作
+
+```java
+  // 修改customers表中的一条记录
+  @Test
+  public void testUpdate() {
+      Connection conn = null;
+      PreparedStatement ps = null;
+      try {
+          // 1. 获取数据库的连接
+          conn = JDBCUtils.getConnection();
+          // 2. 预编译SQL语句，返回PreparedStatement的实例
+          String sql = "update customers set name = ? where id = ?";
+          ps = conn.prepareStatement(sql);
+          // 3. 填充占位符
+          ps.setObject(1, "莫扎特");
+          ps.setObject(2, 18);
+          // 4. 执行
+          ps.execute();
+          System.out.println("修改成功");
+      } catch (Exception e) {
+          e.printStackTrace();
+      } finally {
+          // 5. 资源的关闭
+          JDBCUtils.closeResources(conn, ps);
+      }
   }
 ```
