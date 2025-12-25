@@ -74,7 +74,7 @@ sudo systemctl enable docker
 
   ![docker pull](./images/06_03_docker_pull.png)
 
-- `docker pull [specified tag]`: 在 docker hub 上查找需要的版本
+- `docker pull [镜像名]:[specified tag]`: 在 docker hub 上查找需要的版本
 
   ![docker pull specified tag](./images/06_04_docker_pull_specified_tag.png)
 
@@ -189,7 +189,7 @@ sudo systemctl enable docker
 
 ![写镜像说明](./images/10_05_write_description.png)
 
-- 为例能够让使用镜像的人不指定版本也可以正常下载使用镜像，标准到做法是再推送一个版本为`latest`到镜像:
+- 为了能够让使用镜像的人不指定版本也可以正常下载使用镜像，标准到做法是再推送一个版本为`latest`的镜像:
 
 ![推送最新版本](./images/10_06_push_latest.png)
 
