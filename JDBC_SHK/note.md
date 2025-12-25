@@ -538,7 +538,7 @@ public class JDBCUtils {
   }
 ```
 
--- 对通用对`增删改`操作测试
+-- 对通用的`增删改`操作测试
 
 ```java
 @Test
@@ -550,3 +550,252 @@ public class JDBCUtils {
       update(sql, "DD", 2);
   }
 ```
+
+---
+
+- 针对 customers 表的查询操作举例
+
+```java
+public class CustomerForQuery {
+
+    @Test
+    public void testQuery1() {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet resultSet = null;
+        try {
+            conn = JDBCUtils.getConnection();
+
+            String sql = "select id, name, email, birth from customers where id = ?";
+            ps = conn.prepareStatement(sql);
+            ps.setObject(1, 1);
+
+            // 执行并返回结果集
+            resultSet = ps.executeQuery();
+            // 处理结果集
+            if (resultSet.next()) { // next(): 判断结果集的下一条是否有数据，如果有数据返回true，并指针下移；如果返回false，指针不下移。
+                // 获取当前这条数据的各个字段值
+                int id = resultSet.getInt(1);
+                String name = resultSet.getString(2);
+                String email = resultSet.getString(3);
+                Date birth = resultSet.getDate(4);
+
+                // 方式一: 直接打印各个结果字段值，有点low
+                // System.out.println("id = " + id + ", name = " + name + ", email = " + email + ", birth = " + birth);
+
+                // 方式二: 将结果放到一个数组中
+                // Object[] data = new Object[]{id, name, email, birth};
+
+                // 方式三: 将数据封装为一个对象(推荐)
+                Customer customer = new Customer(id, name, email, birth);
+                System.out.println(customer);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            JDBCUtils.closeResources(conn, ps, resultSet);
+        }
+    }
+}
+```
+
+- 封装的 Customer 对象
+
+```java
+public class Customer {
+
+    private int id;
+    private String name;
+    private String email;
+    private Date birth;
+
+    // 无参构造器
+    // 有参构造器
+    // getters and setters
+    // toString()
+}
+```
+
+- 由于结果集(`ResultSet`)使用后，也需要资源的关闭，需要在`JDBCUtils`中添加一个和之前方法重载的关闭资源的方法。
+
+```java
+  public static void closeResources(Connection conn, Statement stmt, ResultSet rs) {
+      try {
+          if (stmt != null)
+              stmt.close();
+      } catch (SQLException e) {
+          e.printStackTrace();
+      }
+
+      try {
+          if (conn != null)
+              conn.close();
+      } catch (SQLException e) {
+          e.printStackTrace();
+      }
+
+      try {
+          if (rs != null)
+              rs.close();
+      } catch (SQLException e) {
+          e.printStackTrace();
+      }
+  }
+```
+
+---
+
+- 针对 customers 表的通用的查询
+
+```java
+  public Customer queryForCustomers(String sql, Object... args) {
+      Connection conn = null;
+      PreparedStatement ps = null;
+      ResultSet rs = null;
+      try {
+          conn = JDBCUtils.getConnection();
+
+          ps = conn.prepareStatement(sql);
+          for (int i = 0; i < args.length; i++) {
+              ps.setObject(i + 1, args[i]);
+          }
+
+          // *** 下面这段代码可以说是查询乃至JDBC中最难的一段代码 ***
+          rs = ps.executeQuery();
+          // 获取结果集的元数据: ResultSetMetaData
+          ResultSetMetaData rsmd = rs.getMetaData();
+          // 通过ResultSetMetaData获取结果集中的列数
+          int columnCount = rsmd.getColumnCount();
+          if (rs.next()) {
+              Customer cust = new Customer();
+              // 处理结果集一行数据中的每一个列
+              for (int i = 0; i < columnCount; i++) {
+                  Object columnValue = rs.getObject(i + 1);
+                  // 获取每个列的列名
+                  // String columnName = rsmd.getColumnName(i + 1);
+                  // 获取每个列的别名
+                  String columnLabel = rsmd.getColumnLabel(i + 1);
+                  // 给cust对象指定的某个属性，赋值为columnValue: 通过反射。
+                  Field field = Customer.class.getDeclaredField(columnLabel);
+                  field.setAccessible(true);
+                  field.set(cust, columnValue);
+              }
+              return cust;
+          }
+      } catch (Exception e) {
+          e.printStackTrace();
+      } finally {
+          JDBCUtils.closeResources(conn, ps, rs);
+      }
+      return null;
+  }
+```
+
+- 测试
+
+```java
+  @Test
+  public void testQueryForCustomers() {
+      String sql = "select id, name, birth, email from customers where id = ?";
+      Customer customer = queryForCustomers(sql, 13);
+      System.out.println(customer);
+
+      // 只查询一部分字段
+      sql = "select name, email from customers where name = ?";
+      customer = queryForCustomers(sql, "周杰伦");
+      System.out.println(customer);
+  }
+```
+
+---
+
+- 针对 order 表的通用的查询
+
+```java
+public class OrderForQuery {
+
+    @Test
+    public void testQuery1() {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = JDBCUtils.getConnection();
+            String sql = "select order_id, order_name, order_date from `order` where order_id = ?";
+            ps = conn.prepareStatement(sql);
+            ps.setObject(1, 1);
+
+            rs = ps.executeQuery();
+
+            if (rs.next()) {
+                int id = (int) rs.getObject(1);
+                String name = (String) rs.getObject(2);
+                Date date = (Date) rs.getObject(3);
+
+                Order order = new Order(id, name, date);
+                System.out.println(order);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            JDBCUtils.closeResources(conn, ps, rs);
+        }
+    }
+
+    // 针对于Order表的通用查询操作
+    public Order orderForQuery(String sql, Object... args) {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = JDBCUtils.getConnection();
+
+            ps = conn.prepareStatement(sql);
+            for (int i = 0; i < args.length; i++) {
+                ps.setObject(i + 1, args[i]);
+            }
+
+            rs = ps.executeQuery();
+            // 获取结果集的元数据
+            ResultSetMetaData rsmd = rs.getMetaData();
+            // 获取列数
+            int columnCount = rsmd.getColumnCount();
+            if (rs.next()) {
+                Order order = new Order();
+                for (int i = 0; i < columnCount; i++) {
+                    // 获取每个列的列值
+                    Object columnValue = rs.getObject(i + 1);
+                    // 获取每个列的列名: getColumnName() -- 不推荐使用
+                    // 获取每个列的别名: getColumnLabel()
+                    // String columnName = rsmd.getColumnName(i + 1);
+                    String columnLabel = rsmd.getColumnLabel(i + 1);
+
+                    // 通过反射，将对象中属性名为columnLabel的属性值赋值为columnValue
+                    Field field = Order.class.getDeclaredField(columnLabel);
+                    field.setAccessible(true);
+                    field.set(order, columnValue);
+                }
+                return order;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            JDBCUtils.closeResources(conn, ps, rs);
+        }
+        return null;
+    }
+
+    @Test
+    public void testOrderForQuery() {
+        String sql = "select order_id orderId, order_name orderName, order_date orderDate from `order` where order_id = ?";
+        Order order = orderForQuery(sql, 1);
+        System.out.println(order);
+    }
+}
+```
+
+- 针对于表的字段名与类的属性名不相同的情况:
+  1. 声明 SQL 时，必须使用类的属性名来命名字段的别名
+  2. 使用 ResultSetMetaData 时，需要使用 getColumnLabel()来替换 getColumnName()，获取列的别名。
+- 说明: 如果 SQL 中没有给字段起别名，getColumnName()获取的就是列名。
