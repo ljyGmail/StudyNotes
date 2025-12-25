@@ -335,11 +335,11 @@ driverClass=com.mysql.cj.jdbc.Driver
 
 - 使用 Statement 操作数据表存在弊端:
   1. 存在拼串操作，繁琐
-  2. 存在 SQL 注入问题: 利用某些系统没有对用户输入的数据进行充分的检查，而在用户输入的数据中注入非法的 SQL 语句段或命令，从而利用系统的SQL引擎完成恶意行为的做法。
+  2. 存在 SQL 注入问题: 利用某些系统没有对用户输入的数据进行充分的检查，而在用户输入的数据中注入非法的 SQL 语句段或命令，从而利用系统的 SQL 引擎完成恶意行为的做法。
 
 ![alt text](./images/12_01_sql_injection.png)
 
-- 如何避免出现SQL注入? 只要用`PreparedStatement`(从`Statement`扩展而来)取代`Statement`。
+- 如何避免出现 SQL 注入? 只要用`PreparedStatement`(从`Statement`扩展而来)取代`Statement`。
 
 ---
 
@@ -418,7 +418,7 @@ public class PreparedStatementUpdateTest {
 }
 ```
 
---- 
+---
 
 - 对于`增删改`操作，有一些固定的步骤，比如`获取连接`，`关闭资源`。
 - 可以把这些固定的操作封装到`工具类`中。
@@ -506,5 +506,47 @@ public class JDBCUtils {
           // 5. 资源的关闭
           JDBCUtils.closeResources(conn, ps);
       }
+  }
+```
+
+---
+
+- 实现一个通用的`增删改`操作
+
+```java
+  // 通用的增删改操作
+  public void update(String sql, Object... args) { // sql中占位符的个数要与可变形参的长度相同
+      Connection conn = null;
+      PreparedStatement ps = null;
+      try {
+          // 1. 获取数据库的连接
+          conn = JDBCUtils.getConnection();
+          // 2. 预编译SQL语句，返回PreparedStatement的实例
+          ps = conn.prepareStatement(sql);
+          // 3. 填充占位符
+          for (int i = 0; i < args.length; i++) {
+              ps.setObject(i + 1, args[i]);
+          }
+          // 4. 执行
+          ps.execute();
+      } catch (Exception e) {
+          e.printStackTrace();
+      } finally {
+          // 5. 资源的关闭
+          JDBCUtils.closeResources(conn, ps);
+      }
+  }
+```
+
+-- 对通用对`增删改`操作测试
+
+```java
+@Test
+  public void testCommonUpdate() {
+      // String sql = "delete from customers where id = ?";
+      // update(sql, 3);
+
+      String sql = "update `order` set order_name = ? where order_id = ?";
+      update(sql, "DD", 2);
   }
 ```
