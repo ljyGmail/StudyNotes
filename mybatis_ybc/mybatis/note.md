@@ -249,3 +249,111 @@ public class MyBatisTest {
 
 - 注意: 上面的测试方法中必须有提交事务的代码，否则数据无法插入到数据表中。
 - 要想设置为`自动提交`，在创建`SqlSession`时，参数传入`true`。
+
+---
+
+> 13 测试修改和删除功能
+
+`src/main/resources/mappers/UserMapper.xml`
+
+```java
+/**
+ * 修改用户信息
+ */
+void updateUser();
+
+/**
+ * 删除用户信息
+ */
+void deleteUser();
+```
+
+`src/main/resources/mappers/UserMapper.xml`
+
+```xml
+<!-- void updateUser(); -->
+<update id="updateUser">
+    update t_user
+    set username = '张三'
+    where id = 4
+</update>
+
+<!-- void deleteUser(); -->
+<delete id="deleteUser">
+    delete
+    from t_user
+    where id = 1
+</delete>
+```
+
+`src/test/java/com/atguigu/mybatis/test/MyBatisTest.java`
+
+```java
+@Test
+public void testCRUD() throws IOException {
+    InputStream is = Resources.getResourceAsStream("mybatis-config.xml");
+    SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(is);
+    SqlSession sqlSession = sqlSessionFactory.openSession(true);
+    UserMapper mapper = sqlSession.getMapper(UserMapper.class);
+    // mapper.updateUser();
+    mapper.deleteUser();
+}
+```
+
+---
+
+> 14 测试查询功能
+
+`src/main/resources/mappers/UserMapper.xml`
+
+```java
+/**
+ * 根据id查询用户信息
+ */
+User getUserById();
+
+/**
+ * 查询所有的用户信息
+ */
+List<User> getAllUsers();
+```
+
+`src/main/resources/mappers/UserMapper.xml`
+
+```xml
+<!-- 在视频里，仅仅这么写是会报错的...，但目前使用的版本不会报错，会自动匹配能匹配的字段 -->
+<!-- <select id="getUserById"> -->
+<!--
+    查询功能的标签需要设置resultType或resultMap。
+    resultType: 设置默认的映射关系
+    resultMap: 设置的自定义映射关系
+-->
+<!-- User getUserById(); -->
+<select id="getUserById" resultType="com.atguigu.mybatis.pojo.User">
+    select *
+    from t_user
+    where id = 3
+</select>
+
+<!-- List<User> getAllUsers(); -->
+<select id="getAllUsers" resultType="com.atguigu.mybatis.pojo.User">
+    select *
+    from t_user
+</select>
+```
+
+`src/test/java/com/atguigu/mybatis/test/MyBatisTest.java`
+
+```java
+@Test
+public void testCRUD() throws IOException {
+    InputStream is = Resources.getResourceAsStream("mybatis-config.xml");
+    SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(is);
+    SqlSession sqlSession = sqlSessionFactory.openSession(true);
+    UserMapper mapper = sqlSession.getMapper(UserMapper.class);
+    // User user = mapper.getUserById();
+    // System.out.println(user);
+    List<User> list = mapper.getAllUsers();
+    list.forEach(System.out::println);
+}
+```
