@@ -799,3 +799,145 @@ public class OrderForQuery {
   1. 声明 SQL 时，必须使用类的属性名来命名字段的别名
   2. 使用 ResultSetMetaData 时，需要使用 getColumnLabel()来替换 getColumnName()，获取列的别名。
 - 说明: 如果 SQL 中没有给字段起别名，getColumnName()获取的就是列名。
+
+---
+
+> 20 图解查询操作的流程
+
+![查询操作的流程](./images/20_01_query_flowchart.png)
+
+---
+
+> 21 PreparedStatement 针对不同表的通用查询操作 1
+
+- 针对与不同的表的通用的查询操作，返回表中的一条记录
+
+```java
+public class PreparedStatementQueryTest {
+    public <T> T getInstance(Class<T> clazz, String sql, Object... args) {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = JDBCUtils.getConnection();
+
+            ps = conn.prepareStatement(sql);
+            for (int i = 0; i < args.length; i++) {
+                ps.setObject(i + 1, args[i]);
+            }
+
+            rs = ps.executeQuery();
+            // 获取结果集的元数据
+            ResultSetMetaData rsmd = rs.getMetaData();
+            // 获取列数
+            int columnCount = rsmd.getColumnCount();
+            if (rs.next()) {
+                T t = clazz.newInstance();
+                for (int i = 0; i < columnCount; i++) {
+                    Object columnValue = rs.getObject(i + 1);
+                    String columnLabel = rsmd.getColumnLabel(i + 1);
+
+                    Field field = clazz.getDeclaredField(columnLabel);
+                    field.setAccessible(true);
+                    field.set(t, columnValue);
+                }
+                return t;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            JDBCUtils.closeResources(conn, ps, rs);
+        }
+        return null;
+    }
+
+    @Test
+    public void testGetInstance() {
+        String sql = "select name, id, email from customers where id = ?";
+        Customer customer = getInstance(Customer.class, sql, 12);
+        System.out.println(customer);
+
+        String sql1 = "select order_id orderId, order_name orderName from `order` where order_id = ?";
+        Order order = getInstance(Order.class, sql1, 1);
+        System.out.println(order);
+    }
+}
+```
+
+---
+
+> 22 PreparedStatement 针对不同表的通用查询操作 2
+
+- 针对与不同的表的通用的查询操作，返回表中的多条记录
+
+```java
+ public <T> List<T> getForList(Class<T> clazz, String sql, Object... args) {
+     Connection conn = null;
+     PreparedStatement ps = null;
+     ResultSet rs = null;
+     try {
+         conn = JDBCUtils.getConnection();
+
+         ps = conn.prepareStatement(sql);
+         for (int i = 0; i < args.length; i++) {
+             ps.setObject(i + 1, args[i]);
+         }
+
+         rs = ps.executeQuery();
+         // 获取结果集的元数据
+         ResultSetMetaData rsmd = rs.getMetaData();
+         // 获取列数
+         int columnCount = rsmd.getColumnCount();
+         // 创建集合对象
+         List<T> list = new ArrayList<>();
+
+         while (rs.next()) {
+             T t = clazz.newInstance();
+             // 处理结果集一行数据中的每一个列: 给t对象指定的属性赋值
+             for (int i = 0; i < columnCount; i++) {
+                 Object columnValue = rs.getObject(i + 1);
+                 String columnLabel = rsmd.getColumnLabel(i + 1);
+
+                 Field field = clazz.getDeclaredField(columnLabel);
+                 field.setAccessible(true);
+                 field.set(t, columnValue);
+             }
+             list.add(t);
+         }
+         return list;
+     } catch (Exception e) {
+         e.printStackTrace();
+     } finally {
+         JDBCUtils.closeResources(conn, ps, rs);
+     }
+     return null;
+ }
+
+ @Test
+ public void testGetForList() {
+     String sql = "select name, id, email from customers where id < ?";
+     List<Customer> list = getForList(Customer.class, sql, 12);
+     list.forEach(System.out::println);
+
+     String sql1 = "select order_id orderId, order_name orderName from `order`";
+     List<Order> orderList = getForList(Order.class, sql1);
+     orderList.forEach(System.out::println);
+ }
+```
+
+---
+
+> 23 PreparedStatement 解决 SQL 注入问题
+
+- 通过实验演示了使用了 PreparedStatement 后，`SQL注入`的问题被解决了。
+- 原理在于 PreparedStatement 是预编译的，查询语句中的逻辑在编译时已经确定，不会在运行时因为用户输入的值而有所改变。
+
+- 除了解决 Statement 的拼串，SQL 注入的问题之外，PreparedStatement 还有哪些好处?
+  1. PreparedStatement 可以操作`Blob`的数据，而 Statement 做不到。
+  2. PreparedStatement 可以实现更高效的批量操作。
+
+---
+
+> 24 JDBC 核心技术 小结
+
+![小结](./images/24_01_jdbc_summary.png)
