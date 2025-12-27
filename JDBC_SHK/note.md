@@ -1199,3 +1199,117 @@ public void testDeleteByExamCard1() {
     }
 }
 ```
+
+---
+
+> 29 向数据表中插入 Blob 类型数据
+
+```java
+public class BlobTest {
+    // 向customers数据表中插入Blob类型的字段
+    @Test
+    public void testInsert() throws Exception {
+        Connection conn = JDBCUtils.getConnection();
+        String sql = "insert into customers (name, email, birth, photo) values (?, ?, ?, ?)";
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ps.setObject(1, "朴英三");
+        ps.setObject(2, "cys@qq.com");
+        ps.setObject(3, "1992-09-02");
+        FileInputStream is = new FileInputStream("src/main/resources/images/bird.png");
+        ps.setBlob(4, is);
+
+        ps.execute();
+
+        JDBCUtils.closeResources(conn, ps);
+    }
+}
+```
+
+---
+
+> 30 从数据表中读取 Blob 类型数据
+
+```java
+// 查询数据表customers中Blob类型的字段
+@Test
+public void testQuery() {
+    Connection conn = null;
+    PreparedStatement ps = null;
+    ResultSet rs = null;
+    InputStream is = null;
+    FileOutputStream fos = null;
+    try {
+        conn = JDBCUtils.getConnection();
+        String sql = "select id, name, email, birth, photo from customers where id = ?";
+        ps = conn.prepareStatement(sql);
+        ps.setInt(1, 21);
+
+        rs = ps.executeQuery();
+        if (rs.next()) {
+            Customer customer = new Customer();
+            // 方式一:
+            // int id = rs.getInt(1);
+            // String name = rs.getString(2);
+            // String email = rs.getString(3);
+            // Date birth = rs.getDate(4);
+
+            // 方式二:
+            int id = rs.getInt("id");
+            String name = rs.getString("name");
+            String email = rs.getString("email");
+            Date birth = rs.getDate("birth");
+
+            Customer cust = new Customer(id, name, email, birth);
+            System.out.println(cust);
+
+            // 将Blob类型的字段下载下来，以文件的形式保存在本地
+            Blob photo = rs.getBlob("photo");
+            is = photo.getBinaryStream();
+            fos = new FileOutputStream("efficient_linux.png");
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = is.read(buffer)) != -1) {
+                fos.write(buffer, 0, len);
+            }
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    } finally {
+        try {
+            if (is != null)
+                is.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            if (fos != null)
+                fos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        JDBCUtils.closeResources(conn, ps, rs);
+    }
+}
+```
+
+---
+
+> 31 插入 Blob 字段特殊情况的说明
+
+- 在目前的 MySQL(`8.0.44`)版本中，`max_allowed_packet`的值是`64MB`。
+- 在以前的版本，该变量的值是`1MB`，所以可以根据需要来调节这个值的大小。
+
+- 配置该变量的值
+
+```cnf
+vim ~/Desktop/Playground/mysql_conf/my.cnf -> (/etc/mysql/conf.d/my.cnf)
+
+[mysqld]
+max_allowed_packet=10M
+```
+
+- 查看该变量的值
+
+```sql
+show variables like 'max_allowed_packet';
+```
