@@ -357,3 +357,162 @@ public void testCRUD() throws IOException {
     list.forEach(System.out::println);
 }
 ```
+
+---
+
+> 15 核心配置文件之 environments
+
+```xml
+<!--
+    environments: 配置多个连接数据库的环境
+    属性:
+        default: 设置默认使用的环境的id
+-->
+<environments default="development">
+    <!--
+        environment: 配置某个具体的环境
+        属性:
+        id: 表示连接数据库的环境的唯一标识，不能重复
+    -->
+    <environment id="development">
+        <!--
+            transactionManager: 设置事务管理方式
+            属性:
+                type="JDBC|MANAGED"
+                JDBC: 表示当前环境中，执行SQL时，使用的是JDBC中原生的事务管理方式，事务的提交或回滚需要手动处理。
+                MANAGED: 被管理，例如Spring
+        -->
+        <transactionManager type="JDBC"/>
+        <!--
+            dataSource: 配置数据源
+            属性:
+                type: 设置数据源的类型
+                type="POOLED|UNPOOLED|JNDI"
+                POOLED: 表示使用数据库连接池缓存数据库连接。
+                UNPOOLED: 表示不使用数据库连接池。
+                JNDI: 表示使用上下文中的数据源。
+        -->
+        <dataSource type="POOLED">
+            <!-- 设置连接数据库的驱动 -->
+            <property name="driver" value="com.mysql.cj.jdbc.Driver"/>
+            <!-- 设置连接数据库的连接地址 -->
+            <property name="url" value="jdbc:mysql://localhost:3310/atguigu_mybatis"/>
+            <!-- 设置连接数据库的用户名 -->
+            <property name="username" value="root"/>
+            <!-- 设置连接数据库的密码 -->
+            <property name="password" value="123456"/>
+        </dataSource>
+    </environment>
+</environments>
+```
+
+- 上面这些配置内容以后都会在`Spring`中进行配置。
+
+---
+
+> 16 核心配置文件之 properties
+
+- 上面数据库的连接信息都是写死的，可以将这些信息放到`properties`文件中来管理。
+- 在`IDEA`工程中的`resources`目录中创建`Resource Bundle`文件，默认就是`properties`文件。
+
+`src/main/resources/jdbc.properties`
+
+```properties
+jdbc.driver=com.mysql.cj.jdbc.Driver
+jdbc.url=jdbc:mysql://localhost:3310/atguigu_mybatis
+jdbc.username=root
+jdbc.password=123456
+```
+
+- 在核心配置文件中引用上面配置的数据库连接信息。
+
+```xml
+<configuration>
+    <!-- 引入properties文件 -->
+    <properties resource="jdbc.properties"/>
+
+    <!-- ... -->
+
+    <dataSource type="POOLED">
+        <!-- 设置连接数据库的驱动 -->
+        <property name="driver" value="${jdbc.driver}"/>
+        <!-- 设置连接数据库的连接地址 -->
+        <property name="url" value="${jdbc.url}"/>
+        <!-- 设置连接数据库的用户名 -->
+        <property name="username" value="${jdbc.username}"/>
+        <!-- 设置连接数据库的密码 -->
+        <property name="password" value="${jdbc.password}"/>
+    </dataSource>
+
+    <!-- ... -->
+</configuration>
+```
+
+---
+
+> 17 核心配置文件之 typeAliases
+
+- 核心配置文件中的标签之间是有顺序的。
+
+```text
+    The content of element type "configuration" must match
+    "(properties?,settings?,typeAliases?,typeHandlers?,objectFactory?,objectWrapperFactory?,
+    reflectorFactory?,plugins?,environments?,databaseIdProvider?,mappers?)".
+```
+
+```xml
+<!-- 设置类型别名 -->
+<typeAliases>
+    <!--
+        typeAlias: 设置某个类型的别名。
+        属性:
+            type: 设置需要设置别名的类型的全类名。
+            alias: 设置别名。如果不设置alias的值，那么其默认值是类的简单名称。
+                    别名是不区分大小写的，即在配置中设置了alias="User"后，在映射文件中写resultType="user"也是没问题的。
+    -->
+    <!-- 这种方式用的很少，因为只能一次设置一个类的别名。而是会使用下面的package标签来批量地设置别名。
+    <typeAlias type="com.atguigu.mybatis.pojo.User"/>
+    -->
+    <!-- 以包为单位，将包下所有的类型设置默认的类型别名，即类的简单名称，且不区分大小写。 -->
+    <package name="com.atguigu.mybatis.pojo"/>
+</typeAliases>
+```
+
+- 设置别名后，在映射文件中就可以使用类的`别名`来指定`resultType`了。
+
+```xml
+<!-- User getUserById(); -->
+<select id="getUserById" resultType="user">
+    select *
+    from t_user
+    where id = 3
+</select>
+
+<!-- List<User> getAllUsers(); -->
+<select id="getAllUsers" resultType="User">
+    select *
+    from t_user
+</select>
+```
+
+---
+
+> 18 核心配置文件之 mappers
+
+- 映射文件也可以以包为单位进行引入，但是需要满足一些要求。
+
+```xml
+<!-- 引入映射文件 -->
+<mappers>
+    <!-- <mapper resource="mappers/UserMapper.xml"/> -->
+    <!--
+        以包为单位引入映射文件
+        要求:
+            1. mapper接口所在的包要和映射文件所在的包一致。
+            2. mapper接口要和映射文件的名字一致。
+    -->
+    <package name="com.atguigu.mybatis.mapper"/>
+</mappers>
+```
+
+![mapper package](./images/18_01_mappers_package.png)
