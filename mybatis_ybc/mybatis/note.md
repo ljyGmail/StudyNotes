@@ -516,3 +516,119 @@ jdbc.password=123456
 ```
 
 ![mapper package](./images/18_01_mappers_package.png)
+
+---
+
+> 19 思考: 映射文件中的 SQL 该如何拼接
+
+- 到目前为止，写到 SQL 语句都是写死到，以后需要学习如何动态获得从客户端传来到参数，并动态地拼接到 SQL 映射文件中。
+
+---
+
+> 20 在`IDEA`中配置核心配置文件到模板
+
+- 首先准备核心配置文件的内容
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <properties resource="jdbc.properties"/>
+
+    <typeAliases>
+        <package name=""/>
+    </typeAliases>
+
+    <environments default="development">
+        <environment id="development">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <property name="driver" value="${jdbc.driver}"/>
+                <property name="url" value="${jdbc.url}"/>
+                <property name="username" value="${jdbc.username}"/>
+                <property name="password" value="${jdbc.password}"/>
+            </dataSource>
+        </environment>
+    </environments>
+
+    <mappers>
+        <package name=""/>
+    </mappers>
+</configuration>
+```
+
+- 在`IDEA`中按下 2 次`Shift`后，搜索`File and Code Templates`
+
+![mybatis config template](./images/20_01_mybatis_config_template.png)
+
+---
+
+> 21 在`IDEA`中配置映射文件到模板
+
+- 首先准备映射文件的内容
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="">
+
+</mapper>
+```
+
+- 在`IDEA`中按下 2 次`Shift`后，搜索`File and Code Templates`
+
+![mybatis mapper template](./images/21_01_mybatis_mapper_template.png)
+
+---
+
+> 22 封装`SqlSessionUtils`工具类并测试功能
+
+`src/main/java/com/atguigu/mybatis/utils/SqlSessionUtils.java`
+
+```java
+public class SqlSessionUtils {
+    public static SqlSession getSqlSession() {
+        SqlSession sqlSession = null;
+        try {
+            InputStream is = Resources.getResourceAsStream("mybatis-config.xml");
+            SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(is);
+            sqlSession = sqlSessionFactory.openSession(true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return sqlSession;
+    }
+}
+```
+
+为学习获取参数值做一些准备:
+
+`src/main/java/com/atguigu/mybatis/mapper/ParameterMapper.java`
+
+```java
+public interface ParameterMapper {
+
+    /**
+     * 查询所有的员工信息
+     */
+    List<User> getAllUsers();
+}
+```
+
+`src/main/resources/com/atguigu/mybatis/mapper/ParameterMapper.xml`
+
+```java
+<mapper namespace="com.atguigu.mybatis.mapper.ParameterMapper">
+
+    <!-- List<User> getAllUsers(); -->
+    <select id="getAllUsers" resultType="User">
+        select *
+        from t_user
+    </select>
+</mapper>
+```
