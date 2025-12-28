@@ -1298,6 +1298,7 @@ public void testQuery() {
 
 - 在目前的 MySQL(`8.0.44`)版本中，`max_allowed_packet`的值是`64MB`。
 - 在以前的版本，该变量的值是`1MB`，所以可以根据需要来调节这个值的大小。
+- 如果插入的图片的大小超过了`max_allowed_packet`的值，则会报`Packet for query is to large`的异常。
 
 - 配置该变量的值
 
@@ -1312,4 +1313,159 @@ max_allowed_packet=10M
 
 ```sql
 show variables like 'max_allowed_packet';
+```
+
+---
+
+> 32 批量插入数据的操作 1
+
+- 使用 PreparedStatement 可以实现批量插入数据的操作
+- update 和 delete 本身就有批量操作的效果。
+- 此时的批量操作主要指的就是批量插入。
+- 使用 PreparedStatement 如何实现更高效的批量插入?
+
+- 题目: 向 goods 表中插入 20000 条数据。
+
+```sql
+CREATE TABLE goods
+(
+    id   INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(25)
+);
+```
+
+- 方式一: 会很慢，而且不安全，不建议使用。
+
+```txt
+方式一: 使用Statement。
+Connection conn = JDBCUtils.getConnection();
+Statement st = conn.createStatement();
+for(int i = 1; i <= 20000; i++) {
+    String sql = "insert into goods (name) values ('name_'" + i + ")";
+    st.execute(sql);
+}
+```
+
+![alt text](./images/32_01_ps_vs_stmt.png)
+
+- 方式二: 使用`PreparedStatement`。
+
+```java
+public class BatchInsertTest {
+
+    // 批量插入的方式二: 使用PreparedStatement
+    @Test
+    public void testBatchInsert2() {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        try {
+            long start = System.currentTimeMillis();
+            conn = JDBCUtils.getConnection();
+            String sql = "insert into goods (name) values (?)";
+            ps = conn.prepareStatement(sql);
+            for (int i = 1; i <= 20000; i++) {
+                ps.setObject(1, "name_" + i);
+
+                ps.execute();
+            }
+            long end = System.currentTimeMillis();
+            System.out.println("所需要的时间: " + (end - start)); // 53078
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            JDBCUtils.closeResources(conn, ps);
+        }
+    }
+}
+```
+
+---
+
+> 33 批量插入数据的操作 2
+
+- 方式三: 使用`批处理(Batch)`。
+  1. `addBatch()`, `executeBatch()`, `clearBatch()`
+  2. MySQL 服务器是默认关闭批处理的， 需要在连接 URL 后面加上`?rewriteBatchedStatements=true`
+
+```properties
+user=root
+password=123456
+url=jdbc:mysql://localhost:3310/jdbc_learn?rewriteBatchedStatements=true
+driverClass=com.mysql.cj.jdbc.Driver
+```
+
+```java
+@Test
+public void testBatchInsert3() {
+    Connection conn = null;
+    PreparedStatement ps = null;
+    try {
+        conn = JDBCUtils.getConnection();
+        long start = System.currentTimeMillis();
+        String sql = "insert into goods (name) values (?)";
+        ps = conn.prepareStatement(sql);
+        for (int i = 1; i <= 1000000; i++) {
+            ps.setObject(1, "name_" + i);
+
+            // 1. "攒"SQL
+            ps.addBatch();
+
+            if (i % 500 == 0) {
+                // 2. 执行Batch
+                ps.executeBatch();
+
+                // 3. 清空Batch
+                ps.clearBatch();
+            }
+        }
+        long end = System.currentTimeMillis();
+        System.out.println("花费的时间为: " + (end - start)); // 20000: 456; 1000000: 13314
+    } catch (Exception e) {
+        e.printStackTrace();
+    } finally {
+        JDBCUtils.closeResources(conn, ps);
+    }
+}
+```
+
+- 方式四: 设置不允许`自动提交`数据。
+
+```java
+@Test
+public void testBatchInsert4() {
+    Connection conn = null;
+    PreparedStatement ps = null;
+    try {
+        conn = JDBCUtils.getConnection();
+        // 设置不允许自动提交数据
+        conn.setAutoCommit(false);
+        long start = System.currentTimeMillis();
+        String sql = "insert into goods (name) values (?)";
+        ps = conn.prepareStatement(sql);
+        for (int i = 1; i <= 1000000; i++) {
+            ps.setObject(1, "name_" + i);
+
+            // 1. "攒"SQL
+            ps.addBatch();
+
+            if (i % 500 == 0) {
+                // 2. 执行Batch
+                ps.executeBatch();
+
+                // 3. 清空Batch
+                ps.clearBatch();
+            }
+        }
+
+        // 提交数据
+        conn.commit();
+
+        long end = System.currentTimeMillis();
+        System.out.println("花费的时间为: " + (end - start)); // 1000000: 8016
+    } catch (Exception e) {
+        e.printStackTrace();
+    } finally {
+        JDBCUtils.closeResources(conn, ps);
+    }
+}
 ```
