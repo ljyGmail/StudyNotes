@@ -632,3 +632,283 @@ public interface ParameterMapper {
     </select>
 </mapper>
 ```
+
+---
+
+> 23 MyBatis 获取参数值的两种方式`#{}`和`${}`
+
+- MyBatis 获取参数值的两种方式: ${}和#{}
+
+  - ${}的本质是字符串拼接
+  - #{}的本质是占位符赋值
+
+- JDBC 中相应的使用方式
+
+```java
+public void testJDBC() throws Exception {
+    String username = "Tom";
+    Class.forName("");
+    Connection conn = DriverManager.getConnection("", "", "");
+    // 字符串拼接的方式
+    // Statement stmt = conn.createStatement();
+    // stmt.execute("select * from t_user where username = '" + username + "'");
+    // 使用占位符的方式
+    PreparedStatement ps = conn.prepareStatement("select * from t_user where username = ?");
+    ps.setString(1, "Tom");
+}
+```
+
+---
+
+> 24 MyBatis 获取参数值的各种情况(1)
+
+- Mapper 接口方法的参数为单个的字面量类型
+- 可以通过`${}`和`#{}`以`任意的名称`获取参数值，但是为了见名知意，建议使用和参数名一致的名称。
+
+`src/main/java/com/atguigu/mybatis/mapper/ParameterMapper.java`
+
+```java
+/*
+根据用户名查询用户信息
+*/
+User getUserByUsername(String username);
+```
+
+`src/main/resources/com/atguigu/mybatis/mapper/ParameterMapper.xml`
+
+```xml
+<!-- User getUserByUsername(String username); -->
+<select id="getUserByUsername" resultType="User">
+    select *
+    from t_user
+    where username = #{username}
+</select>
+```
+
+`src/test/java/com/atguigu/mybatis/test/B_ParameterMapperTest.java`
+
+```java
+@Test
+public void testGetUserByUsername() {
+    SqlSession sqlSession = SqlSessionUtils.getSqlSession();
+    ParameterMapper mapper = sqlSession.getMapper(ParameterMapper.class);
+    User admin = mapper.getUserByUsername("admin");
+    System.out.println(admin);
+}
+```
+
+---
+
+> 25 MyBatis 获取参数值的各种情况(2)
+
+- Mapper 接口方法的参数为多个时
+- 此时 MyBatis 会将这些参数放在一个`map`集合中，以两种方式进行存储
+
+  - 以`arg0`, `arg1`...为键，以参数值为值
+  - 以`param1`, `param2`...为键，以参数值为值
+
+- 如果没有按照 MyBatis 提供的键在映射文件中进行参数的获取，则会报一下的异常:
+
+```text
+Error querying database.  Cause: org.apache.ibatis.binding.BindingException: Parameter 'username' not found. Available parameters are [arg1, arg0, param1, param2]
+```
+
+```java
+ /*
+验证登录
+*/
+User checkLogin(String username, String password);
+```
+
+```xml
+<!-- User checkLogin(String username, String password); -->
+<select id="checkLogin" resultType="User">
+    select *
+    from t_user
+    where username = #{param1}
+        and password = #{param2}
+</select>
+```
+
+```java
+@Test
+public void testCheckLogin() {
+    SqlSession sqlSession = SqlSessionUtils.getSqlSession();
+    ParameterMapper mapper = sqlSession.getMapper(ParameterMapper.class);
+    User user = mapper.checkLogin("admin", "123456");
+    System.out.println(user);
+}
+```
+
+---
+
+> 26 MyBatis 获取参数值的各种情况(3)
+
+- 若 Mapper 接口方法的参数有多个时，可以手动将这些参数放在一个`Map`集合中
+- 然后在 SQL 映射文件中就可以使用在`Map`集合中设置的`Key`来获取参数的值
+
+```java
+/*
+验证登录(参数为Map)
+*/
+User checkLoginByMap(Map<String, Object> map);
+```
+
+```xml
+<!-- User checkLoginByMap(Map<String, Object> map); -->
+<select id="checkLoginByMap" resultType="User">
+    select *
+    from t_user
+    where username = #{username}
+        and password = #{password}
+</select>
+```
+
+```java
+@Test
+public void testCheckLoginByMap() {
+    SqlSession sqlSession = SqlSessionUtils.getSqlSession();
+    ParameterMapper mapper = sqlSession.getMapper(ParameterMapper.class);
+    Map<String, Object> map = new HashMap<>();
+    map.put("username", "admin");
+    map.put("password", "123456");
+    User user = mapper.checkLoginByMap(map);
+    System.out.println(user);
+}
+```
+
+---
+
+> 27 MyBatis 获取参数值的各种情况(4)
+
+- Mapper 接口方法的参数为实体类类型时
+- 然后在 SQL 映射文件中通过实体类的`属性`来获取参数值
+
+```java
+/*
+添加用户信息
+*/
+int insertUser(User user);
+```
+
+```xml
+<!-- int insertUser(User user); -->
+<insert id="insertUser">
+    insert into t_user
+    values (null, #{username}, #{password}, #{age}, #{sex}, #{email})
+</insert>
+```
+
+```java
+@Test
+public void testInsertUser() {
+    SqlSession sqlSession = SqlSessionUtils.getSqlSession();
+    ParameterMapper mapper = sqlSession.getMapper(ParameterMapper.class);
+    User user = new User(null, "Tom", "111222", 18, "女", "tom@gmail.com");
+    int result = mapper.insertUser(user);
+    System.out.println("result: " + result);
+}
+```
+
+---
+
+> 28 MyBatis 获取参数值的各种情况(5)
+
+- 使用命名参数`@Param("在映射文件中使用的Key")`
+- 此时 MyBatis 会将值参数放在一个 Map 集合中，以两种方式进行存储
+  - 以@Param 注解的值为键，以参数为值
+  - 以 param1, param2..为键，以参数为值(此时 arg0, arg1...不可用)
+
+```java
+/*
+验证登录(使用@Param)
+*/
+User checkLoginByParam(@Param("username") String username, @Param("password") String password);
+```
+
+```xml
+<!-- User checkLoginByParam(@Param("username") String username, @Param("password") String password); -->
+<select id="checkLoginByParam" resultType="User">
+    select *
+    from t_user
+    where username = #{param1}
+        and password = #{param2}
+</select>
+```
+
+```java
+@Test
+public void testCheckLoginByParam() {
+    SqlSession sqlSession = SqlSessionUtils.getSqlSession();
+    ParameterMapper mapper = sqlSession.getMapper(ParameterMapper.class);
+    User user = mapper.checkLoginByParam("admin", "123456");
+    System.out.println(user);
+}
+```
+
+---
+
+> 29 `@Param`源码分析
+
+```java
+public ParamNameResolver(Configuration config, Method method) {
+    this.useActualParamName = config.isUseActualParamName();
+    final Class<?>[] paramTypes = method.getParameterTypes();
+    final Annotation[][] paramAnnotations = method.getParameterAnnotations();
+    final SortedMap<Integer, String> map = new TreeMap<>();
+    int paramCount = paramAnnotations.length;
+    // get names from @Param annotations
+    for (int paramIndex = 0; paramIndex < paramCount; paramIndex++) {
+      if (isSpecialParameter(paramTypes[paramIndex])) {
+        // skip special parameters
+        continue;
+      }
+      String name = null;
+      for (Annotation annotation : paramAnnotations[paramIndex]) {
+        if (annotation instanceof Param) {
+          hasParamAnnotation = true;
+          name = ((Param) annotation).value();
+          break;
+        }
+      }
+      if (name == null) {
+        // @Param was not specified.
+        if (useActualParamName) {
+          name = getActualParamName(method, paramIndex);
+        }
+        if (name == null) {
+          // use the parameter index as the name ("0", "1", ...)
+          // gcode issue #71
+          name = String.valueOf(map.size());
+        }
+      }
+      map.put(paramIndex, name);
+    }
+    names = Collections.unmodifiableSortedMap(map);
+  }
+
+public Object getNamedParams(Object[] args) {
+    final int paramCount = names.size();
+    if (args == null || paramCount == 0) {
+      return null;
+    }
+    if (!hasParamAnnotation && paramCount == 1) {
+      Object value = args[names.firstKey()];
+      return wrapToMapIfCollection(value, useActualParamName ? names.get(names.firstKey()) : null);
+    } else {
+      final Map<String, Object> param = new ParamMap<>();
+      int i = 0;
+      for (Map.Entry<Integer, String> entry : names.entrySet()) {
+        param.put(entry.getValue(), args[entry.getKey()]);
+        // add generic param names (param1, param2, ...)
+        final String genericParamName = i < 10 ? GENERIC_NAME_CACHE[i] : GENERIC_NAME_PREFIX + (i + 1);
+        // ensure not to overwrite parameter named with @Param
+        if (!names.containsValue(genericParamName)) {
+          param.put(genericParamName, args[entry.getKey()]);
+        }
+        i++;
+      }
+      return param;
+    }
+  }
+```
