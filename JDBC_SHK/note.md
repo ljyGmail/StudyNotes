@@ -1469,3 +1469,122 @@ public void testBatchInsert4() {
     }
 }
 ```
+
+---
+
+> 34 数据库连接及 PreparedStatement 使用小结
+
+---
+
+> 35 数据库事务的问题引入
+
+```txt
+针对于数据表user_table来说:
+    AA用户给BB用户转账100
+
+    update user_table set balance = balance - 100 where user = 'AA';
+    update user_table set balance = balance + 100 where user = 'BB';
+```
+
+```java
+// 未考虑数据库事务情况下的转账操
+@Test
+public void testUpdate() {
+    String sql1 = "update user_table set balance = balance - 100 where user = ?";
+    update(sql1, "AA");
+
+    // 模拟网络异常
+    System.out.println(10 / 0);
+
+    String sql2 = "update user_table set balance = balance + 100 where user = ?";
+    update(sql2, "BB");
+
+    System.out.println("转账成功");
+}
+```
+
+---
+
+> 36 何为事务及数据库事务的处理原则
+
+- 1. 什么叫数据库事务?
+- 事务: 一组逻辑操作单元，使数据从一种状态变换到两一种状态。
+  - 一组逻辑操作单元: 一个或多个`DML`操作。
+
+![transaction details](./images/36_01_transaction_details.png)
+
+- 所以说，要想解决目前没有考虑事务时产生的问题，要从两个方面来考虑如何解决:
+  1. 要将`autocommmit`到值设置为`false`。
+  2. 每次完成一个`DML`操作后不能关掉数据库到连接。(目前的`update()`方法都是完成操作后关掉数据库连接的)
+
+![transaction yn compare](image.png)
+
+---
+
+> 37 考虑事务以后的代码实现
+> 38 设置连接恢复为默认状态
+
+```java
+// ************* 考虑数据库事务情况下的转账操 *************
+// 通用的增删改操作 -- version2.0
+public int update(Connection conn, String sql, Object... args) {
+    PreparedStatement ps = null;
+    try {
+        // 1. 预编译SQL语句，返回PreparedStatement的实例
+        ps = conn.prepareStatement(sql);
+        // 2. 填充占位符
+        for (int i = 0; i < args.length; i++) {
+            ps.setObject(i + 1, args[i]);
+        }
+        // 3. 执行
+        return ps.executeUpdate();
+    } catch (SQLException e) {
+        e.printStackTrace();
+    } finally {
+        // 4. 关闭资源
+        JDBCUtils.closeResources(null, ps);
+    }
+    return 0;
+}
+
+@Test
+public void testUpdateWithTx() {
+    Connection conn = null;
+    try {
+        conn = JDBCUtils.getConnection();
+        // 取消数据的自动提交
+        System.out.println("isAutoCommit: " + conn.getAutoCommit());
+        conn.setAutoCommit(false);
+        String sql1 = "update user_table set balance = balance - 100 where user = ?";
+        update(conn, sql1, "AA");
+
+        // 模拟网络异常
+        System.out.println(10 / 0);
+
+        String sql2 = "update user_table set balance = balance + 100 where user = ?";
+        update(conn, sql2, "BB");
+
+        System.out.println("转账成功");
+
+        // 提交数据
+        conn.commit();
+    } catch (Exception e) {
+        e.printStackTrace();
+        // 回滚数据
+        try {
+            conn.rollback();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    } finally {
+        // 修改其为自动提交数据
+        // 主要针对于使用数据库连接池的使用
+        try {
+            conn.setAutoCommit(true);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        JDBCUtils.closeResources(conn, null);
+    }
+}
+```
