@@ -912,3 +912,226 @@ public Object getNamedParams(Object[] args) {
     }
   }
 ```
+
+---
+
+> 30 MyBatis 的各种查询功能(1)
+
+- MyBatis 的各种查询功能
+  1. 若查询的数据只有一条  
+     a> 可以通过实体类对象接收  
+     b> 可以通过 List 集合接收
+  2. 若查询的数据多条  
+     a> 可以通过 List 集合接收  
+     b>  
+     注意: 一定不能通过实体类对象接收，否则会报如下异常:  
+     `org.apache.ibatis.exceptions.TooManyResultsException: Expected one result (or null) to be returned by selectOne(), but found: 5`
+
+`src/main/java/com/atguigu/mybatis/mapper/SelectMapper.java`
+
+```java
+public interface SelectMapper {
+    /**
+     * 根据id查询用户信息
+     */
+    User getUserById(@Param("id") Integer id);
+    // 这种情况也可以用List集合接收
+    // List<User> getUserById(@Param("id") Integer id);
+
+    /**
+     * 查询所有的用户信息
+     */
+    List<User> getAllUsers();
+}
+```
+
+`src/main/resources/com/atguigu/mybatis/mapper/SelectMapper.xml`
+
+```xml
+<mapper namespace="com.atguigu.mybatis.mapper.SelectMapper">
+    <!-- User getUserById(@Param("id") Integer id); -->
+    <select id="getUserById" resultType="User">
+        select *
+        from t_user
+        where id = #{id}
+    </select>
+
+    <!-- List<User> getAllUsers(); -->
+    <select id="getAllUsers" resultType="User">
+        select *
+        from t_user
+    </select>
+</mapper>
+```
+
+`src/test/java/com/atguigu/mybatis/test/C_SelectMapperTest.java`
+
+```java
+public class C_SelectMapperTest {
+
+    @Test
+    public void testGetUserById() {
+        SqlSession sqlSession = SqlSessionUtils.getSqlSession();
+        SelectMapper mapper = sqlSession.getMapper(SelectMapper.class);
+        System.out.println(mapper.getUserById(3));
+        // 结果: User{id=3, username='admin1', password='123456', age=23, sex='男', email='admin@qq.com'}
+    }
+
+    @Test
+    public void testGetAllUsers() {
+        SqlSession sqlSession = SqlSessionUtils.getSqlSession();
+        SelectMapper mapper = sqlSession.getMapper(SelectMapper.class);
+        List<User> list = mapper.getAllUsers();
+        list.forEach(System.out::println);
+        // 结果:
+        /*
+        User{id=2, username='admin', password='123456', age=23, sex='男', email='admin@qq.com'}
+        User{id=3, username='admin1', password='123456', age=23, sex='男', email='admin@qq.com'}
+        User{id=4, username='张三', password='123456', age=23, sex='男', email='admin@qq.com'}
+        ...
+         */
+    }
+}
+```
+
+---
+
+> 31 MyBatis 的各种查询功能(2)
+
+- MyBatis 中设置了默认的类型`别名`
+
+  - `java.lang.Integer` -> `int`, `integer`
+  - `int` -> `_int`, `-integer`
+  - `Map` -> `map`
+  - `String` -> `string`
+
+- 查询`单行单列`的值
+
+`src/main/java/com/atguigu/mybatis/mapper/SelectMapper.java`
+
+```java
+/**
+ * 查询用户信息的总记录数
+ */
+Integer getUserCount();
+```
+
+`src/main/resources/com/atguigu/mybatis/mapper/SelectMapper.xml`
+
+```xml
+<!-- Integer getUserCount(); -->
+<select id="getUserCount" resultType="_int">
+    select count(*)
+    from t_user
+</select>
+```
+
+`src/test/java/com/atguigu/mybatis/test/C_SelectMapperTest.java`
+
+```java
+@Test
+public void testGetUserCount() {
+    SqlSession sqlSession = SqlSessionUtils.getSqlSession();
+    SelectMapper mapper = sqlSession.getMapper(SelectMapper.class);
+    Integer userCount = mapper.getUserCount();
+    System.out.println("userCount: " + userCount);
+    // 结果: userCount: 5
+}
+```
+
+---
+
+> 32 MyBatis 的各种查询功能(3)
+
+- 将查询出的一条记录使用`Map`集合来接收
+
+  1. 若查询的数据只有一条  
+     a> 可以通过实体类对象接收  
+     b> 可以通过 List 集合接收
+     c> 可以通过 Map 集合接收
+  2. 若查询的数据多条  
+     a> 可以通过 List 集合接收  
+     b>
+
+`src/main/java/com/atguigu/mybatis/mapper/SelectMapper.java`
+
+```java
+/**
+ * 根据id查询用户信息为一个Map集合
+ */
+Map<String, Object> getUserByIdToMap(@Param("id") Integer id);
+```
+
+`src/main/resources/com/atguigu/mybatis/mapper/SelectMapper.xml`
+
+```xml
+<!-- Map<String, Object> getUserByIdToMap(@Param("id") Integer id); -->
+<select id="getUserByIdToMap" resultType="map">
+    select *
+    from t_user
+    where id = #{id}
+</select>
+```
+
+`src/test/java/com/atguigu/mybatis/test/C_SelectMapperTest.java`
+
+```java
+@Test
+public void testGetUserByIdToMap() {
+    SqlSession sqlSession = SqlSessionUtils.getSqlSession();
+    SelectMapper mapper = sqlSession.getMapper(SelectMapper.class);
+    System.out.println(mapper.getUserByIdToMap(3));
+    // 结果: {password=123456, sex=男, id=3, age=23, email=admin@qq.com, username=admin1}
+}
+```
+
+---
+
+> 33 MyBatis 的各种查询功能(4)
+
+- 将查询出的多条记录使用`Map`集合来接收
+
+  1. 若查询的数据只有一条  
+     a> 可以通过实体类对象接收  
+     b> 可以通过 List 集合接收
+     c> 可以通过 Map 集合接收
+  2. 若查询的数据多条  
+     a> 可以通过 List 集合接收  
+     b> 可以通过 Map 类型的 List 集合接收
+     c> 可以在 Mapper 接口的方法上添加`@MapKey`注解，此时就以注解中指定的字段作为键，以查询出的每条记录作为值，放在通过一个`Map`集合中
+
+`src/main/java/com/atguigu/mybatis/mapper/SelectMapper.java`
+
+```java
+/**
+ * 查询所有的用户信息为Map集合
+ */
+@MapKey("id")
+Map<String, Object> getAllUsersToMap();
+```
+
+`src/main/resources/com/atguigu/mybatis/mapper/SelectMapper.xml`
+
+```xml
+<!-- Map<String, Object> getAllUsersToMap(); -->
+<select id="getAllUsersToMap" resultType="map">
+    select *
+    from t_user
+</select>
+```
+
+`src/test/java/com/atguigu/mybatis/test/C_SelectMapperTest.java`
+
+```java
+@Test
+public void testGetAllUsersToMap() {
+    SqlSession sqlSession = SqlSessionUtils.getSqlSession();
+    SelectMapper mapper = sqlSession.getMapper(SelectMapper.class);
+    System.out.println(mapper.getAllUsersToMap());
+    // 结果: {2={password=123456, sex=男, id=2, age=23, email=admin@qq.com, username=admin},
+    // 3={password=123456, sex=男, id=3, age=23, email=admin@qq.com, username=admin1},
+    // 4={password=123456, sex=男, id=4, age=23, email=admin@qq.com, username=张三},
+    // 5={password=123456, sex=男, id=5, age=23, email=admin@qq.com, username=2},
+    // 6={password=111222, sex=女, id=6, age=18, email=tom@gmail.com, username=Tom}}
+}
+```
