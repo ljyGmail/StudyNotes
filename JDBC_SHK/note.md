@@ -1588,3 +1588,123 @@ public void testUpdateWithTx() {
     }
 }
 ```
+
+---
+
+> 39 事务的 ACID 属性及 4 种隔离级别
+
+![ACID](./images/39_01_acid.png)
+
+![并发问题](./images/39_02_tx_problems.png)
+
+![隔离级别](./images/39_03_isolation_levels.png)
+
+---
+
+> 40 使用命令行验证 MySQL 的隔离级别
+
+- 使用`root`用户创建一个新的用户，用来模拟两个人同时访问数据库时的情况。
+- 这里使用 MySQL`8.0`版本的命令，与`5.7`的命令是不同的。
+- 使用下面的命令来验证不同`隔离级别`下，读取数据时产生的不同效果。
+
+```bash
+-- 创建用户
+create user 'jerry'@'localhost' identified by 'abc123';
+
+- 赋予权限
+grant select, insert, update, delete on jdbc_learn.* to 'jerry'@'localhost';
+
+- 取消自动提交
+set autocommit = false;
+
+- 查看当前的隔离级别
+select @@tx_isolation;
+
+- 设置全局的事务隔离级别为`read committed`
+set global transaction isolation level read committed;
+```
+
+---
+
+> 41 Java 代码演示并设置数据库的隔离级别
+
+`src/main/java/com/atguigu7/transaction/User.java`
+
+```java
+public class User {
+    private String user;
+    private String password;
+    private int balance;
+
+    // No args constructor
+    // All args constructor
+    // Getters and Setters
+    // toString()
+}
+```
+
+```java
+// 通用的查询操作，用于返回数据表中的一条记录 (Version 2.0: 考虑事务)
+public <T> T getInstance(Connection conn, Class<T> clazz, String sql, Object... args) {
+    PreparedStatement ps = null;
+    ResultSet rs = null;
+    try {
+        ps = conn.prepareStatement(sql);
+        for (int i = 0; i < args.length; i++) {
+            ps.setObject(i + 1, args[i]);
+        }
+
+        rs = ps.executeQuery();
+        // 获取结果集的元数据
+        ResultSetMetaData rsmd = rs.getMetaData();
+        // 获取列数
+        int columnCount = rsmd.getColumnCount();
+        if (rs.next()) {
+            T t = clazz.newInstance();
+            for (int i = 0; i < columnCount; i++) {
+                Object columnValue = rs.getObject(i + 1);
+                String columnLabel = rsmd.getColumnLabel(i + 1);
+
+                Field field = clazz.getDeclaredField(columnLabel);
+                field.setAccessible(true);
+                field.set(t, columnValue);
+            }
+            return t;
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    } finally {
+        JDBCUtils.closeResources(null, ps, rs);
+    }
+    return null;
+}
+
+@Test
+public void testTransactionSelect() throws Exception {
+    Connection conn = JDBCUtils.getConnection();
+    // 获取当前的隔离级别
+    System.out.println("隔离级别: " + conn.getTransactionIsolation());
+    // 设置数据库的事务隔离级别
+    conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+    // 取消自动提交数据
+    conn.setAutoCommit(false);
+
+    String sql = "select user, password, balance from user_table where user = ?";
+    User user = getInstance(conn, User.class, sql, "CC");
+
+    System.out.println(user);
+}
+
+@Test
+public void testTransactionUpdate() throws Exception {
+    Connection conn = JDBCUtils.getConnection();
+    // 取消自动提交数据
+    conn.setAutoCommit(false);
+
+    String sql = "update user_table set balance = ? where user = ?";
+    update(conn, sql, 5000, "CC");
+
+    Thread.sleep(15000);
+    System.out.println("修改结束");
+}
+```
