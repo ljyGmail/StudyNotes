@@ -1708,3 +1708,552 @@ public void testTransactionUpdate() throws Exception {
     System.out.println("修改结束");
 }
 ```
+
+---
+
+> 42 提供操作数据表的 BaseDAO
+
+```java
+// 封装了针对于数据表的通用的操作
+public abstract class BaseDAO {
+    // 通用的增删改操作 -- version2.0 (考虑上事务)
+    public int update(Connection conn, String sql, Object... args) {
+        PreparedStatement ps = null;
+        try {
+            // 1. 预编译SQL语句，返回PreparedStatement的实例
+            ps = conn.prepareStatement(sql);
+            // 2. 填充占位符
+            for (int i = 0; i < args.length; i++) {
+                ps.setObject(i + 1, args[i]);
+            }
+            // 3. 执行
+            return ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            // 4. 关闭资源
+            JDBCUtils.closeResources(null, ps);
+        }
+        return 0;
+    }
+
+    // 通用的查询操作，用于返回数据表中的一条记录 (Version 2.0: 考虑事务)
+    public <T> T getInstance(Connection conn, Class<T> clazz, String sql, Object... args) {
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = conn.prepareStatement(sql);
+            for (int i = 0; i < args.length; i++) {
+                ps.setObject(i + 1, args[i]);
+            }
+
+            rs = ps.executeQuery();
+            // 获取结果集的元数据
+            ResultSetMetaData rsmd = rs.getMetaData();
+            // 获取列数
+            int columnCount = rsmd.getColumnCount();
+            if (rs.next()) {
+                T t = clazz.newInstance();
+                for (int i = 0; i < columnCount; i++) {
+                    Object columnValue = rs.getObject(i + 1);
+                    String columnLabel = rsmd.getColumnLabel(i + 1);
+
+                    Field field = clazz.getDeclaredField(columnLabel);
+                    field.setAccessible(true);
+                    field.set(t, columnValue);
+                }
+                return t;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            JDBCUtils.closeResources(null, ps, rs);
+        }
+        return null;
+    }
+
+    // 通用的查询操作，用于返回数据表中的多条记录构成的集合 (Version 2.0: 考虑事务)
+    public <T> List<T> getForList(Connection conn, Class<T> clazz, String sql, Object... args) {
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = conn.prepareStatement(sql);
+            for (int i = 0; i < args.length; i++) {
+                ps.setObject(i + 1, args[i]);
+            }
+
+            rs = ps.executeQuery();
+            // 获取结果集的元数据
+            ResultSetMetaData rsmd = rs.getMetaData();
+            // 获取列数
+            int columnCount = rsmd.getColumnCount();
+            // 创建集合对象
+            List<T> list = new ArrayList<>();
+
+            while (rs.next()) {
+                T t = clazz.newInstance();
+                // 处理结果集一行数据中的每一个列: 给t对象指定的属性赋值
+                for (int i = 0; i < columnCount; i++) {
+                    Object columnValue = rs.getObject(i + 1);
+                    String columnLabel = rsmd.getColumnLabel(i + 1);
+
+                    Field field = clazz.getDeclaredField(columnLabel);
+                    field.setAccessible(true);
+                    field.set(t, columnValue);
+                }
+                list.add(t);
+            }
+            return list;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            JDBCUtils.closeResources(null, ps, rs);
+        }
+        return null;
+    }
+
+    // 用于查询特殊值的通用的方法
+    public <E> E getValue(Connection conn, String sql, Object... args) {
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = conn.prepareStatement(sql);
+            for (int i = 0; i < args.length; i++) {
+                ps.setObject(i + 1, args[i]);
+            }
+
+            rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return (E) rs.getObject(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            JDBCUtils.closeResources(null, ps, rs);
+        }
+        return null;
+    }
+}
+```
+
+---
+
+> 43 CustomerDAO 及 CustomerDAOImpl 的实现
+
+`src/main/java/com/atguigu8/basedao/CustomerDAO.java`
+
+```java
+// 此接口用户规范针对于customers表的常用操作
+public interface CustomerDAO {
+
+    /**
+     * 将cust对象添加到数据库中
+     *
+     * @param conn
+     * @param cust
+     */
+    void insert(Connection conn, Customer cust);
+
+    /**
+     * 根据指定的id，删除表中的一条记录
+     *
+     * @param conn
+     * @param id
+     */
+    void deleteById(Connection conn, int id);
+
+    /**
+     * 针对内存中的cust对象，去修改数据表中指定的记录
+     *
+     * @param conn
+     * @param id
+     * @param cust
+     */
+    void update(Connection conn, Customer cust);
+
+    /**
+     * 针对指定的id查询得到对应的Customer对象
+     *
+     * @param conn
+     * @param id
+     * @return
+     */
+    Customer getCustomerById(Connection conn, int id);
+
+    /**
+     * 查询表中的所有记录构成的集合
+     *
+     * @param conn
+     * @return
+     */
+    List<Customer> getAll(Connection conn);
+
+    /**
+     * 返回数据表中的数据的条目数
+     *
+     * @param conn
+     * @return
+     */
+    Long getCount(Connection conn);
+
+    /**
+     * 返回数据表的最大的生日
+     *
+     * @param conn
+     * @return
+     */
+    Date getMaxBirth(Connection conn);
+}
+```
+
+`src/main/java/com/atguigu8/basedao/CustomerDAOImpl.java`
+
+```java
+public class CustomerDAOImpl extends BaseDAO implements CustomerDAO {
+    @Override
+    public void insert(Connection conn, Customer cust) {
+        String sql = "insert into customers(name, email, birth) values(?, ?, ?)";
+        update(conn, sql, cust.getName(), cust.getEmail(), cust.getBirth());
+    }
+
+    @Override
+    public void deleteById(Connection conn, int id) {
+        String sql = "delete from customers where id = ?";
+        update(conn, sql, id);
+    }
+
+    @Override
+    public void update(Connection conn, Customer cust) {
+        String sql = "update customers set name = ?, email = ?, birth = ? where id = ?";
+        update(conn, sql, cust.getName(), cust.getEmail(), cust.getBirth(), cust.getId());
+    }
+
+    @Override
+    public Customer getCustomerById(Connection conn, int id) {
+
+        String sql = "select id, name, email, birth from customers where id = ?";
+        return getInstance(conn, Customer.class, sql, id);
+    }
+
+    @Override
+    public List<Customer> getAll(Connection conn) {
+        String sql = "select id, name, email, birth from customers";
+        return getForList(conn, Customer.class, sql);
+    }
+
+    @Override
+    public Long getCount(Connection conn) {
+        String sql = "select count(*) from customers";
+        return getValue(conn, sql);
+    }
+
+    @Override
+    public Date getMaxBirth(Connection conn) {
+        String sql = "select max(birth) from customers";
+        return getValue(conn, sql);
+    }
+}
+```
+
+---
+
+> 44 CustomerDAOImpl 的单元测试
+
+```java
+public class CustomerDAOImplTest {
+
+    private CustomerDAOImpl dao = new CustomerDAOImpl();
+
+    @Test
+    public void testInsert() throws Exception {
+        Connection conn = null;
+        try {
+            conn = JDBCUtils.getConnection();
+            Customer cust = new Customer(1, "Shell", "shell@126.com", new Date(4123123124123L));
+            dao.insert(conn, cust);
+            System.out.println("添加成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            JDBCUtils.closeResources(conn, null);
+        }
+    }
+
+    @Test
+    public void testDeleteById() {
+        Connection conn = null;
+        try {
+            conn = JDBCUtils.getConnection();
+            dao.deleteById(conn, 21);
+            System.out.println("删除成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            JDBCUtils.closeResources(conn, null);
+        }
+    }
+
+    @Test
+    public void testUpdateCustomer() {
+        Connection conn = null;
+        try {
+            conn = JDBCUtils.getConnection();
+            Customer cust = new Customer(22, "李石路", "lsl@136.com", new Date(4123113124123L));
+            dao.update(conn, cust);
+            System.out.println("修改成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            JDBCUtils.closeResources(conn, null);
+        }
+    }
+
+    @Test
+    public void testGetCustomerById() {
+        Connection conn = null;
+        try {
+            conn = JDBCUtils.getConnection();
+            Customer cust = dao.getCustomerById(conn, 19);
+            System.out.println(cust);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            JDBCUtils.closeResources(conn, null);
+        }
+    }
+
+    @Test
+    public void testGetAll() {
+        Connection conn = null;
+        try {
+            conn = JDBCUtils.getConnection();
+            List<Customer> list = dao.getAll(conn);
+            list.forEach(System.out::println);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            JDBCUtils.closeResources(conn, null);
+        }
+    }
+
+    @Test
+    public void testGetCount() {
+        Connection conn = null;
+        try {
+            conn = JDBCUtils.getConnection();
+            Long count = dao.getCount(conn);
+            System.out.println("表中的记录数为: " + count);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            JDBCUtils.closeResources(conn, null);
+        }
+    }
+
+    @Test
+    public void testGetMaxBirth() {
+        Connection conn = null;
+        try {
+            conn = JDBCUtils.getConnection();
+            Date maxBirth = dao.getMaxBirth(conn);
+            System.out.println("最大的生日为: " + maxBirth);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            JDBCUtils.closeResources(conn, null);
+        }
+    }
+}
+```
+
+---
+
+> 45 升级以后的 DAO 及相关类的测试
+
+`src/main/java/com/atguigu9/dao_improved/BaseDAO.java`
+
+```java
+// DAO: data(base) access object
+// 封装了针对于数据表的通用的操作
+public abstract class BaseDAO<T> {
+
+    private Class<T> clazz;
+
+    {
+        // 获取当前BaseDAO的子类继承的父类中的泛型
+        Type genericSuperclass = this.getClass().getGenericSuperclass();
+        ParameterizedType paramType = (ParameterizedType) genericSuperclass;
+        Type[] typeArguments = paramType.getActualTypeArguments();// 获取了父类的泛型参数
+        clazz = (Class<T>) typeArguments[0];// 泛型的第一个参数
+    }
+
+    // 通用的增删改操作 -- version2.0 (考虑上事务)
+    public int update(Connection conn, String sql, Object... args) {
+        PreparedStatement ps = null;
+        try {
+            // 1. 预编译SQL语句，返回PreparedStatement的实例
+            ps = conn.prepareStatement(sql);
+            // 2. 填充占位符
+            for (int i = 0; i < args.length; i++) {
+                ps.setObject(i + 1, args[i]);
+            }
+            // 3. 执行
+            return ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            // 4. 关闭资源
+            JDBCUtils.closeResources(null, ps);
+        }
+        return 0;
+    }
+
+    // 通用的查询操作，用于返回数据表中的一条记录 (Version 2.0: 考虑事务)
+    public T getInstance(Connection conn, String sql, Object... args) {
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = conn.prepareStatement(sql);
+            for (int i = 0; i < args.length; i++) {
+                ps.setObject(i + 1, args[i]);
+            }
+
+            rs = ps.executeQuery();
+            // 获取结果集的元数据
+            ResultSetMetaData rsmd = rs.getMetaData();
+            // 获取列数
+            int columnCount = rsmd.getColumnCount();
+            if (rs.next()) {
+                T t = clazz.newInstance();
+                for (int i = 0; i < columnCount; i++) {
+                    Object columnValue = rs.getObject(i + 1);
+                    String columnLabel = rsmd.getColumnLabel(i + 1);
+
+                    Field field = clazz.getDeclaredField(columnLabel);
+                    field.setAccessible(true);
+                    field.set(t, columnValue);
+                }
+                return t;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            JDBCUtils.closeResources(null, ps, rs);
+        }
+        return null;
+    }
+
+    // 通用的查询操作，用于返回数据表中的多条记录构成的集合 (Version 2.0: 考虑事务)
+    public List<T> getForList(Connection conn, String sql, Object... args) {
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = conn.prepareStatement(sql);
+            for (int i = 0; i < args.length; i++) {
+                ps.setObject(i + 1, args[i]);
+            }
+
+            rs = ps.executeQuery();
+            // 获取结果集的元数据
+            ResultSetMetaData rsmd = rs.getMetaData();
+            // 获取列数
+            int columnCount = rsmd.getColumnCount();
+            // 创建集合对象
+            List<T> list = new ArrayList<>();
+
+            while (rs.next()) {
+                T t = clazz.newInstance();
+                // 处理结果集一行数据中的每一个列: 给t对象指定的属性赋值
+                for (int i = 0; i < columnCount; i++) {
+                    Object columnValue = rs.getObject(i + 1);
+                    String columnLabel = rsmd.getColumnLabel(i + 1);
+
+                    Field field = clazz.getDeclaredField(columnLabel);
+                    field.setAccessible(true);
+                    field.set(t, columnValue);
+                }
+                list.add(t);
+            }
+            return list;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            JDBCUtils.closeResources(null, ps, rs);
+        }
+        return null;
+    }
+
+    // 用于查询特殊值的通用的方法
+    public <E> E getValue(Connection conn, String sql, Object... args) {
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = conn.prepareStatement(sql);
+            for (int i = 0; i < args.length; i++) {
+                ps.setObject(i + 1, args[i]);
+            }
+
+            rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return (E) rs.getObject(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            JDBCUtils.closeResources(null, ps, rs);
+        }
+        return null;
+    }
+}
+```
+
+`src/main/java/com/atguigu9/dao_improved/CustomerDAOImpl.java`
+
+```java
+public class CustomerDAOImpl extends BaseDAO<Customer> implements CustomerDAO {
+    @Override
+    public void insert(Connection conn, Customer cust) {
+        String sql = "insert into customers(name, email, birth) values(?, ?, ?)";
+        update(conn, sql, cust.getName(), cust.getEmail(), cust.getBirth());
+    }
+
+    @Override
+    public void deleteById(Connection conn, int id) {
+        String sql = "delete from customers where id = ?";
+        update(conn, sql, id);
+    }
+
+    @Override
+    public void update(Connection conn, Customer cust) {
+        String sql = "update customers set name = ?, email = ?, birth = ? where id = ?";
+        update(conn, sql, cust.getName(), cust.getEmail(), cust.getBirth(), cust.getId());
+    }
+
+    @Override
+    public Customer getCustomerById(Connection conn, int id) {
+
+        String sql = "select id, name, email, birth from customers where id = ?";
+        return getInstance(conn, sql, id);
+    }
+
+    @Override
+    public List<Customer> getAll(Connection conn) {
+        String sql = "select id, name, email, birth from customers";
+        return getForList(conn, sql);
+    }
+
+    @Override
+    public Long getCount(Connection conn) {
+        String sql = "select count(*) from customers";
+        return getValue(conn, sql);
+    }
+
+    @Override
+    public Date getMaxBirth(Connection conn) {
+        String sql = "select max(birth) from customers";
+        return getValue(conn, sql);
+    }
+}
+```
