@@ -1093,12 +1093,12 @@ public void testGetUserByIdToMap() {
 
   1. 若查询的数据只有一条  
      a> 可以通过实体类对象接收  
-     b> 可以通过 List 集合接收
+     b> 可以通过 List 集合接收  
      c> 可以通过 Map 集合接收
   2. 若查询的数据多条  
      a> 可以通过 List 集合接收  
-     b> 可以通过 Map 类型的 List 集合接收
-     c> 可以在 Mapper 接口的方法上添加`@MapKey`注解，此时就以注解中指定的字段作为键，以查询出的每条记录作为值，放在通过一个`Map`集合中
+     b> 可以通过 Map 类型的 List 集合接收  
+     c> 可以在 Mapper 接口的方法上添加`@MapKey`注解，此时就以注解中指定的字段作为键，以查询出的每条记录作为值，放在同一个`Map`集合中
 
 `src/main/java/com/atguigu/mybatis/mapper/SelectMapper.java`
 
@@ -1133,5 +1133,190 @@ public void testGetAllUsersToMap() {
     // 4={password=123456, sex=男, id=4, age=23, email=admin@qq.com, username=张三},
     // 5={password=123456, sex=男, id=5, age=23, email=admin@qq.com, username=2},
     // 6={password=111222, sex=女, id=6, age=18, email=tom@gmail.com, username=Tom}}
+}
+```
+
+---
+
+> 34 MyBatis 处理模糊查询
+
+- 根据用户名模糊查询用户信息
+- 可以尝试下面几种写法:
+
+1. 使用`#{username}`，直接这么写会报下面的异常:
+
+```text
+Caused by: org.apache.ibatis.type.TypeException: Could not set parameters for mapping:
+ParameterMapping{property='username', mode=IN, javaType=class java.lang.Object, jdbcType=null, numericScale=null,
+resultMapId='null', jdbcTypeName='null', expression='null'}.
+Cause: org.apache.ibatis.type.TypeException: Error setting non null for parameter #1 with JdbcType null .
+Try setting a different JdbcType for this parameter or a different configuration property.
+Cause: java.sql.SQLException: Parameter index out of range (1 > number of parameters, which is 0).
+```
+
+2. 使用`${username}`，这种方式看似可以用，但是会有`SQL注入`的问题。
+3. 使用`concat()`函数。
+4. 使用`"%" #{username} "%"`。
+
+`src/main/java/com/atguigu/mybatis/mapper/SQLMapper.java`
+
+```java
+public interface SQLMapper {
+
+    /**
+     * 根据用户名模糊查询用户信息
+     */
+    List<User> getUserByNameLike(@Param("username") String username);
+}
+```
+
+`src/main/resources/com/atguigu/mybatis/mapper/SQLMapper.xml`
+
+```xml
+<mapper namespace="com.atguigu.mybatis.mapper.SQLMapper">
+
+    <!-- List<User> getUserByNameLike(@Param("username") String username); -->
+    <select id="getUserByNameLike" resultType="User">
+        select *
+        from t_user
+        where username like "%" #{username} "%"
+    </select>
+    <!--
+        where username like '%#{username}%'
+        where username like '%${username}%'
+        where username like concat('%', #{username}, '%')
+    -->
+</mapper>
+```
+
+`src/test/java/com/atguigu/mybatis/test/D_SQLMapperTest.java`
+
+```java
+public class D_SQLMapperTest {
+    @Test
+    public void testGetUserByLike() {
+        SqlSession sqlSession = SqlSessionUtils.getSqlSession();
+        SQLMapper mapper = sqlSession.getMapper(SQLMapper.class);
+        // 下面是可以导致SQL注入的写法
+        // List<User> list = mapper.getUserByNameLike("' or true or '");
+        List<User> list = mapper.getUserByNameLike("a");
+        list.forEach(System.out::println);
+    }
+}
+```
+
+---
+
+> 35 MyBatis 处理批量删除
+
+- 本示例想要使用`delete from t_user where id in (1,2,3)`的方式批量删除，使用`#{}`的方式会直接报错。
+- 因为对于 MySQL 数据库，此 SQL 语句为`delete from t_user where id in ('1,2,3')`，执行时是会报错的。`ERROR 1292 (22007): Truncated incorrect DOUBLE value: '1, 2, 3'`
+- 这是 MySQL 数据库出于安全考虑，不让这个 SQL 语句执行，如果想要让它能执行，虽然不推荐，但是可以通过配置修改`sql_mode`的值，让其执行。
+- 但是即使执行，也是会抛出警告。
+
+```bash
+# 查看sql_mode
+SELECT @@SESSION.sql_mode;
+SELECT @@GLOBAL.sql_mode;
+
+# ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+
+# 只对当前连接生效
+SET SESSION sql_mode =
+REPLACE(@@SESSION.sql_mode, 'STRICT_TRANS_TABLES', '');
+
+# 对所有新的连接生效
+SET GLOBAL sql_mode =
+REPLACE(@@GLOBAL.sql_mode, 'STRICT_TRANS_TABLES', '');
+
+# 永久修改: my.cnf
+[mysqld]
+sql_mode=ONLY_FULL_GROUP_BY,NO_ENGINE_SUBSTITUTION
+```
+
+- 修改了`sql_mode`的值后，现退出当前连接，再次连接后，就会看到下面的效果:
+
+```text
+mysql> delete from t_user where id in ('1, 2, 3');
+Query OK, 0 rows affected, 1 warning (0.00 sec)
+
+mysql> show warnings;
++---------+------+---------------------------------------------+
+| Level   | Code | Message                                     |
++---------+------+---------------------------------------------+
+| Warning | 1292 | Truncated incorrect DOUBLE value: '1, 2, 3' |
++---------+------+---------------------------------------------+
+1 row in set (0.00 sec)
+```
+
+- 但是上面的命令仅仅是在 MySQL 内部的命令行是可以执行的，在其他的客户端，如`DataGrip`和`IDEA`，因为安全级别的设定，还是会报错。
+
+- 所以在 MyBatis 中实现批量删除时:
+  1. 可以使用`${}`来实现，但是不推荐，因为有`SQL注入`的问题
+  2. 使用`<foreach>`循环结构，搭配`#{}`，这才是比较靠谱的方式
+
+```java
+/**
+ * 批量删除
+ */
+// int deleteBatch(@Param("ids") String ids);
+int deleteBatch(@Param("ids") String[] ids);
+```
+
+```xml
+<!-- int deleteBatch(@Param("ids") String ids); -->
+<delete id="deleteBatch">
+    delete
+    from t_user
+    where id in
+    <foreach collection="ids" item="id" separator="," open="(" close=")">
+        #{id}
+    </foreach>
+</delete>
+<!-- where id in (${ids}) -->
+```
+
+```java
+@Test
+public void testDeleteBatch() {
+    SqlSession sqlSession = SqlSessionUtils.getSqlSession();
+    SQLMapper mapper = sqlSession.getMapper(SQLMapper.class);
+    String ids = "1,2,3,4,5,6";
+    // int i = mapper.deleteBatch(ids);
+    String[] idArr = ids.split(",");
+    int i = mapper.deleteBatch(idArr);
+
+    System.out.println("i: " + i);
+}
+```
+
+---
+
+> 36 MyBatis 处理动态设置表明
+
+- 对于一些特殊的情况，只能用`${}`来动态地设置表明，因为查询中的表名是不能用引号引起来的，所以不能使用`#{}`。
+
+```java
+/**
+ * 查询指定表中的数据
+ */
+List<User> selectUserByTableName(@Param("tableName") String tableName);
+```
+
+```xml
+<!-- List<User> selectUserByTableName(@Param("tableName") String tableName); -->
+<select id="selectUserByTableName" resultType="User">
+    select *
+    from ${tableName}
+</select>
+```
+
+```java
+@Test
+public void testGetUserByTableName() {
+    SqlSession sqlSession = SqlSessionUtils.getSqlSession();
+    SQLMapper mapper = sqlSession.getMapper(SQLMapper.class);
+    List<User> list = mapper.selectUserByTableName("t_user");
+    list.forEach(System.out::println);
 }
 ```
