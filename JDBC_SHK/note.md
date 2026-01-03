@@ -1070,14 +1070,27 @@ public class Exer2Test {
 
 ```java
 @Override
-public String toString() {
-    System.out.println("==========查询结果==========");
-    return info();
-}
+public class Student {
+    private int flowId; // 流水号
+    private int type; // 考试类型
+    private String idCard;  // 身份证号
+    private String examCard; // 准考证号
+    private String name; // 学生姓名
+    private String location; // 所在城市
+    private int grade; // 成绩
 
-private String info() {
-    return "流水号: " + flowId + "\n四级/六级: " + type + "\n身份证号: " + idCard + "\n准考证号: " + examCard
-            + "\n学生姓名: " + name + "\n区域: " + location + "\n成绩: " + grade;
+    // 无参构造器
+    // 有参构造器
+    // Getters and Setters
+    public String toString() {
+        System.out.println("==========查询结果==========");
+        return info();
+    }
+
+    private String info() {
+        return "流水号: " + flowId + "\n四级/六级: " + type + "\n身份证号: " + idCard + "\n准考证号: " + examCard
+                + "\n学生姓名: " + name + "\n区域: " + location + "\n成绩: " + grade;
+    }
 }
 ```
 
@@ -1517,11 +1530,11 @@ public void testUpdate() {
   1. 要将`autocommmit`到值设置为`false`。
   2. 每次完成一个`DML`操作后不能关掉数据库到连接。(目前的`update()`方法都是完成操作后关掉数据库连接的)
 
-![transaction yn compare](image.png)
+![transaction yn compare](./images/36_02_transaction_yn_compare.png)
 
 ---
 
-> 37 考虑事务以后的代码实现
+> 37 考虑事务以后的代码实现  
 > 38 设置连接恢复为默认状态
 
 ```java
@@ -2254,6 +2267,340 @@ public class CustomerDAOImpl extends BaseDAO<Customer> implements CustomerDAO {
     public Date getMaxBirth(Connection conn) {
         String sql = "select max(birth) from customers";
         return getValue(conn, sql);
+    }
+}
+```
+
+---
+
+> 46 数据库连接池技术概述
+
+---
+
+> 47 C3P0 数据库连接池的两种实现方式
+
+- 在`pom.xml`中加入依赖
+
+```xml
+<!-- https://mvnrepository.com/artifact/com.mchange/c3p0 -->
+<dependency>
+    <groupId>com.mchange</groupId>
+    <artifactId>c3p0</artifactId>
+    <version>0.9.5.2</version>
+</dependency>
+```
+
+- 使用`C3P0`获取连接的方式一:
+
+```java
+public class C3P0Test {
+    // 方式一
+    @Test
+    public void testGetConnection1() throws Exception {
+        // 获取C3P0数据库连接池
+        ComboPooledDataSource cpds = new ComboPooledDataSource();
+        cpds.setDriverClass("com.mysql.cj.jdbc.Driver");
+        cpds.setJdbcUrl("jdbc:mysql://localhost:3310/jdbc_learn");
+        cpds.setUser("root");
+        cpds.setPassword("123456");
+
+        // 通过设置相关的参数，对数据库连接池进行管理
+        // 设置初始时数据库连接池中的连接数
+        cpds.setInitialPoolSize(10);
+
+        Connection conn = cpds.getConnection();
+        System.out.println(conn);
+
+        // 销毁C3P0数据库连接池，一般情况下不会做这个操作
+        // DataSources.destroy(cpds);
+    }
+}
+```
+
+- 方式二: 使用配置文件
+
+`src/main/resources/c3p0-config.xml`
+
+```xml
+<?xml version="1.0" encoding="utf-8" ?>
+<c3p0-config>
+    <named-config name="helloc3p0">
+        <!-- 提供获取连接的4个基本信息 -->
+        <property name="driverClass">com.mysql.cj.jdbc.Driver</property>
+        <property name="jdbcUrl">jdbc:mysql://localhost:3310/jdbc_learn</property>
+        <property name="user">root</property>
+        <property name="password">123456</property>
+
+        <!-- 进行数据库连接池管理的基本信息 -->
+        <!-- 当数据库连接池中的连接数不够时，c3p0一次性向数据库服务器申请的连接数 -->
+        <property name="acquireIncrement">5</property>
+        <!-- c3p0数据库连接池中初始化时的连接数 -->
+        <property name="initialPoolSize">10</property>
+        <!-- c3p0数据库连接池维护的最少的连接数 -->
+        <property name="minPoolSize">10</property>
+        <!-- c3p0数据库连接池维护的最多的连接数 -->
+        <property name="maxPoolSize">100</property>
+        <!-- c3p0数据库连接池最多维护的Statement的个数 -->
+        <property name="maxStatements">50</property>
+        <!-- 每个连接中最多可以使用的Statement的个数 -->
+        <property name="maxStatementsPerConnection">2</property>
+    </named-config>
+</c3p0-config>
+```
+
+```java
+// 方式二: 使用配置文件
+@Test
+public void testGetConnection2() throws SQLException {
+    ComboPooledDataSource cpds = new ComboPooledDataSource("helloc3p0");
+    Connection conn = cpds.getConnection();
+    System.out.println(conn);
+}
+```
+
+---
+
+> 48 JDBCUtils 中使用 C3P0 数据库连接池获取连接
+
+```java
+/**
+ * 使用C3P0的数据库连接池技术
+ */
+public class JDBCUtils {
+    // 数据库连接池只需提供一个即可
+    private static ComboPooledDataSource cpds = new ComboPooledDataSource("helloc3p0");
+
+    public static Connection getConnection1() throws SQLException {
+        Connection conn = cpds.getConnection();
+
+        return conn;
+    }
+
+    // 关闭资源的方法
+}
+```
+
+- 测试
+
+`src/main/java/com/atguigu12/util/JDBCUtils.java`
+
+```java
+@Test
+public void testGetCustomerById() {
+    Connection conn = null;
+    try {
+        conn = JDBCUtils.getConnection1();
+        Customer cust = dao.getCustomerById(conn, 19);
+        System.out.println(cust);
+    } catch (Exception e) {
+        e.printStackTrace();
+    } finally {
+        JDBCUtils.closeResources(conn, null);
+    }
+}
+```
+
+---
+
+> 49 DBCP 数据库连接池的两种实现方式
+
+- 在`pom.xml`中加入依赖
+
+```xml
+<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-dbcp2 -->
+<dependency>
+    <groupId>org.apache.commons</groupId>
+    <artifactId>commons-dbcp2</artifactId>
+    <version>2.9.0</version>
+</dependency>
+```
+
+`src/main/java/com/atguigu11/connection/DBCPTest.java`
+
+```java
+// 测试DBCP的数据库连接池技术
+public class DBCPTest {
+
+    // 方式一: 不推荐
+    @Test
+    public void testGetConnection() throws SQLException {
+        BasicDataSource source = new BasicDataSource();
+        // 设置基本信息
+        source.setDriverClassName("com.mysql.cj.jdbc.Driver");
+        source.setUrl("jdbc:mysql://localhost:3310/jdbc_learn");
+        source.setUsername("root");
+        source.setPassword("123456");
+        // 还可以设置其他涉及数据库连接池的相关属性
+        source.setInitialSize(10);
+        // ...
+        Connection conn = source.getConnection();
+        System.out.println(conn);
+    }
+
+    // 方式二: 使用配置文件(推荐)
+    @Test
+    public void testGetConnection1() throws Exception {
+        Properties props = new Properties();
+        // 获取流的方式1:
+        InputStream is = ClassLoader.getSystemClassLoader().getResourceAsStream("dbcp.properties");
+        // 获取流的方式2:
+        // FileInputStream is = new FileInputStream(new File("src/main/resources/dbcp.properties"));
+        props.load(is);
+        BasicDataSource source = BasicDataSourceFactory.createDataSource(props);
+
+        Connection conn = source.getConnection();
+        System.out.println(conn);
+    }
+}
+```
+
+- 方式二中需要的配置文件:
+
+`src/main/resources/dbcp.properties`
+
+```properties
+driverClassName=com.mysql.cj.jdbc.Driver
+url=jdbc:mysql://localhost:3310/jdbc_learn
+username=root
+password=123456
+initialSize=10
+```
+
+- 在`JDBCUtils`中加入使用`DBCP`数据库连接池获取连接的方法:
+
+`src/main/java/com/atguigu12/util/JDBCUtils.java`
+
+```java
+private static DataSource source;
+
+static {
+    try {
+        Properties props = new Properties();
+        // 获取流的方式1:
+        InputStream is = ClassLoader.getSystemClassLoader().getResourceAsStream("dbcp.properties");
+        props.load(is);
+        // 创建一个DBCP数据库连接池
+        source = BasicDataSourceFactory.createDataSource(props);
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+}
+
+/**
+ * 使用DBCP数据库连接池技术获取数据库连接
+ *
+ * @return
+ */
+public static Connection getConnection2() throws Exception {
+    Connection conn = source.getConnection();
+    return conn;
+}
+```
+
+- 测试:
+
+`src/main/java/com/atguigu8/basedao/CustomerDAOImplTest.java`
+
+```java
+@Test
+public void testGetCustomerById() {
+    Connection conn = null;
+    try {
+        conn = JDBCUtils.getConnection2();
+        Customer cust = dao.getCustomerById(conn, 19);
+        System.out.println(cust);
+    } catch (Exception e) {
+        e.printStackTrace();
+    } finally {
+        JDBCUtils.closeResources(conn, null);
+    }
+}
+```
+
+---
+
+> 50 Druid 数据库连接池技术的实现
+
+- 在`pom.xml`中加入依赖
+
+```xml
+<!-- https://mvnrepository.com/artifact/com.alibaba/druid -->
+<dependency>
+    <groupId>com.alibaba</groupId>
+    <artifactId>druid</artifactId>
+    <version>1.2.24</version>
+</dependency>
+```
+
+`src/main/resources/druid.properties`
+
+```properties
+url=jdbc:mysql://localhost:3310/jdbc_learn
+username=root
+password=123456
+driverClassName=com.mysql.cj.jdbc.Driver
+```
+
+`src/main/java/com/atguigu11/connection/DruidTest.java`
+
+```java
+public class DruidTest {
+    @Test
+    public void getConnection() throws Exception {
+        Properties props = new Properties();
+        InputStream is = ClassLoader.getSystemClassLoader().getResourceAsStream("druid.properties");
+        props.load(is);
+        DataSource source = DruidDataSourceFactory.createDataSource(props);
+        Connection conn = source.getConnection();
+        System.out.println(conn);
+    }
+}
+```
+
+- 在`JDBCUtils`中加入使用`Druid`数据库连接池获取连接的方法:
+
+`src/main/java/com/atguigu12/util/JDBCUtils.java`
+
+```java
+private static DataSource source1;
+
+static {
+    try {
+        Properties props = new Properties();
+        InputStream is = ClassLoader.getSystemClassLoader().getResourceAsStream("druid.properties");
+        props.load(is);
+        source1 = DruidDataSourceFactory.createDataSource(props);
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+}
+
+/**
+ * 使用Druid数据库连接池技术
+ *
+ * @return
+ * @throws SQLException
+ */
+public static Connection getConnection3() throws SQLException {
+    Connection conn = source1.getConnection();
+    return conn;
+}
+```
+
+- 测试:
+
+```java
+@Test
+public void testGetCustomerById() {
+    Connection conn = null;
+    try {
+        conn = JDBCUtils.getConnection3();
+        Customer cust = dao.getCustomerById(conn, 18);
+        System.out.println(cust);
+    } catch (Exception e) {
+        e.printStackTrace();
+    } finally {
+        JDBCUtils.closeResources(conn, null);
     }
 }
 ```
