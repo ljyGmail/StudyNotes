@@ -1387,3 +1387,655 @@ public void testInsertUser() {
 
 - `useGeneratedKeys`: 设置当前标签中的 SQL 使用了自增的主键
 - `keyProperty`: 将自增主键的值赋给传输到映射文件中参数到某个属性
+
+---
+
+> 38 搭建 MyBatis 框架
+
+- 为演示`resultMap`的用法做准备
+
+- 向`t_emp`和`t_dept`表中插入测试数据
+
+```sql
+SELECT *
+FROM t_emp;
+
+SELECT *
+FROM t_dept;
+
+INSERT INTO t_emp
+VALUES (NULL, 'tom', 12, 'M', 'tom@126.com', 1);
+INSERT INTO t_emp
+VALUES (NULL, 'rose', 15, 'F', 'rose@126.com', 2);
+INSERT INTO t_emp
+VALUES (NULL, 'ron', 18, 'F', 'ron@126.com', 3);
+INSERT INTO t_emp
+VALUES (NULL, 'jerry', 21, 'M', 'jerry@126.com', 1);
+INSERT INTO t_emp
+VALUES (NULL, 'kate', 17, 'F', 'kate@126.com', 2);
+
+
+INSERT INTO t_dept
+VALUES (1, 'A');
+INSERT INTO t_dept
+VALUES (2, 'B');
+INSERT INTO t_dept
+VALUES (3, 'C');
+```
+
+`src/main/java/com/atguigu/mybatis/pojo/Emp.java`
+
+```java
+public class Emp {
+
+    private Integer eid;
+    private String empName;
+    private Integer age;
+    private String sex;
+    private String email;
+
+    // ...
+}
+```
+
+`src/main/java/com/atguigu/mybatis/pojo/Dept.java`
+
+```java
+public class Dept {
+    private Integer did;
+    private String deptName;
+
+    // ...
+}
+```
+
+`src/main/java/com/atguigu/mybatis/mapper/EmpMapper.java`
+
+```java
+public interface EmpMapper {
+}
+```
+
+`src/main/java/com/atguigu/mybatis/mapper/DeptMapper.java`
+
+```java
+public interface DeptMapper {
+}
+```
+
+`src/main/resources/com/atguigu/mybatis/mapper/EmpMapper.xml`
+
+```java
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.atguigu.mybatis.mapper.EmpMapper">
+
+</mapper>
+```
+
+`src/main/resources/com/atguigu/mybatis/mapper/DeptMapper.xml`
+
+```java
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.atguigu.mybatis.mapper.DeptMapper">
+
+</mapper>
+```
+
+---
+
+> 39 通过字段别名解决字段名和属性名的映射关系
+
+- 对于字段名和属性名不同的情况，有 3 种解决方案
+  1. 给字段起别名，让其跟属性名一致
+
+`src/main/java/com/atguigu/mybatis/mapper/EmpMapper.java`
+
+```java
+/**
+ * 查询所有的员工信息
+ */
+List<Emp> getAllEmps();
+```
+
+`src/main/resources/com/atguigu/mybatis/mapper/EmpMapper.xml`
+
+```xml
+<!-- List<Emp> getAllEmp(); -->
+<select id="getAllEmps" resultType="Emp">
+    select eid, emp_name empName, age, sex, email
+    from t_emp
+</select>
+<!--
+在之前的案例中，由于字段名和属性名一致，可以使用 select * from t_emp 的方式。
+但是现在对于empName属性，数据库中的字段名是emp_name。
+此时可以使用数据库字段的别名。
+-->
+```
+
+`src/test/java/com/atguigu/mybatis/test/E_ResultMapTest.java`
+
+```java
+public class E_ResultMapTest {
+    @Test
+    public void testGetAllEmps() {
+        SqlSession sqlSession = SqlSessionUtils.getSqlSession();
+        EmpMapper mapper = sqlSession.getMapper(EmpMapper.class);
+        List<Emp> emps = mapper.getAllEmps();
+        emps.forEach(System.out::println);
+        /* 结果:
+        Emp{eid=1, empName='tom', age=12, sex='M', email='tom@126.com'}
+        Emp{eid=2, empName='rose', age=15, sex='F', email='rose@126.com'}
+        Emp{eid=3, empName='ron', age=18, sex='F', email='ron@126.com'}
+         */
+    }
+}
+```
+
+---
+
+> 40 通过全局配置 mapUnderscoreToCamelCase 解决字段名和属性名的映射关系
+
+- 对于字段名和属性名不同的情况，有 3 种解决方案
+  1. 给字段起别名，让其跟属性名一致
+  2. 在全局配置文件`mybatis-config.xml`中，添加`settings`的配置，用于将下划线自动转换为驼峰。
+
+`src/main/resources/mybatis-config.xml`
+
+```xml
+<!-- 设置MyBatis的全局配置 -->
+<settings>
+    <!-- 将下划线自动映射为驼峰，emp_name: empName -->
+    <setting name="mapUnderscoreToCamelCase" value="true"/>
+</settings>
+```
+
+- 在写`settings`标签时，没有必要纠结该写在什么位置，先在任意位置写上后，让`IDEA`提示该写在什么位置。
+- 配置了自动转换后，此时在`Mapper`映射文件中就可以写`select * from t_emp`了。
+
+---
+
+> 41 通过 resultMap 解决字段名和属性名的映射关系
+
+- 对于字段名和属性名不同的情况，有 3 种解决方案
+
+  1. 给字段起别名，让其跟属性名一致。
+  2. 在全局配置文件`mybatis-config.xml`中，添加`settings`的配置，用于将下划线自动转换为驼峰。
+  3. 使用`resultMap`来自定义映射关系。
+
+- 注意: 在做`resultMap`的实验时，记得把上一个例子的全局配置(mapUnderscoreToCamelCase)注释掉，否则看不到真正的效果。
+
+```xml
+<!--
+    resultMap: 设置自定义映射关系
+    id: 唯一标识，不能重复
+    type: 设置映射关系中的实体类类型
+    子标签:
+        id: 设置主键的映射关系
+        result: 设置普通字段的映射关系
+        属性:
+            property: 设置映射关系中的属性名，必须是type属性所设置的实体类类型中的属性名
+            column: 设置映射关系中的字段名，必须是SQL语句查询出的字段名
+-->
+<resultMap id="empResultMap" type="Emp">
+    <id property="eid" column="eid"/>
+    <result property="empName" column="emp_name"/>
+    <result property="age" column="age"/>
+    <result property="sex" column="sex"/>
+    <result property="email" column="email"/>
+</resultMap>
+
+<!-- List<Emp> getAllEmps(); -->
+<select id="getAllEmps" resultMap="empResultMap">
+    select *
+    from t_emp
+</select>
+```
+
+- 如果仅仅是为了解决属性名和字段名不一致的问题，使用`resultMap`显得有些浪费，`resultMap`真正发挥作用的地方在于映射实体间的关系。
+
+---
+
+> 42 通过级联属性赋值解决多对一得映射关系
+
+- 处理多对一映射关系得 3 种方式:
+  1. 级联属性赋值
+- 在`Emp`类中添加`Dept dept`属性
+
+`src/main/java/com/atguigu/mybatis/pojo/Emp.java`
+
+```java
+public class Emp {
+
+    private Integer eid;
+    private String empName;
+    private Integer age;
+    private String sex;
+    private String email;
+
+    private Dept dept;
+    // ...
+}
+```
+
+`src/main/java/com/atguigu/mybatis/mapper/EmpMapper.java`
+
+```java
+/**
+ * 查询员工以及员工所对应的部门信息
+ */
+Emp getEmpAndDept(@Param("eid") Integer eid);
+```
+
+`src/main/resources/com/atguigu/mybatis/mapper/EmpMapper.xml`
+
+```xml
+<!-- 处理多对一映射关系方式一: 级联属性赋值 -->
+<resultMap id="empAndDeptResultMapOgnl" type="Emp">
+    <id property="eid" column="eid"/>
+    <result property="empName" column="emp_name"/>
+    <result property="age" column="age"/>
+    <result property="sex" column="sex"/>
+    <result property="email" column="email"/>
+    <result property="dept.did" column="did"/>
+    <result property="dept.deptName" column="dept_name"/>
+</resultMap>
+
+<!-- Emp getEmpAndDept(@Param("eid") Integer eid); -->
+<select id="getEmpAndDept" resultMap="empAndDeptResultMapOgnl">
+    select *
+    from t_emp e
+                left join t_dept d
+                        on e.did = d.did
+    where e.eid = #{eid}
+</select>
+```
+
+`src/test/java/com/atguigu/mybatis/test/E_ResultMapTest.java`
+
+```java
+@Test
+public void testGetEmpAndDept() {
+    SqlSession sqlSession = SqlSessionUtils.getSqlSession();
+    EmpMapper mapper = sqlSession.getMapper(EmpMapper.class);
+    Emp emp = mapper.getEmpAndDept(1);
+    System.out.println(emp);
+    // 结果: Emp{eid=1, empName='tom', age=12, sex='M', email='tom@126.com', dept=Dept{did=1, deptName='A'}}
+}
+```
+
+---
+
+> 43 通过 association 解决多对一得映射关系
+
+- 处理多对一映射关系得 3 种方式:
+  1. 级联属性赋值
+  2. association
+
+`src/main/resources/com/atguigu/mybatis/mapper/EmpMapper.xml`
+
+```xml
+<resultMap id="empAndDeptResultMapAssociation" type="Emp">
+    <id property="eid" column="eid"/>
+    <result property="empName" column="emp_name"/>
+    <result property="age" column="age"/>
+    <result property="sex" column="sex"/>
+    <result property="email" column="email"/>
+    <!--
+        association: 处理多对一的映射关系
+            property: 需要处理多对一的映射关系的属性名
+            javaType: 该属性的类型
+    -->
+    <association property="dept" javaType="Dept">
+        <id property="did" column="did"/>
+        <result property="deptName" column="dept_name"/>
+    </association>
+</resultMap>
+
+<!-- Emp getEmpAndDept(@Param("eid") Integer eid); -->
+<select id="getEmpAndDept" resultMap="empAndDeptResultMapAssociation">
+    select *
+    from t_emp e
+                left join t_dept d
+                        on e.did = d.did
+    where e.eid = #{eid}
+</select>
+```
+
+---
+
+> 44 通过分步查询解决多对一得映射关系
+
+- 处理多对一映射关系得 3 种方式:
+
+  1. 级联属性赋值
+  2. association
+  3. 分步查询
+
+- 为了便于测试，在这个例子中需要开启`mapUnderscoreToCamelCase`的配置。
+
+`src/main/java/com/atguigu/mybatis/mapper/EmpMapper.java`
+
+```java
+/**
+ * 分步查询员工以及员工所对应的部门信息
+ * 第一步: 查询员工信息
+ */
+Emp getEmpAndDeptByStepOne(@Param("eid") Integer eid);
+```
+
+`src/main/resources/com/atguigu/mybatis/mapper/EmpMapper.xml`
+
+```xml
+<resultMap id="empAndDeptResultMapByStep" type="Emp">
+    <id property="eid" column="eid"/>
+    <result property="empName" column="emp_name"/>
+    <result property="age" column="age"/>
+    <result property="sex" column="sex"/>
+    <result property="email" column="email"/>
+    <!--
+        select: 设置分步查询的SQL的唯一标识(namespace.sqlID或Mapper接口的全类名.方法名)
+        column: 设置分步查询的条件字段
+    -->
+    <association property="dept" select="com.atguigu.mybatis.mapper.DeptMapper.getEmpAndDeptByStepTwo"
+                    column="did"/>
+</resultMap>
+
+<!-- Emp getEmpAndDeptByStepOne(@Param("eid") Integer eid); -->
+<select id="getEmpAndDeptByStepOne" resultMap="empAndDeptResultMapByStep">
+    select *
+    from t_emp
+    where eid = #{eid}
+</select>
+```
+
+`src/main/java/com/atguigu/mybatis/mapper/DeptMapper.java`
+
+```java
+/**
+ * 分步查询员工以及员工所对应的部门信息
+ * 第二步: 通过did查询员工所在的部门信息
+ */
+Dept getEmpAndDeptByStepTwo(@Param("did") Integer did);
+```
+
+`src/main/resources/com/atguigu/mybatis/mapper/DeptMapper.xml`
+
+```xml
+<mapper namespace="com.atguigu.mybatis.mapper.DeptMapper">
+    <!-- Dept getEmpAndDeptByStepTwo(@Param("did") Integer did); -->
+    <select id="getEmpAndDeptByStepTwo" resultType="Dept">
+        select *
+        from t_dept
+        where did = #{did}
+    </select>
+</mapper>
+```
+
+```java
+@Test
+public void testGetEmpAndDeptByStep() {
+    SqlSession sqlSession = SqlSessionUtils.getSqlSession();
+    EmpMapper mapper = sqlSession.getMapper(EmpMapper.class);
+    Emp emp = mapper.getEmpAndDeptByStepOne(3);
+    System.out.println(emp);
+    // 结果: Emp{eid=1, empName='tom', age=12, sex='M', email='tom@126.com', dept=Dept{did=1, deptName='A'}}
+}
+```
+
+- 分步查询可以看到控制台中会执行两次查询:
+
+```text
+[main] DEBUG c.a.m.m.E.getEmpAndDeptByStepOne - ==>  Preparing: select * from t_emp where eid = ?
+[main] DEBUG c.a.m.m.E.getEmpAndDeptByStepOne - ==> Parameters: 3(Integer)
+[main] DEBUG c.a.m.m.D.getEmpAndDeptByStepTwo - ====>  Preparing: select * from t_dept where did = ?
+[main] DEBUG c.a.m.m.D.getEmpAndDeptByStepTwo - ====> Parameters: 3(Integer)
+[main] DEBUG c.a.m.m.D.getEmpAndDeptByStepTwo - <====      Total: 1
+[main] DEBUG c.a.m.m.E.getEmpAndDeptByStepOne - <==      Total: 1
+Emp{eid=3, empName='ron', age=18, sex='F', email='ron@126.com', dept=Dept{did=3, deptName='C'}}
+```
+
+---
+
+> 45 延迟加载
+
+- 分步查询的另一个好处就是可以实现延迟加载。如果查询到一个实体后，没有访问其关联到实体到属性，那么第二个查询不会执行。
+- 在全局配置文件中配置延迟加载:
+
+`src/main/resources/mybatis-config.xml`
+
+```xml
+<!-- 设置MyBatis的全局配置 -->
+<settings>
+    <!-- 将下划线自动映射为驼峰，emp_name: empName -->
+    <setting name="mapUnderscoreToCamelCase" value="true"/>
+    <!-- 开启延迟加载 -->
+    <setting name="lazyLoadingEnabled" value="true"/>
+</settings>
+```
+
+`src/test/java/com/atguigu/mybatis/test/E_ResultMapTest.java`
+
+```java
+@Test
+public void testGetEmpAndDeptByStep() {
+    SqlSession sqlSession = SqlSessionUtils.getSqlSession();
+    EmpMapper mapper = sqlSession.getMapper(EmpMapper.class);
+    Emp emp = mapper.getEmpAndDeptByStepOne(3);
+
+    // 只访问Emp里的属性，可以看到延迟加载的效果
+    System.out.println(emp.getEmpName());
+
+    System.out.println("++++++++++++++++++++++++++");
+
+    System.out.println(emp.getDept());
+}
+```
+
+```text
+[main] DEBUG c.a.m.m.E.getEmpAndDeptByStepOne - ==>  Preparing: select * from t_emp where eid = ?
+[main] DEBUG c.a.m.m.E.getEmpAndDeptByStepOne - ==> Parameters: 3(Integer)
+[main] DEBUG c.a.m.m.E.getEmpAndDeptByStepOne - <==      Total: 1
+ron
+++++++++++++++++++++++++++
+[main] DEBUG c.a.m.m.D.getEmpAndDeptByStepTwo - ==>  Preparing: select * from t_dept where did = ?
+[main] DEBUG c.a.m.m.D.getEmpAndDeptByStepTwo - ==> Parameters: 3(Integer)
+[main] DEBUG c.a.m.m.D.getEmpAndDeptByStepTwo - <==      Total: 1
+Dept{did=3, deptName='C'}
+```
+
+- 在配置了全局到`延迟加载`后，如果想针对某个查询配置为`立即加载`，使用`fetchType`属性:
+
+`src/main/resources/com/atguigu/mybatis/mapper/EmpMapper.xml`
+
+```xml
+<resultMap id="empAndDeptResultMapByStep" type="Emp">
+    <id property="eid" column="eid"/>
+    <result property="empName" column="emp_name"/>
+    <result property="age" column="age"/>
+    <result property="sex" column="sex"/>
+    <result property="email" column="email"/>
+    <!--
+        select: 设置分步查询的SQL的唯一标识(namespace.sqlID或Mapper接口的全类名.方法名)
+        column: 设置分步查询的条件字段
+    -->
+    <association property="dept" select="com.atguigu.mybatis.mapper.DeptMapper.getEmpAndDeptByStepTwo"
+                    column="did" fetchType="eager"/>
+</resultMap>
+```
+
+- 配置成立即加载后，结果如下:
+
+```text
+[main] DEBUG c.a.m.m.E.getEmpAndDeptByStepOne - ==>  Preparing: select * from t_emp where eid = ?
+[main] DEBUG c.a.m.m.E.getEmpAndDeptByStepOne - ==> Parameters: 3(Integer)
+[main] DEBUG c.a.m.m.D.getEmpAndDeptByStepTwo - ====>  Preparing: select * from t_dept where did = ?
+[main] DEBUG c.a.m.m.D.getEmpAndDeptByStepTwo - ====> Parameters: 3(Integer)
+[main] DEBUG c.a.m.m.D.getEmpAndDeptByStepTwo - <====      Total: 1
+[main] DEBUG c.a.m.m.E.getEmpAndDeptByStepOne - <==      Total: 1
+ron
+++++++++++++++++++++++++++
+Dept{did=3, deptName='C'}
+```
+
+---
+
+> 46 通过 collection 解决一对多的映射关系
+
+- 处理多对一映射关系得 2 种方式:
+
+  1. collection
+
+- 在`Dept`类中加入`List<Emp> emps`属性:
+
+`src/main/java/com/atguigu/mybatis/pojo/Dept.java`
+
+```java
+public class Dept {
+    private Integer did;
+    private String deptName;
+
+    private List<Emp> emps;
+
+    // ...
+}
+```
+
+`src/main/java/com/atguigu/mybatis/mapper/DeptMapper.java`
+
+```java
+/**
+ * 获取部门以及部门中所有的员工信息
+ */
+Dept getDeptAndEmps(@Param("did") Integer did);
+```
+
+`src/main/resources/com/atguigu/mybatis/mapper/DeptMapper.xml`
+
+```xml
+<resultMap id="deptAndEmpsResultMapAssociation" type="Dept">
+    <id property="did" column="did"/>
+    <result property="deptName" column="dept_name"/>
+    <!--
+        collection: 处理一对多的映射关系
+            ofType: 表示该属性所对应的集合中存储的数据类型
+    -->
+    <collection property="emps" ofType="Emp">
+        <id property="eid" column="eid"/>
+        <result property="empName" column="emp_name"/>
+        <result property="age" column="age"/>
+        <result property="sex" column="sex"/>
+        <result property="email" column="email"/>
+    </collection>
+</resultMap>
+
+<!-- Dept getDeptAndEmps(@Param("did") Integer did); -->
+<select id="getDeptAndEmps" resultMap="deptAndEmpsResultMapAssociation">
+    select *
+    from t_dept d
+                left join t_emp e on d.did = e.did
+    where d.did = #{did}
+</select>
+```
+
+`src/test/java/com/atguigu/mybatis/test/E_ResultMapTest.java`
+
+```java
+@Test
+public void testGetDeptAndEmps() {
+    SqlSession sqlSession = SqlSessionUtils.getSqlSession();
+    DeptMapper mapper = sqlSession.getMapper(DeptMapper.class);
+    Dept dept = mapper.getDeptAndEmps(1);
+    System.out.println(dept);
+    // 结果: Dept{did=1, deptName='A',
+    // emps=[Emp{eid=1, empName='tom', age=12, sex='M', email='tom@126.com', dept=null},
+    // Emp{eid=4, empName='jerry', age=21, sex='M', email='jerry@126.com', dept=null}]}
+}
+```
+
+---
+
+> 47 通过分步查询解决一对多的映射关系
+
+- 处理多对一映射关系得 2 种方式:
+  1. collection
+  2. 分步查询
+
+`src/main/java/com/atguigu/mybatis/mapper/DeptMapper.java`
+
+```java
+/**
+ * 通过分步查询获取部门以及部门中所有的员工信息
+ * 分步查询的第一步: 查询部门信息
+ */
+Dept getDeptAndEmpsByStepOne(@Param("did") Integer did);
+```
+
+`src/main/resources/com/atguigu/mybatis/mapper/DeptMapper.xml`
+
+```xml
+<resultMap id="deptAndEmpsResultMapByStep" type="Dept">
+    <id property="did" column="did"/>
+    <result property="deptName" column="dept_name"/>
+    <collection property="emps" select="com.atguigu.mybatis.mapper.EmpMapper.getEmpsByDid" column="did"
+                fetchType="lazy"/>
+</resultMap>
+
+<!-- Dept getDeptAndEmpsByStepOne(@Param("did") Integer did); -->
+<select id="getDeptAndEmpsByStepOne" resultMap="deptAndEmpsResultMapByStep">
+    select *
+    from t_dept
+    where did = #{did}
+</select>
+```
+
+`src/main/java/com/atguigu/mybatis/mapper/EmpMapper.java`
+
+```java
+/**
+ * 通过分步查询获取部门以及部门中所有的员工信息
+ * 分步查询的第一步: 查询部门信息
+ */
+Dept getDeptAndEmpsByStepOne(@Param("did") Integer did);
+```
+
+```xml
+<!-- List<Emp> getEmpsByDidByStepTwo(@Param("did") Integer did); -->
+<select id="getEmpsByDidByStepTwo" resultType="Emp">
+    select *
+    from t_emp
+    where did = #{did}
+</select>
+```
+
+```java
+@Test
+public void testGetDeptAndEmpsByStep() {
+    SqlSession sqlSession = SqlSessionUtils.getSqlSession();
+    DeptMapper mapper = sqlSession.getMapper(DeptMapper.class);
+    Dept dept = mapper.getDeptAndEmpsByStepOne(1);
+    // System.out.println(dept);
+    System.out.println(dept.getDeptName());
+    System.out.println("++++++++++++++++++++++++++++++++");
+    System.out.println(dept.getEmps());
+}
+```
+
+```text
+[main] DEBUG c.a.m.m.D.getDeptAndEmpsByStepOne - ==>  Preparing: select * from t_dept where did = ?
+[main] DEBUG c.a.m.m.D.getDeptAndEmpsByStepOne - ==> Parameters: 1(Integer)
+[main] DEBUG c.a.m.m.D.getDeptAndEmpsByStepOne - <==      Total: 1
+A
+++++++++++++++++++++++++++++++++
+[main] DEBUG c.a.m.m.E.getEmpsByDidByStepTwo - ==>  Preparing: select * from t_emp where did = ?
+[main] DEBUG c.a.m.m.E.getEmpsByDidByStepTwo - ==> Parameters: 1(Integer)
+[main] DEBUG c.a.m.m.E.getEmpsByDidByStepTwo - <==      Total: 2
+[Emp{eid=1, empName='tom', age=12, sex='M', email='tom@126.com', dept=null}, Emp{eid=4, empName='jerry', age=21, sex='M', email='jerry@126.com', dept=null}]
+```
