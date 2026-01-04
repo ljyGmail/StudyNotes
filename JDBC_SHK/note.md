@@ -2604,3 +2604,252 @@ public void testGetCustomerById() {
     }
 }
 ```
+
+---
+
+> 51 使用`QueryRunner`测试添加数据的操作
+
+- 在`pom.xml`中加入依赖
+
+```xml
+<!-- https://mvnrepository.com/artifact/commons-dbutils/commons-dbutils -->
+<dependency>
+    <groupId>commons-dbutils</groupId>
+    <artifactId>commons-dbutils</artifactId>
+    <version>1.7</version>
+</dependency>
+```
+
+`src/main/java/com/atguigu13/dbutils/QueryRunnerTest.java`
+
+```java
+// commons-dbutils是Apache组织提供的一个开源的JDBC工具类库，封装了针对于数据库的增删改查操作
+public class QueryRunnerTest {
+    // 测试插入
+    @Test
+    public void testInsert() {
+        Connection conn = null;
+        try {
+            QueryRunner runner = new QueryRunner();
+            conn = JDBCUtils.getConnection3();
+            String sql = "insert into  customers (name, email, birth) values (?, ?, ?)";
+            int insertCount = runner.update(conn, sql, "周华健", "zhj@gmail.com", "1960-03-12");
+            System.out.println("添加了" + insertCount + "条记录");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            JDBCUtils.closeResources(conn, null);
+        }
+    }
+}
+```
+
+---
+
+> 52 使用`QueryRunner`查询表中一条或多条记录的操作
+
+```java
+// 测试查询
+/**
+ * BeanHandler是ResultSetHandler接口的实现类，用于封装表中的一条记录。
+ */
+@Test
+public void testQuery1() {
+    Connection conn = null;
+    try {
+        QueryRunner runner = new QueryRunner();
+        conn = JDBCUtils.getConnection3();
+        String sql = "select id, name, email, birth from customers where id = ?";
+        BeanHandler<Customer> handler = new BeanHandler<>(Customer.class);
+        Customer customer = runner.query(conn, sql, handler, 31);
+        System.out.println(customer);
+    } catch (SQLException e) {
+        e.printStackTrace();
+    } finally {
+        JDBCUtils.closeResources(conn, null);
+    }
+
+}
+
+/*
+BeanListHandler是ResultSetHandler接口的实现类，用于封装表中的多条记录构成的集合。
+    */
+@Test
+public void testQuery2() {
+    Connection conn = null;
+    try {
+        QueryRunner runner = new QueryRunner();
+        conn = JDBCUtils.getConnection3();
+        String sql = "select id, name, email, birth from customers where id < ?";
+        BeanListHandler<Customer> handler = new BeanListHandler<>(Customer.class);
+        List<Customer> list = runner.query(conn, sql, handler, 31);
+        list.forEach(System.out::println);
+    } catch (SQLException e) {
+        e.printStackTrace();
+    } finally {
+        JDBCUtils.closeResources(conn, null);
+    }
+}
+
+/**
+ * MapHandler是ResultSetHandler接口的实现类，对应表中的一条记录。
+ * 将字段及相应字段值作为Map中的key和value。
+ */
+@Test
+public void testQuery3() {
+    Connection conn = null;
+    try {
+        QueryRunner runner = new QueryRunner();
+        conn = JDBCUtils.getConnection3();
+        String sql = "select id, name, email, birth from customers where id = ?";
+        MapHandler handler = new MapHandler();
+        Map<String, Object> map = runner.query(conn, sql, handler, 31);
+        System.out.println(map);
+    } catch (SQLException e) {
+        e.printStackTrace();
+    } finally {
+        JDBCUtils.closeResources(conn, null);
+    }
+}
+
+/**
+ * MapListHandler是ResultSetHandler接口的实现类，对应表中的多条记录。
+ * 将多条记录以Map的形式保存在一个List中。
+ */
+@Test
+public void testQuery4() {
+    Connection conn = null;
+    try {
+        QueryRunner runner = new QueryRunner();
+        conn = JDBCUtils.getConnection3();
+        String sql = "select id, name, email, birth from customers where id < ?";
+        MapListHandler handler = new MapListHandler();
+        List<Map<String, Object>> list = runner.query(conn, sql, handler, 31);
+        list.forEach(System.out::println);
+    } catch (SQLException e) {
+        e.printStackTrace();
+    } finally {
+        JDBCUtils.closeResources(conn, null);
+    }
+}
+```
+
+---
+
+> 53 使用`QueryRunner`查询表中特殊值的操作
+
+```java
+/*
+ScalarHandler用户查询特殊值。
+    */
+@Test
+public void testQuery5() {
+    Connection conn = null;
+    try {
+        QueryRunner runner = new QueryRunner();
+        conn = JDBCUtils.getConnection3();
+        String sql = "select count(*) from customers";
+        ScalarHandler<Long> handler = new ScalarHandler<>();
+        Long count = runner.query(conn, sql, handler);
+        System.out.println("count: " + count);
+    } catch (SQLException e) {
+        e.printStackTrace();
+    } finally {
+        JDBCUtils.closeResources(conn, null);
+    }
+}
+
+@Test
+public void testQuery6() {
+    Connection conn = null;
+    try {
+        QueryRunner runner = new QueryRunner();
+        conn = JDBCUtils.getConnection3();
+        String sql = "select max(birth) from customers";
+        ScalarHandler<Date> handler = new ScalarHandler<>();
+        Date maxDate = runner.query(conn, sql, handler);
+        System.out.println("maxDate: " + maxDate);
+    } catch (SQLException e) {
+        e.printStackTrace();
+    } finally {
+        JDBCUtils.closeResources(conn, null);
+    }
+}
+```
+
+---
+
+> 54 自定义`ResultSetHandler`的实现类完成查询操作
+
+```java
+/*
+自定义ResultSetHandler实现类。
+    */
+@Test
+public void testQuery7() {
+    Connection conn = null;
+    try {
+        QueryRunner runner = new QueryRunner();
+        conn = JDBCUtils.getConnection3();
+        String sql = "select  id, name, email, birth from customers where id = ?";
+        ResultSetHandler<Customer> handler = new ResultSetHandler<Customer>() {
+            @Override
+            public Customer handle(ResultSet rs) throws SQLException {
+                // System.out.println("handler");
+                // return null;
+                // return new Customer(12, "成龙", "jacky@126.com", new Date(23453421232L));
+                if (rs.next()) {
+                    int id = rs.getInt("id");
+                    String name = rs.getString("name");
+                    String email = rs.getString("email");
+                    Date birth = rs.getDate("birth");
+                    Customer customer = new Customer(id, name, email, birth);
+                    return customer;
+                }
+                return null;
+            }
+        };
+        Customer customer = runner.query(conn, sql, handler, 31);
+        System.out.println(customer);
+    } catch (SQLException e) {
+        e.printStackTrace();
+    } finally {
+        JDBCUtils.closeResources(conn, null);
+    }
+}
+```
+
+---
+
+> 55 `DbUtils`类关闭资源的操作
+
+```java
+/*
+使用dbutils.jar中提供的DbUtils工具类，实现资源的关闭。
+    */
+public static void closeResources1(Connection conn, Statement stmt, ResultSet rs) {
+    /*
+    try {
+        DbUtils.close(conn);
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+
+    try {
+        DbUtils.close(stmt);
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+
+    try {
+        DbUtils.close(rs);
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+        */
+
+    DbUtils.closeQuietly(conn);
+    DbUtils.closeQuietly(stmt);
+    DbUtils.closeQuietly(rs);
+}
+```
