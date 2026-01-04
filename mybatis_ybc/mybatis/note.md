@@ -2039,3 +2039,285 @@ A
 [main] DEBUG c.a.m.m.E.getEmpsByDidByStepTwo - <==      Total: 2
 [Emp{eid=1, empName='tom', age=12, sex='M', email='tom@126.com', dept=null}, Emp{eid=4, empName='jerry', age=21, sex='M', email='jerry@126.com', dept=null}]
 ```
+
+---
+
+> 48 动态 SQL 简介
+
+---
+
+> 49 动态 SQL 之 if 标签
+
+- 根据`<if>`标签中`test`属性中的表达式的真假来决定标签中的内容是否需要拼接到 SQL 中。
+
+`src/main/java/com/atguigu/mybatis/mapper/DynamicSQLMapper.java`
+
+```java
+public interface DynamicSQLMapper {
+
+    /**
+     * 多条件查询
+     */
+    List<Emp> getEmpsByCondition(Emp emp);
+}
+```
+
+`src/main/resources/com/atguigu/mybatis/mapper/DynamicSQLMapper.xml`
+
+```xml
+<mapper namespace="com.atguigu.mybatis.mapper.DynamicSQLMapper">
+    <!-- List<Emp> getEmpsByCondition(Emp emp); -->
+    <select id="getEmpsByCondition" resultType="Emp">
+        select *
+        from t_emp
+        where 1 = 1
+            <if test="empName != null and empName != ''">
+                and emp_name = #{empName}
+            </if>
+            <if test="age != null and age != ''">
+                and age = #{age}
+            </if>
+            <if test="sex != null and sex != ''">
+                and sex = #{sex}
+            </if>
+            <if test="email != null and email != ''">
+                and email = #{email}
+            </if>
+    </select>
+</mapper>
+```
+
+`src/test/java/com/atguigu/mybatis/test/F_DynamicSQLMapperTest.java`
+
+```java
+public class F_DynamicSQLMapperTest {
+    @Test
+    public void testGetEmpsByCondition() {
+        SqlSession sqlSession = SqlSessionUtils.getSqlSession();
+        DynamicSQLMapper mapper = sqlSession.getMapper(DynamicSQLMapper.class);
+        Emp emp = new Emp(null, "tom", null, "", "");
+        List<Emp> list = mapper.getEmpsByCondition(emp);
+        System.out.println(list);
+    }
+}
+```
+
+---
+
+> 50 动态 SQL 之 where 标签
+
+- 当`<where>`标签中有内容时，会自动生产`where`关键字，并且将内容前多余到`and`或`or`去掉。
+- 当`<where>`标签中没有内容时，此时该标签没有任何效果。
+
+```xml
+<!-- List<Emp> getEmpsByCondition(Emp emp); -->
+<select id="getEmpsByCondition" resultType="Emp">
+    select *
+    from t_emp
+    <where>
+        <if test="empName != null and empName != ''">
+            and emp_name = #{empName}
+        </if>
+        <if test="age != null and age != ''">
+            and age = #{age}
+        </if>
+        <if test="sex != null and sex != ''">
+            and sex = #{sex}
+        </if>
+        <if test="email != null and email != ''">
+            and email = #{email}
+        </if>
+    </where>
+</select>
+```
+
+---
+
+> 51 动态 SQL 之 trim 标签
+
+- 若标签中有内容时:
+
+  - `prefix|suffix`: 给`trim`标签中内容前面或后面添加指定内容。
+  - `prefixOverrides|suffixOverrides`: 将`trim`标签中内容前面或后面到内容去掉。
+
+- 若标签中没有内容，`trim`标签也没有任何效果。
+
+```xml
+<!-- List<Emp> getEmpsByCondition(Emp emp); -->
+<select id="getEmpsByCondition" resultType="Emp">
+    select *
+    from t_emp
+    <trim prefix="where" suffixOverrides="and|or">
+        <if test="empName != null and empName != ''">
+            emp_name = #{empName} and
+        </if>
+        <if test="age != null and age != ''">
+            age = #{age} or
+        </if>
+        <if test="sex != null and sex != ''">
+            sex = #{sex} and
+        </if>
+        <if test="email != null and email != ''">
+            email = #{email}
+        </if>
+    </trim>
+</select>
+```
+
+---
+
+> 52 动态 SQL 之 choose, when, otherwise 标签
+
+- 相当于 Java 中的`if...else if...else`。
+- `<when>`至少要有一个，`<otherwise>`最多有一个。
+
+```java
+/**
+ * 测试choose, when, otherwise
+ */
+List<Emp> getEmpsByChoose(Emp emp);
+```
+
+```xml
+<!-- List<Emp> getEmpsByChoose(Emp emp); -->
+<select id="getEmpsByChoose" resultType="Emp">
+    select *
+    from t_emp
+    <where>
+        <choose>
+            <when test="empName != null and empName != ''">
+                emp_name = #{empName}
+            </when>
+            <when test="age != null and age != ''">
+                age = #{age}
+            </when>
+            <when test="sex != null and sex != ''">
+                sex = #{sex}
+            </when>
+            <when test="email != null and email != ''">
+                email = #{email}
+            </when>
+            <otherwise>
+                did = 2
+            </otherwise>
+        </choose>
+    </where>
+</select>
+```
+
+```java
+@Test
+public void testGetEmpsByChoose() {
+    SqlSession sqlSession = SqlSessionUtils.getSqlSession();
+    DynamicSQLMapper mapper = sqlSession.getMapper(DynamicSQLMapper.class);
+    Emp emp = new Emp(null, "", null, "", "");
+    List<Emp> list = mapper.getEmpsByChoose(emp);
+    System.out.println(list);
+}
+```
+
+---
+
+> 53 动态 SQL 之 foreach 标签(1)
+
+```java
+/**
+ * 通过数组实现批量删除
+ */
+int deleteBatchByArray(@Param("eids") Integer[] eids);
+```
+
+```xml
+<!-- int deleteBatchByArray(@Param("eids") Integer[] eids); -->
+<!-- 第二种方式: where id = 1 or i d = 2 or id = 3 -->
+<delete id="deleteBatchByArray">
+    delete
+    from t_emp
+    where
+    <foreach collection="eids" item="eid" separator="or">
+        eid = #{eid}
+    </foreach>
+</delete>
+<!-- 第一种方式: where id in (1, 2, 3) -->
+<!--
+delete
+from t_emp
+where eid in
+<foreach collection="eids" item="eid" separator="," open="(" close=")">
+    #{eid}
+</foreach>
+-->
+```
+
+```java
+@Test
+public void testDeleteBatchByArray() {
+    SqlSession sqlSession = SqlSessionUtils.getSqlSession();
+    DynamicSQLMapper mapper = sqlSession.getMapper(DynamicSQLMapper.class);
+    int result = mapper.deleteBatchByArray(new Integer[]{9, 10, 11});
+    System.out.println("result: " + result);
+}
+```
+
+---
+
+> 54 动态 SQL 之 foreach 标签(2)
+
+- `collection`: 设置需要循环的数组或集合
+- `item`: 表示数组或集合中的每一个数据
+- `separator`: 循环体之间的分隔符
+- `open`: `foreach`标签所循环的所有内容的开始符
+- `close`: `foreach`标签所循环的所有内容的结束符
+
+```java
+/**
+ * 通过List集合实现批量添加
+ */
+int insertBatchByList(@Param("emps") List<Emp> emps);
+```
+
+```xml
+<!-- int insertBatchByList(@Param("emps") List<Emp> emps); -->
+<insert id="insertBatchByList">
+    insert into t_emp
+    values
+    <foreach collection="emps" item="emp" separator=",">
+        (null, #{emp.empName}, #{emp.age}, #{emp.sex}, #{emp.email}, null)
+    </foreach>
+</insert>
+```
+
+```java
+@Test
+public void testInsertBatchByList() {
+    SqlSession sqlSession = SqlSessionUtils.getSqlSession();
+    DynamicSQLMapper mapper = sqlSession.getMapper(DynamicSQLMapper.class);
+    Emp emp1 = new Emp(null, "java", 23, "F", "java@gmail.com");
+    Emp emp2 = new Emp(null, "python", 26, "M", "python@gmail.com");
+    Emp emp3 = new Emp(null, "php", 27, "F", "php@gmail.com");
+    Emp emp4 = new Emp(null, "javascript", 24, "M", "js@gmail.com");
+    List<Emp> emps = Arrays.asList(emp1, emp2, emp3, emp4);
+    int result = mapper.insertBatchByList(emps);
+    System.out.println("result: " + result);
+}
+```
+
+---
+
+> 55 动态 SQL 之 sql 标签
+
+- 对于公用的`sql`片段可以将其放在`<sql>`标签中，在需要的地方进行引用。
+
+```xml
+<sql id="empColumns">
+    eid
+    , emp_name, age, sex, email
+</sql>
+
+<!-- List<Emp> getEmpsByCondition(Emp emp); -->
+<select id="getEmpsByCondition" resultType="Emp">
+    select
+    <include refid="empColumns"/>
+    from t_emp
+</select>
+```
