@@ -2321,3 +2321,376 @@ public void testInsertBatchByList() {
     from t_emp
 </select>
 ```
+
+---
+
+> 56 MyBatis 的`一级缓存`
+
+- MyBatis 中的`一级缓存`的范围是`SqlSession`，是默认开启的。
+
+`src/main/java/com/atguigu/mybatis/mapper/CacheMapper.java`
+
+```java
+public interface CacheMapper {
+
+    Emp getEmpByEid(@Param("eid") Integer eid);
+}
+```
+
+`src/main/resources/com/atguigu/mybatis/mapper/CacheMapper.xml`
+
+```xml
+<mapper namespace="com.atguigu.mybatis.mapper.CacheMapper">
+    <!-- Emp getEmpByEid(@Param("eid") Integer eid); -->
+    <select id="getEmpByEid" resultType="Emp">
+        select *
+        from t_emp
+        where eid = #{eid}
+    </select>
+</mapper>
+```
+
+`src/test/java/com/atguigu/mybatis/test/G_CacheMapperTest.java`
+
+```java
+public class G_CacheMapperTest {
+    @Test
+    public void testCache() {
+        SqlSession sqlSession1 = SqlSessionUtils.getSqlSession();
+        CacheMapper mapper1 = sqlSession1.getMapper(CacheMapper.class);
+        Emp emp1 = mapper1.getEmpByEid(1);
+        System.out.println(emp1);
+        Emp emp2 = mapper1.getEmpByEid(1);
+        System.out.println(emp2);
+        /*
+        可以看到查询条件不变的时候，查询只执行一次
+        [main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - ==>  Preparing: select * from t_emp where eid = ?
+        [main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - ==> Parameters: 1(Integer)
+        [main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - <==      Total: 1
+        Emp{eid=1, empName='tom', age=12, sex='M', email='tom@126.com', dept=null}
+        Emp{eid=1, empName='tom', age=12, sex='M', email='tom@126.com', dept=null}
+         */
+
+        SqlSession sqlSession2 = SqlSessionUtils.getSqlSession();
+        CacheMapper mapper2 = sqlSession2.getMapper(CacheMapper.class);
+        Emp emp3 = mapper2.getEmpByEid(1);
+        System.out.println(emp3);
+        /*
+        可以看到重新获取一个SqlSession以后，查询语句会执行，说明一级缓存的范围是SqlSession。
+        [main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - ==>  Preparing: select * from t_emp where eid = ?
+        [main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - ==> Parameters: 1(Integer)
+        [main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - <==      Total: 1
+        Emp{eid=1, empName='tom', age=12, sex='M', email='tom@126.com', dept=null}
+         */
+    }
+}
+```
+
+---
+
+> 57 使`一级缓存`失效的四种情况
+
+- 四种情况:
+
+  1. 不同的`SqlSession`对应不同的一级缓存
+  2. 同一个`SqlSession`但是查询条件不同
+  3. 同一个`SqlSession`两次查询期间执行了任意一次`增删改`操作
+  4. 同一个`SqlSession`两次查询期间手动清空了缓存
+
+- 不同的`SqlSession`对应不同的一级缓存
+
+  - 看上例
+
+- 同一个`SqlSession`但是查询条件不同
+
+```java
+@Test
+public void testCache() {
+    SqlSession sqlSession1 = SqlSessionUtils.getSqlSession();
+    CacheMapper mapper1 = sqlSession1.getMapper(CacheMapper.class);
+    Emp emp1 = mapper1.getEmpByEid(1);
+    System.out.println(emp1);
+
+    Emp emp2 = mapper1.getEmpByEid(2);
+    System.out.println(emp2);
+    /*
+    [main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - ==>  Preparing: select * from t_emp where eid = ?
+    [main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - ==> Parameters: 1(Integer)
+    [main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - <==      Total: 1
+    Emp{eid=1, empName='tom', age=12, sex='M', email='tom@126.com', dept=null}
+    [main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - ==>  Preparing: select * from t_emp where eid = ?
+    [main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - ==> Parameters: 2(Integer)
+    [main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - <==      Total: 1
+    Emp{eid=2, empName='rose', age=15, sex='F', email='rose@126.com', dept=null}
+    */
+}
+```
+
+- 同一个`SqlSession`两次查询期间执行了任意一次`增删改`操作
+
+```java
+@Test
+public void testCache() {
+    SqlSession sqlSession1 = SqlSessionUtils.getSqlSession();
+    CacheMapper mapper1 = sqlSession1.getMapper(CacheMapper.class);
+    Emp emp1 = mapper1.getEmpByEid(1);
+    System.out.println(emp1);
+    // mapper1.insertEmp(new Emp(null, "K.Will", 34, "男", "kwill@gmail.com"));
+    // 测试修改操作是否会使一级缓存失效，该修改操作与查询中使用的实体不是同一个，来看看是否也会使一级缓存失效
+    // mapper1.updateDept(new Dept(3, "D"));
+    Emp emp2 = mapper1.getEmpByEid(2);
+    System.out.println(emp2);
+    /*
+    可以看到两次相同查询之间，有增删改操作的话，一级缓存就会失效
+    [main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - ==>  Preparing: select * from t_emp where eid = ?
+    [main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - ==> Parameters: 1(Integer)
+    [main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - <==      Total: 1
+    Emp{eid=1, empName='tom', age=12, sex='M', email='tom@126.com', dept=null}
+    [main] DEBUG c.a.m.mapper.CacheMapper.insertEmp - ==>  Preparing: insert into t_emp values (null, ?, ?, ?, ?, null)
+    [main] DEBUG c.a.m.mapper.CacheMapper.insertEmp - ==> Parameters: K.Will(String), 34(Integer), 男(String), kwill@gmail.com(String)
+    [main] DEBUG c.a.m.mapper.CacheMapper.insertEmp - <==    Updates: 1
+    [main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - ==>  Preparing: select * from t_emp where eid = ?
+    [main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - ==> Parameters: 1(Integer)
+    [main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - <==      Total: 1
+    Emp{eid=1, empName='tom', age=12, sex='M', email='tom@126.com', dept=null}
+        */
+    /*
+    事实证明任何一次增删改操作都会使一级缓存失效
+    [main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - ==>  Preparing: select * from t_emp where eid = ?
+    [main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - ==> Parameters: 1(Integer)
+    [main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - <==      Total: 1
+    Emp{eid=1, empName='tom', age=12, sex='M', email='tom@126.com', dept=null}
+    [main] DEBUG c.a.m.mapper.CacheMapper.updateDept - ==>  Preparing: update t_dept set dept_name = ? where did = ?
+    [main] DEBUG c.a.m.mapper.CacheMapper.updateDept - ==> Parameters: D(String), 3(Integer)
+    [main] DEBUG c.a.m.mapper.CacheMapper.updateDept - <==    Updates: 1
+    [main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - ==>  Preparing: select * from t_emp where eid = ?
+    [main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - ==> Parameters: 1(Integer)
+    [main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - <==      Total: 1
+    Emp{eid=1, empName='tom', age=12, sex='M', email='tom@126.com', dept=null}
+        */
+}
+```
+
+- 同一个`SqlSession`两次查询期间手动清空了缓存
+
+```java
+@Test
+public void testCache() {
+    SqlSession sqlSession1 = SqlSessionUtils.getSqlSession();
+    CacheMapper mapper1 = sqlSession1.getMapper(CacheMapper.class);
+    Emp emp1 = mapper1.getEmpByEid(1);
+    System.out.println(emp1);
+    // 清空缓存
+    sqlSession1.clearCache();
+    Emp emp2 = mapper1.getEmpByEid(1);
+    System.out.println(emp2);
+}
+/*
+[main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - ==>  Preparing: select * from t_emp where eid = ?
+[main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - ==> Parameters: 1(Integer)
+[main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - <==      Total: 1
+Emp{eid=1, empName='tom', age=12, sex='M', email='tom@126.com', dept=null}
+[main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - ==>  Preparing: select * from t_emp where eid = ?
+[main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - ==> Parameters: 1(Integer)
+[main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - <==      Total: 1
+Emp{eid=1, empName='tom', age=12, sex='M', email='tom@126.com', dept=null}
+*/
+```
+
+---
+
+> 58 MyBatis 的`二级缓存`
+
+- 二级缓存是`SelSessionFactory`级别的，而且需要`手动`开启。
+
+- 二级缓存开启的条件:
+
+  1. 在核心配置文件中，设置全局配置属性`cacheEnabled="true"`，默认为`true`，不需要设置。
+  2. 在映射文件中设置标签`<cache />`。
+  3. 二级缓存必须在`SqlSession`关闭或提交之后有效。
+  4. 查询的数据所转换的实体类类型必须实现序列化的接口。
+
+- 在映射文件中设置标签`<cache />`
+
+```xml
+<mapper namespace="com.atguigu.mybatis.mapper.CacheMapper">
+
+    <cache/>
+
+    ...
+</mapper>
+```
+
+- 查询的数据所转换的实体类类型必须实现`序列化的接口`
+
+```java
+public class Emp implements Serializable {
+
+    ...
+}
+```
+
+- 二级缓存必须在`SqlSession`关闭或提交之后有效
+
+```java
+@Test
+public void testCacheTwo() {
+    // 测试二级缓存时，不能再用之前写好的SqlSessionUtils类了，因为每次都会new一个新的SqlSessionFactory。
+    try {
+        InputStream is = Resources.getResourceAsStream("mybatis-config.xml");
+        SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(is);
+        SqlSession sqlSession1 = sqlSessionFactory.openSession(true);
+        CacheMapper mapper1 = sqlSession1.getMapper(CacheMapper.class);
+        System.out.println(mapper1.getEmpByEid(1));
+        sqlSession1.close();
+
+        SqlSession sqlSession2 = sqlSessionFactory.openSession(true);
+        CacheMapper mapper2 = sqlSession2.getMapper(CacheMapper.class);
+        System.out.println(mapper2.getEmpByEid(1));
+        sqlSession2.close();
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+}
+/*
+[main] DEBUG c.atguigu.mybatis.mapper.CacheMapper - Cache Hit Ratio [com.atguigu.mybatis.mapper.CacheMapper]: 0.0
+[main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - ==>  Preparing: select * from t_emp where eid = ?
+[main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - ==> Parameters: 1(Integer)
+[main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - <==      Total: 1
+Emp{eid=1, empName='tom', age=12, sex='M', email='tom@126.com', dept=null}
+[main] WARN  o.a.ibatis.io.SerialFilterChecker - As you are using functionality that deserializes object streams, it is recommended to define the JEP-290 serial filter. Please refer to https://docs.oracle.com/pls/topic/lookup?ctx=javase15&id=GUID-8296D8E8-2B93-4B9A-856E-0A65AF9B8C66
+[main] DEBUG c.atguigu.mybatis.mapper.CacheMapper - Cache Hit Ratio [com.atguigu.mybatis.mapper.CacheMapper]: 0.5
+Emp{eid=1, empName='tom', age=12, sex='M', email='tom@126.com', dept=null}
+*/
+```
+
+- 两次查询之间执行了任意的`增删改`，会使一级和二级缓存同时失效
+
+```java
+@Test
+public void testCacheTwo() {
+    try {
+        InputStream is = Resources.getResourceAsStream("mybatis-config.xml");
+        SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(is);
+        SqlSession sqlSession1 = sqlSessionFactory.openSession(true);
+        CacheMapper mapper1 = sqlSession1.getMapper(CacheMapper.class);
+        System.out.println(mapper1.getEmpByEid(1));
+        // 更新操作
+        mapper1.updateDept(new Dept(2, "E"));
+        sqlSession1.close();
+
+        SqlSession sqlSession2 = sqlSessionFactory.openSession(true);
+        CacheMapper mapper2 = sqlSession2.getMapper(CacheMapper.class);
+        System.out.println(mapper2.getEmpByEid(1));
+        sqlSession2.close();
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+}
+/*
+[main] DEBUG c.atguigu.mybatis.mapper.CacheMapper - Cache Hit Ratio [com.atguigu.mybatis.mapper.CacheMapper]: 0.0
+[main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - ==>  Preparing: select * from t_emp where eid = ?
+[main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - ==> Parameters: 1(Integer)
+[main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - <==      Total: 1
+Emp{eid=1, empName='tom', age=12, sex='M', email='tom@126.com', dept=null}
+[main] DEBUG c.a.m.mapper.CacheMapper.updateDept - ==>  Preparing: update t_dept set dept_name = ? where did = ?
+[main] DEBUG c.a.m.mapper.CacheMapper.updateDept - ==> Parameters: E(String), 2(Integer)
+[main] DEBUG c.a.m.mapper.CacheMapper.updateDept - <==    Updates: 1
+[main] WARN  o.a.ibatis.io.SerialFilterChecker - As you are using functionality that deserializes object streams, it is recommended to define the JEP-290 serial filter. Please refer to https://docs.oracle.com/pls/topic/lookup?ctx=javase15&id=GUID-8296D8E8-2B93-4B9A-856E-0A65AF9B8C66
+[main] DEBUG c.atguigu.mybatis.mapper.CacheMapper - Cache Hit Ratio [com.atguigu.mybatis.mapper.CacheMapper]: 0.0
+[main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - ==>  Preparing: select * from t_emp where eid = ?
+[main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - ==> Parameters: 1(Integer)
+[main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - <==      Total: 1
+Emp{eid=1, empName='tom', age=12, sex='M', email='tom@126.com', dept=null}
+*/
+```
+
+---
+
+> 59 MyBatis`二级缓存`相关配置
+
+![level two cache configs](./images/59_level2_cache_configs.png)
+
+---
+
+> 60 MyBatis 缓存查询的顺序
+
+- 先查询`二级缓存`，因为`二级缓存`中可能会有其他程序已经查询出来的数据，可以拿来直接使用。
+- 如果`二级缓存`没有命中，再查询`一级缓存`。
+- 如果`一级缓存`也没有命中，则查询`数据库`。
+- `SqlSession`关闭之后，`一级缓存`中的数据库会写入`二级缓存`。
+
+---
+
+> 61 MyBatis 整合第三方缓存`EHCache`
+
+- 在`pom.xml`中加入依赖:
+
+```xml
+<!-- https://mvnrepository.com/artifact/org.mybatis.caches/mybatis-ehcache -->
+<dependency>
+    <groupId>org.mybatis.caches</groupId>
+    <artifactId>mybatis-ehcache</artifactId>
+    <version>1.3.1</version>
+</dependency>
+```
+
+- 加入`ehcache`的配置文件:
+
+`src/main/resources/ehcache.xml`
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<ehcache
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://ehcache.org/ehcache.xsd"
+        updateCheck="false">
+
+    <!-- 磁盘缓存路径 -->
+    <diskStore path="~/Desktop/Playground/cache"/>
+
+    <!-- 默认缓存策略 -->
+    <defaultCache
+            maxElementsInMemory="1000"
+            maxElementsOnDisk="10000000"
+            eternal="false"
+            overflowToDisk="true"
+            timeToIdleSeconds="120"
+            timeToLiveSeconds="120"
+            diskPersistent="false"
+            diskExpiryThreadIntervalSeconds="120"
+            memoryStoreEvictionPolicy="LRU" />
+</ehcache>
+```
+
+- 测试
+
+```java
+@Test
+public void testCacheTwo() {
+    try {
+        InputStream is = Resources.getResourceAsStream("mybatis-config.xml");
+        SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(is);
+        SqlSession sqlSession1 = sqlSessionFactory.openSession(true);
+        CacheMapper mapper1 = sqlSession1.getMapper(CacheMapper.class);
+        System.out.println(mapper1.getEmpByEid(1));
+        sqlSession1.close();
+
+        SqlSession sqlSession2 = sqlSessionFactory.openSession(true);
+        CacheMapper mapper2 = sqlSession2.getMapper(CacheMapper.class);
+        System.out.println(mapper2.getEmpByEid(1));
+        sqlSession2.close();
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+}
+/*
+[main] DEBUG c.atguigu.mybatis.mapper.CacheMapper - Cache Hit Ratio [com.atguigu.mybatis.mapper.CacheMapper]: 0.0
+[main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - ==>  Preparing: select * from t_emp where eid = ?
+[main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - ==> Parameters: 1(Integer)
+[main] DEBUG c.a.m.mapper.CacheMapper.getEmpByEid - <==      Total: 1
+Emp{eid=1, empName='tom', age=12, sex='M', email='tom@126.com', dept=null}
+[main] DEBUG c.atguigu.mybatis.mapper.CacheMapper - Cache Hit Ratio [com.atguigu.mybatis.mapper.CacheMapper]: 0.5
+Emp{eid=1, empName='tom', age=12, sex='M', email='tom@126.com', dept=null}
+*/
+```
