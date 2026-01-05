@@ -2694,3 +2694,600 @@ Emp{eid=1, empName='tom', age=12, sex='M', email='tom@126.com', dept=null}
 Emp{eid=1, empName='tom', age=12, sex='M', email='tom@126.com', dept=null}
 */
 ```
+
+---
+
+> 62 MyBatis 逆向工程之`清晰简洁`版
+
+- 在`pom.xml`中加入插件的配置
+
+```xml
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.mybatis.generator</groupId>
+            <artifactId>mybatis-generator-maven-plugin</artifactId>
+            <version>1.4.2</version>
+            <configuration>
+                <!-- MBG 配置文件路径 -->
+                <configurationFile>
+                    ${project.basedir}/src/main/resources/generatorConfig.xml
+                </configurationFile>
+                <!-- 覆盖已生成文件 -->
+                <overwrite>true</overwrite>
+                <!-- 控制台输出详细日志 -->
+                <verbose>true</verbose>
+            </configuration>
+            <!-- 运行插件需要的依赖 -->
+            <dependencies>
+                <!-- MyBatis Generator Core -->
+                <dependency>
+                    <groupId>org.mybatis.generator</groupId>
+                    <artifactId>mybatis-generator-core</artifactId>
+                    <version>1.4.2</version>
+                </dependency>
+
+                <!-- MySQL驱动 -->
+                <dependency>
+                    <groupId>com.mysql</groupId>
+                    <artifactId>mysql-connector-j</artifactId>
+                    <version>9.3.0</version>
+                </dependency>
+            </dependencies>
+        </plugin>
+    </plugins>
+</build>
+```
+
+- 加入生成器的配置文件
+
+`src/main/resources/generatorConfig.xml`
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+        PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+
+<generatorConfiguration>
+    <!--
+        targetRuntime: 执行生成的逆向工程的版本
+            MyBatis3Simple: 生成基本的CRUD(清新简洁版)
+            MyBatis3: 生成带条件的CRUD(奢华尊享版)
+    -->
+    <!-- 数据库连接 -->
+    <context id="MySQLContext" targetRuntime="MyBatis3Simple">
+
+        <!-- 去掉生成的注释时间（可选） -->
+        <commentGenerator>
+            <property name="suppressDate" value="true"/>
+            <property name="suppressAllComments" value="true"/>
+        </commentGenerator>
+
+        <!-- 数据库连接信息 -->
+        <jdbcConnection
+                driverClass="com.mysql.cj.jdbc.Driver"
+                connectionURL="jdbc:mysql://localhost:3310/atguigu_mybatis?useSSL=false&amp;serverTimezone=Asia/Seoul"
+                userId="root"
+                password="123456"/>
+
+        <!-- Java 类型解析 -->
+        <javaTypeResolver>
+            <property name="forceBigDecimals" value="false"/>
+        </javaTypeResolver>
+
+        <!-- 实体类生成位置 -->
+        <javaModelGenerator
+                targetPackage="com.atguigu.mybatis.pojo"
+                targetProject="src/main/java">
+            <property name="enableSubPackages" value="true"/>
+            <property name="trimStrings" value="true"/>
+        </javaModelGenerator>
+
+        <!-- Mapper XML 生成位置 -->
+        <sqlMapGenerator
+                targetPackage="com.atguigu.mybatis.mapper"
+                targetProject="src/main/resources">
+            <property name="enableSubPackages" value="true"/>
+        </sqlMapGenerator>
+
+        <!-- Mapper 接口生成位置 -->
+        <javaClientGenerator
+                type="XMLMAPPER"
+                targetPackage="com.atguigu.mybatis.mapper"
+                targetProject="src/main/java">
+            <property name="enableSubPackages" value="true"/>
+        </javaClientGenerator>
+
+        <!-- 表配置（重点） -->
+        <!--
+        <table tableName="t_emp" domainObjectName="Emp"/>
+        <table tableName="t_dept" domainObjectName="Dept"/>
+        -->
+        <table tableName="tbl_person" domainObjectName="MyPerson"/>
+    </context>
+</generatorConfiguration>
+```
+
+![run generator plugin](./images/62_01_run_generator_plugin.png)
+
+- 运行插件后，看以看到生成的`POJO实体类`，`Mapper接口`，和`映射文件`。
+
+![simple generated](./images/63_01_simple_generated.png)
+
+`src/main/java/com/atguigu/mybatis/pojo/Person.java`
+
+```java
+public class Person {
+    private Integer id;
+    private String fullName;
+    private String gender;
+    private Integer age;
+    private String email;
+
+    // Getters and Setters
+
+    // 下面的无参，有参构造器和toString()方法是自己生成的
+    public Person() {
+    }
+
+    public Person(Integer id, String fullName, String gender, Integer age, String email) {
+        this.id = id;
+        this.fullName = fullName;
+        this.gender = gender;
+        this.age = age;
+        this.email = email;
+    }
+
+    @Override
+    public String toString() {
+        return "Person{" +
+                "id=" + id +
+                ", fullName='" + fullName + '\'' +
+                ", gender='" + gender + '\'' +
+                ", age=" + age +
+                ", email='" + email + '\'' +
+                '}';
+    }
+}
+```
+
+`src/main/java/com/atguigu/mybatis/mapper/PersonMapper.java`
+
+```java
+public interface PersonMapper {
+    int deleteByPrimaryKey(Integer id);
+
+    int insert(Person row);
+
+    Person selectByPrimaryKey(Integer id);
+
+    List<Person> selectAll();
+
+    int updateByPrimaryKey(Person row);
+}
+```
+
+`src/main/resources/com/atguigu/mybatis/mapper/PersonMapper.xml`
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.mybatis.mapper.PersonMapper">
+  <resultMap id="BaseResultMap" type="com.atguigu.mybatis.pojo.Person">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="full_name" jdbcType="VARCHAR" property="fullName" />
+    <result column="gender" jdbcType="CHAR" property="gender" />
+    <result column="age" jdbcType="INTEGER" property="age" />
+    <result column="email" jdbcType="VARCHAR" property="email" />
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from tbl_person
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.atguigu.mybatis.pojo.Person">
+    insert into tbl_person (id, full_name, gender,
+      age, email)
+    values (#{id,jdbcType=INTEGER}, #{fullName,jdbcType=VARCHAR}, #{gender,jdbcType=CHAR},
+      #{age,jdbcType=INTEGER}, #{email,jdbcType=VARCHAR})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com.atguigu.mybatis.pojo.Person">
+    update tbl_person
+    set full_name = #{fullName,jdbcType=VARCHAR},
+      gender = #{gender,jdbcType=CHAR},
+      age = #{age,jdbcType=INTEGER},
+      email = #{email,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select id, full_name, gender, age, email
+    from tbl_person
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap">
+    select id, full_name, gender, age, email
+    from tbl_person
+  </select>
+</mapper>
+```
+
+- 测试
+
+`src/test/java/com/atguigu/mybatis/test/H_SimpleGeneratorTest.java`
+
+```java
+public class H_SimpleGeneratorTest {
+    @Test
+    public void testSimpleGenerator() {
+        SqlSession sqlSession = SqlSessionUtils.getSqlSession();
+        PersonMapper mapper = sqlSession.getMapper(PersonMapper.class);
+        // int insertResult = mapper.insert(new Person(null, "Hermione", "F", 21, "hermione@126.com"));
+        // System.out.println("insertResult: " + insertResult);
+        // int updateResult = mapper.updateByPrimaryKey(new Person(1, "Lily", "F", 18, "lily@gmail.com"));
+        // System.out.println("updateResult: " + updateResult);
+        // int deleteResult = mapper.deleteByPrimaryKey(1);
+        // System.out.println("deleteResult: " + deleteResult);
+        Person person = mapper.selectByPrimaryKey(2);
+        System.out.println(person);
+
+        List<Person> list = mapper.selectAll();
+        list.forEach(System.out::println);
+    }
+}
+```
+
+---
+
+> 63 MyBatis 逆向工程之`奢华尊享`版 (1)
+
+- 在`generatorConfig.xml`配置文件中的`targetRuntime`的值改为`MyBatis3`即可使用`奢华尊享`版。
+
+```xml
+<context id="MySQLContext" targetRuntime="MyBatis3">
+...
+
+<!-- 测试`清新简洁版` -->
+<!--
+<table tableName="tbl_person" domainObjectName="Person"/>
+-->
+<!-- 测试`奢华尊享版` -->
+<table tableName="tbl_person" domainObjectName="MyPerson"/>
+```
+
+- 执行逆向工程插件后可以看到生成了一个`Mapper接口`，一个`映射文件`，一个`POJO实体类`和一个帮助查询的类`XXXExample`。
+
+![luxury generated](./images/64_01_luxury_generated.png)
+
+`src/main/java/com/atguigu/mybatis/pojo/MyPerson.java`
+
+```java
+public class MyPerson {
+    private Integer id;
+    private String fullName;
+    private String gender;
+    private Integer age;
+    private String email;
+
+    // Getters and Setters
+
+    // 下面的无参，有参构造器和toString()方法是自己生成的
+    public MyPerson() {
+    }
+
+    public MyPerson(Integer id, String fullName, String gender, Integer age, String email) {
+        this.id = id;
+        this.fullName = fullName;
+        this.gender = gender;
+        this.age = age;
+        this.email = email;
+    }
+
+    @Override
+    public String toString() {
+        return "MyPerson{" +
+                "id=" + id +
+                ", fullName='" + fullName + '\'' +
+                ", gender='" + gender + '\'' +
+                ", age=" + age +
+                ", email='" + email + '\'' +
+                '}';
+    }
+}
+```
+
+`src/main/java/com/atguigu/mybatis/pojo/MyPersonExample.java`
+
+```java
+public class MyPersonExample {
+    protected String orderByClause;
+
+    protected boolean distinct;
+
+    protected List<Criteria> oredCriteria;
+
+    public MyPersonExample() {
+        oredCriteria = new ArrayList<>();
+    }
+
+    public void setOrderByClause(String orderByClause) {
+        this.orderByClause = orderByClause;
+    }
+
+    public String getOrderByClause() {
+        return orderByClause;
+    }
+
+    public void setDistinct(boolean distinct) {
+        this.distinct = distinct;
+    }
+
+    public boolean isDistinct() {
+        return distinct;
+    }
+
+    public List<Criteria> getOredCriteria() {
+        return oredCriteria;
+    }
+
+    // ... 530行左右
+}
+```
+
+`src/main/resources/com/atguigu/mybatis/mapper/MyPersonMapper.xml`
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.mybatis.mapper.MyPersonMapper">
+  <resultMap id="BaseResultMap" type="com.atguigu.mybatis.pojo.MyPerson">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="full_name" jdbcType="VARCHAR" property="fullName" />
+    <result column="gender" jdbcType="CHAR" property="gender" />
+    <result column="age" jdbcType="INTEGER" property="age" />
+    <result column="email" jdbcType="VARCHAR" property="email" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    id, full_name, gender, age, email
+  </sql>
+  <select id="selectByExample" parameterType="com.atguigu.mybatis.pojo.MyPersonExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from tbl_person
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from tbl_person
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from tbl_person
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.atguigu.mybatis.pojo.MyPersonExample">
+    delete from tbl_person
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.atguigu.mybatis.pojo.MyPerson">
+    insert into tbl_person (id, full_name, gender,
+      age, email)
+    values (#{id,jdbcType=INTEGER}, #{fullName,jdbcType=VARCHAR}, #{gender,jdbcType=CHAR},
+      #{age,jdbcType=INTEGER}, #{email,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.atguigu.mybatis.pojo.MyPerson">
+    insert into tbl_person
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="fullName != null">
+        full_name,
+      </if>
+      <if test="gender != null">
+        gender,
+      </if>
+      <if test="age != null">
+        age,
+      </if>
+      <if test="email != null">
+        email,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="fullName != null">
+        #{fullName,jdbcType=VARCHAR},
+      </if>
+      <if test="gender != null">
+        #{gender,jdbcType=CHAR},
+      </if>
+      <if test="age != null">
+        #{age,jdbcType=INTEGER},
+      </if>
+      <if test="email != null">
+        #{email,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.atguigu.mybatis.pojo.MyPersonExample" resultType="java.lang.Long">
+    select count(*) from tbl_person
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update tbl_person
+    <set>
+      <if test="row.id != null">
+        id = #{row.id,jdbcType=INTEGER},
+      </if>
+      <if test="row.fullName != null">
+        full_name = #{row.fullName,jdbcType=VARCHAR},
+      </if>
+      <if test="row.gender != null">
+        gender = #{row.gender,jdbcType=CHAR},
+      </if>
+      <if test="row.age != null">
+        age = #{row.age,jdbcType=INTEGER},
+      </if>
+      <if test="row.email != null">
+        email = #{row.email,jdbcType=VARCHAR},
+      </if>
+    </set>
+    <if test="example != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update tbl_person
+    set id = #{row.id,jdbcType=INTEGER},
+      full_name = #{row.fullName,jdbcType=VARCHAR},
+      gender = #{row.gender,jdbcType=CHAR},
+      age = #{row.age,jdbcType=INTEGER},
+      email = #{row.email,jdbcType=VARCHAR}
+    <if test="example != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.atguigu.mybatis.pojo.MyPerson">
+    update tbl_person
+    <set>
+      <if test="fullName != null">
+        full_name = #{fullName,jdbcType=VARCHAR},
+      </if>
+      <if test="gender != null">
+        gender = #{gender,jdbcType=CHAR},
+      </if>
+      <if test="age != null">
+        age = #{age,jdbcType=INTEGER},
+      </if>
+      <if test="email != null">
+        email = #{email,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.atguigu.mybatis.pojo.MyPerson">
+    update tbl_person
+    set full_name = #{fullName,jdbcType=VARCHAR},
+      gender = #{gender,jdbcType=CHAR},
+      age = #{age,jdbcType=INTEGER},
+      email = #{email,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>
+```
+
+- 测试
+
+`src/test/java/com/atguigu/mybatis/test/I_LuxuryGeneratorTest.java`
+
+```java
+public class I_LuxuryGeneratorTest {
+    @Test
+    public void testLuxuryGenerator() {
+        SqlSession sqlSession = SqlSessionUtils.getSqlSession();
+        MyPersonMapper mapper = sqlSession.getMapper(MyPersonMapper.class);
+
+        // 查询所有数据，参数传入null就是指没有查询条件
+        List<MyPerson> list = mapper.selectByExample(null);
+        list.forEach(System.out::println);
+        // 根据条件查询，QBC风格
+        MyPersonExample example = new MyPersonExample();
+        example.createCriteria().andFullNameLike("%on%").andAgeBetween(20, 25);
+        example.or().andEmailEqualTo("jerry@126.com");
+        List<MyPerson> list2 = mapper.selectByExample(example);
+        list2.forEach(System.out::println);
+    }
+}
+```
+
+---
+
+> 64 MyBatis 逆向工程之`奢华尊享`版 (2)
+
+- 测试修改的方法
+
+```java
+@Test
+public void testLuxuryGenerator() {
+    SqlSession sqlSession = SqlSessionUtils.getSqlSession();
+    MyPersonMapper mapper = sqlSession.getMapper(MyPersonMapper.class);
+
+    // 一般修改，如果某个属性的值为null，那么它的值会被修改为null
+    // mapper.updateByPrimaryKey(new MyPerson(2, "Java", null, 36, "java@oracle.com"));
+    // 选择性修改，如果某个属性的值为null，那么它的值不会被修改
+    mapper.updateByPrimaryKeySelective(new MyPerson(2, "Python", null, 34, "python@oracle.com"));
+}
+```
