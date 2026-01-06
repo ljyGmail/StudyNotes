@@ -3291,3 +3291,111 @@ public void testLuxuryGenerator() {
     mapper.updateByPrimaryKeySelective(new MyPerson(2, "Python", null, 34, "python@oracle.com"));
 }
 ```
+
+---
+
+> 65 MyBatis 的`分页插件`简介
+
+- 添加分页插件的依赖
+
+```xml
+<dependency>
+    <groupId>com.github.pagehelper</groupId>
+    <artifactId>pagehelper</artifactId>
+    <version>6.1.0</version>
+</dependency>
+```
+
+- 在核心配置文件中配置插件
+
+```xml
+<typeAliases/>
+
+<plugins>
+    <plugin interceptor="com.github.pagehelper.PageInterceptor"/>
+</plugins>
+
+<environments />
+```
+
+- 分页相关信息
+
+```text
+limit index, pageSize
+    index: 当前页的起始索引
+    pageSize: 每页显示的条数
+    pageNum: 当前页的页码
+    index = (pageNum - 1) * pageSize
+```
+
+---
+
+> 66 MyBatis 的`分页插件`的使用
+
+- 使用 MyBatis 的分页插件实现分页功能:
+  1. 需要在查询功能之前开启分页 `PageHelper.startPage(int pageNum, int pageSize);`
+
+`src/test/java/com/atguigu/mybatis/test/J_PageHelperTest.java`
+
+```java
+public class J_PageHelperTest {
+    /*
+    limit index, pageSize
+        index: 当前页的起始索引
+        pageSize: 每页显示的条数
+        pageNum: 当前页的页码
+        index = (pageNum - 1) * pageSize
+     */
+    @Test
+    public void testPageHelper() {
+        SqlSession sqlSession = SqlSessionUtils.getSqlSession();
+        MyPersonMapper mapper = sqlSession.getMapper(MyPersonMapper.class);
+        // 使用Page
+        Page<Object> page = PageHelper.startPage(1, 4);
+        List<MyPerson> list = mapper.selectByExample(null);
+        list.forEach(System.out::println);
+        System.out.println("========================================");
+        System.out.println(page);
+
+        System.out.println("****************************************");
+
+        // 使用PageInfo，提供更多的关于分页的功能
+        PageHelper.startPage(1, 4);
+        MyPersonExample example = new MyPersonExample();
+        example.createCriteria().andGenderEqualTo("M");
+        List<MyPerson> list2 = mapper.selectByExample(example);
+        PageInfo<MyPerson> pageInfo = new PageInfo<>(list2, 7);
+        list2.forEach(System.out::println);
+        System.out.println("========================================");
+        System.out.println(pageInfo);
+    }
+}
+```
+
+```text
+[main] DEBUG c.a.m.m.M.selectByExample_COUNT - ==>  Preparing: SELECT count(0) FROM tbl_person
+[main] DEBUG c.a.m.m.M.selectByExample_COUNT - ==> Parameters:
+[main] DEBUG c.a.m.m.M.selectByExample_COUNT - <==      Total: 1
+[main] DEBUG c.a.m.m.M.selectByExample - ==>  Preparing: select id, full_name, gender, age, email from tbl_person LIMIT ?
+[main] DEBUG c.a.m.m.M.selectByExample - ==> Parameters: 4(Integer)
+[main] DEBUG c.a.m.m.M.selectByExample - <==      Total: 4
+MyPerson{id=2, fullName='Python', gender='M', age=34, email='python@oracle.com'}
+MyPerson{id=3, fullName='Harry', gender='M', age=28, email='harry@126.com'}
+MyPerson{id=4, fullName='Ron', gender='M', age=32, email='ron@126.com'}
+MyPerson{id=5, fullName='Hermione', gender='F', age=21, email='hermione@126.com'}
+========================================
+Page{count=true, pageNum=1, pageSize=4, startRow=0, endRow=4, total=14, pages=4, reasonable=false, pageSizeZero=false}[MyPerson{id=2, fullName='Python', gender='M', age=34, email='python@oracle.com'}, MyPerson{id=3, fullName='Harry', gender='M', age=28, email='harry@126.com'}, MyPerson{id=4, fullName='Ron', gender='M', age=32, email='ron@126.com'}, MyPerson{id=5, fullName='Hermione', gender='F', age=21, email='hermione@126.com'}]
+****************************************
+[main] DEBUG c.a.m.m.M.selectByExample_COUNT - ==>  Preparing: SELECT count(0) FROM tbl_person WHERE (gender = ?)
+[main] DEBUG c.a.m.m.M.selectByExample_COUNT - ==> Parameters: M(String)
+[main] DEBUG c.a.m.m.M.selectByExample_COUNT - <==      Total: 1
+[main] DEBUG c.a.m.m.M.selectByExample - ==>  Preparing: select id, full_name, gender, age, email from tbl_person WHERE ( gender = ? ) LIMIT ?
+[main] DEBUG c.a.m.m.M.selectByExample - ==> Parameters: M(String), 4(Integer)
+[main] DEBUG c.a.m.m.M.selectByExample - <==      Total: 4
+MyPerson{id=2, fullName='Python', gender='M', age=34, email='python@oracle.com'}
+MyPerson{id=3, fullName='Harry', gender='M', age=28, email='harry@126.com'}
+MyPerson{id=4, fullName='Ron', gender='M', age=32, email='ron@126.com'}
+MyPerson{id=6, fullName='tom0', gender='M', age=23, email='tom@sun.com'}
+========================================
+PageInfo{pageNum=1, pageSize=4, size=4, startRow=1, endRow=4, total=13, pages=4, list=Page{count=true, pageNum=1, pageSize=4, startRow=0, endRow=4, total=13, pages=4, reasonable=false, pageSizeZero=false}[MyPerson{id=2, fullName='Python', gender='M', age=34, email='python@oracle.com'}, MyPerson{id=3, fullName='Harry', gender='M', age=28, email='harry@126.com'}, MyPerson{id=4, fullName='Ron', gender='M', age=32, email='ron@126.com'}, MyPerson{id=6, fullName='tom0', gender='M', age=23, email='tom@sun.com'}], prePage=0, nextPage=2, isFirstPage=true, isLastPage=false, hasPreviousPage=false, hasNextPage=true, navigatePages=7, navigateFirstPage=1, navigateLastPage=4, navigatepageNums=[1, 2, 3, 4]}
+```
