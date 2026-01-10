@@ -235,3 +235,205 @@ User(id=3, name=Tom, age=28, email=test3@baomidou.com)
 User(id=4, name=Sandy, age=21, email=test4@baomidou.com)
 User(id=5, name=Billie, age=24, email=test5@baomidou.com)
 ```
+
+> 测试`BaseMapper`提供的各种`CRUD`方法
+
+- `IDEA`中查看类中成员的快捷键: `Command + F12`
+
+- 测试`添加`功能
+
+```java
+@Test
+public void testInsert() {
+    User user = new User(null, "Tom", 33, "tom@126.com");
+    int insertResult = userMapper.insert(user);
+    System.out.println("insertResult: " + insertResult);
+    System.out.println("user: " + user);
+/*
+==>  Preparing: INSERT INTO user ( id, name, age, email ) VALUES ( ?, ?, ?, ? )
+==> Parameters: 2009800769263542273(Long), Tom(String), 33(Integer), tom@126.com(String)
+<==    Updates: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@54489296]
+insertResult: 1
+user: User(id=2009800769263542273, name=Tom, age=33, email=tom@126.com)
+*/
+}
+```
+
+- 测试`删除`功能
+
+```java
+@Test
+public void testDelete() {
+    // 通过ID删除用户信息
+    int deleteResult1 = userMapper.deleteById(2009800769263542273L);
+    System.out.println("deleteResult1: " + deleteResult1);
+    /*
+    ==>  Preparing: DELETE FROM user WHERE id=?
+    ==> Parameters: 2009800769263542273(Long)
+    <==    Updates: 1
+    Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@3751acd7]
+    deleteResult: 1
+        */
+
+    /*
+    根据Map集合中所设置的条件删除用户信息
+        */
+        Map<String, Object> map = new HashMap<>();
+        map.put("name", "Tom");
+        map.put("age", 23);
+        int deleteResult2 = userMapper.deleteByMap(map);
+        System.out.println("deleteResult2: " + deleteResult2);
+    /*
+    ==>  Preparing: DELETE FROM user WHERE (name = ? AND age = ?)
+    ==> Parameters: Tom(String), 23(Integer)
+    <==    Updates: 0
+    Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@71bb8b34]
+    deleteResult: 0
+        */
+
+    // 通过多个ID实现批量删除
+    int deleteResult3 = userMapper.deleteByIds(Arrays.asList(1, 2, 3));
+    System.out.println("deleteResult3: " + deleteResult3);
+    /*
+    ==>  Preparing: DELETE FROM user WHERE id IN ( ? , ? , ? )
+    ==> Parameters: 1(Integer), 2(Integer), 3(Integer)
+    <==    Updates: 3
+    Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@274fdea6]
+    deleteResult: 3
+        */
+}
+```
+
+- 测试`修改`功能
+
+```java
+    @Test
+    public void testUpdate() {
+        // 修改用户信息
+        User user = new User(4L, "Java", null, "java@oracle.com");
+        int updateResult = userMapper.updateById(user);
+        System.out.println("updateResult: " + updateResult);
+/*
+==>  Preparing: UPDATE user SET name=?, email=? WHERE id=?
+==> Parameters: Java(String), java@oracle.com(String), 4(Long)
+<==    Updates: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@410fc508]
+updateResult: 1
+    */
+    }
+```
+
+- 测试`查询`功能
+
+```java
+@Test
+public void testSelect() {
+    // 根据ID查询
+    User user = userMapper.selectById(4L);
+    System.out.println(user);
+    /*
+    ==>  Preparing: SELECT id,name,age,email FROM user WHERE id=?
+    ==> Parameters: 4(Long)
+    <==    Columns: id, name, age, email
+    <==        Row: 4, Java, 34, java@oracle.com
+    <==      Total: 1
+    Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@410fc508]
+    User(id=4, name=Java, age=34, email=java@oracle.com)
+        */
+
+    // 根据多个ID查询多个用户信息
+    List<Long> list = Arrays.asList(1L, 2L, 3L, 4L, 5L);
+    List<User> users = userMapper.selectByIds(list);
+    users.forEach(System.out::println);
+    /*
+    ==>  Preparing: SELECT id,name,age,email FROM user WHERE id IN ( ? , ? , ? , ? , ? )
+    ==> Parameters: 1(Long), 2(Long), 3(Long), 4(Long), 5(Long)
+    <==    Columns: id, name, age, email
+    <==        Row: 4, Java, 34, java@oracle.com
+    <==        Row: 5, Billie, 24, test5@baomidou.com
+    <==      Total: 2
+    Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@419f0ea]
+    User(id=4, name=Java, age=34, email=java@oracle.com)
+    User(id=5, name=Billie, age=24, email=test5@baomidou.com)
+        */
+
+    // 根据Map集合中的条件查询
+    Map<String, Object> map = new HashMap<>();
+    map.put("name", "Java");
+    List<User> users1 = userMapper.selectByMap(map);
+    users1.forEach(System.out::println);
+    /*
+    ==>  Preparing: SELECT id,name,age,email FROM user WHERE (name = ?)
+    ==> Parameters: Java(String)
+    <==    Columns: id, name, age, email
+    <==        Row: 4, Java, 34, java@oracle.com
+    <==      Total: 1
+    Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@7573c7b5]
+    User(id=4, name=Java, age=34, email=java@oracle.com)
+        */
+
+    // 查询全部
+    List<User> users2 = userMapper.selectList(null);
+    users2.forEach(System.out::println);
+    /*
+    ==>  Preparing: SELECT id,name,age,email FROM user
+    ==> Parameters:
+    <==    Columns: id, name, age, email
+    <==        Row: 4, Java, 34, java@oracle.com
+    <==        Row: 5, Billie, 24, test5@baomidou.com
+    <==      Total: 2
+    Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@4e2824b1]
+    User(id=4, name=Java, age=34, email=java@oracle.com)
+    User(id=5, name=Billie, age=24, email=test5@baomidou.com)
+        */
+}
+```
+
+> 测试`自定义`查询功能
+
+- 当`MyBatis Plus`提供的功能无法满足需求时，可以写自定义的查询功能。
+- 目前`SpingBoot`中默认配置的`Mapper映射文件`的位置是`classpath*:/mapper/**/*.xml`，因此只要在`resources`目录下创建`mapper`目录后，在这里写映射文件即可。
+
+`src/main/java/com/atguigu/mybatisplus/mapper/UserMapper.java`
+
+```java
+public interface UserMapper extends BaseMapper<User> {
+    /**
+     * 根据ID查询用户信息为Map集合
+     *
+     * @param id
+     * @return
+     */
+    Map<String, Object> selectMapById(Long id);
+}
+```
+
+`src/main/resources/mapper/UserMapper.xml`
+
+```xml
+<mapper namespace="com.atguigu.mybatisplus.mapper.UserMapper">
+    <!-- Map<String, Object> selectMapById(Long id); -->
+    <select id="selectMapById" resultType="map">
+        select *
+        from user
+        where id =#{id}
+    </select>
+</mapper>
+```
+
+- 测试
+
+```java
+Map<String, Object> userMap = userMapper.selectMapById(4L);
+System.out.println("userMap: " + userMap);
+/*
+==>  Preparing: select * from user where id =?
+==> Parameters: 4(Long)
+<==    Columns: id, NAME, age, email
+<==        Row: 4, Java, 34, java@oracle.com
+<==      Total: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@636fccb0]
+userMap: {id=4, age=34, email=java@oracle.com, NAME=Java}
+    */
+```
