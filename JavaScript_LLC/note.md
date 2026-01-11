@@ -138,3 +138,35 @@ console.log(obj);
 console.log(typeof obj); // object
 console.log("a" in obj); // true
 ```
+
+> 48 对象字面量
+
+```javascript
+let obj = Object();
+console.log(obj);
+/*
+对象字面量:
+    - 可以直接使用{}来创建对象。
+    - 使用{}所创建对象，可以直接向对象中添加属性。
+    - 语法:
+        {
+            属性名: 属性值,
+            [属性名]: 属性值,
+        }
+*/
+let mySymbol = Symbol();
+
+let obj2 = {
+  name: "孙悟空", //
+  age: 18,
+  ["gender"]: "男",
+  [mySymbol]: "特殊的属性",
+  hello: {
+    a: 1,
+    b: 2,
+  },
+};
+// obj2.name = "孙悟空";
+console.log(obj2); // { name: "孙悟空" }
+console.log(typeof obj2); // object
+```
