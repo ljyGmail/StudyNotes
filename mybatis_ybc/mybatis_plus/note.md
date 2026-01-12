@@ -437,3 +437,87 @@ Closing non transactional SqlSession [org.apache.ibatis.session.defaults.Default
 userMap: {id=4, age=34, email=java@oracle.com, NAME=Java}
     */
 ```
+
+---
+
+- 通用的`Service`
+
+> 18 通用 Service 接口
+
+![通用的Service](./images/02_general_service.png)
+
+- 创建 Service 接口和实现类
+
+`src/main/java/com/atguigu/mybatisplus/service/UserService.java`
+
+```java
+public interface UserService extends IService<User> {
+}
+```
+
+`src/main/java/com/atguigu/mybatisplus/service/impl/UserServiceImpl.java`
+
+```java
+@Service
+public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
+}
+```
+
+> 19 测试通用 Service 之查询总记录数
+
+`src/test/java/com/atguigu/mybatisplus/B_MyBatisPlusServiceTest.java`
+
+```java
+@SpringBootTest
+public class B_MyBatisPlusServiceTest {
+
+    @Autowired
+    private UserService userService;
+
+    @Test
+    public void testGetCount() {
+        // 查询总记录数
+        long count = userService.count();
+        System.out.println("总记录数: " + count);
+/*
+==>  Preparing: SELECT COUNT( * ) AS total FROM user
+==> Parameters:
+<==    Columns: total
+<==        Row: 2
+<==      Total: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@6987a133]
+总记录数: 2
+*/
+    }
+}
+```
+
+> 20 测试通用 Service 之批量添加
+
+```java
+@Test
+public void testBatchInsert() {
+    // 批量添加
+    List<User> list = new ArrayList<>();
+    for (int i = 0; i < 10; i++) {
+        User user = new User(null, "周华健" + i, 40 + i, "zhj" + i + "@126.com");
+        list.add(user);
+    }
+    boolean b = userService.saveBatch(list);
+    System.out.println(b);
+/*
+==>  Preparing: INSERT INTO user ( id, name, age, email ) VALUES ( ?, ?, ?, ? )
+==> Parameters: 2010720684266917890(Long), 周华健0(String), 40(Integer), zhj0@126.com(String)
+==> Parameters: 2010720684468244481(Long), 周华健1(String), 41(Integer), zhj1@126.com(String)
+==> Parameters: 2010720684472438786(Long), 周华健2(String), 42(Integer), zhj2@126.com(String)
+==> Parameters: 2010720684476633090(Long), 周华健3(String), 43(Integer), zhj3@126.com(String)
+==> Parameters: 2010720684476633091(Long), 周华健4(String), 44(Integer), zhj4@126.com(String)
+==> Parameters: 2010720684480827394(Long), 周华健5(String), 45(Integer), zhj5@126.com(String)
+==> Parameters: 2010720684485021697(Long), 周华健6(String), 46(Integer), zhj6@126.com(String)
+==> Parameters: 2010720684485021698(Long), 周华健7(String), 47(Integer), zhj7@126.com(String)
+==> Parameters: 2010720684489216002(Long), 周华健8(String), 48(Integer), zhj8@126.com(String)
+==> Parameters: 2010720684489216003(Long), 周华健9(String), 49(Integer), zhj9@126.com(String)
+true
+*/
+}
+```
