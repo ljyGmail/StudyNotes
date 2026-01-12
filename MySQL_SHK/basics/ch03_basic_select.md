@@ -163,6 +163,7 @@ SELECT *
 FROM employees
 WHERE last_name = 'King';
 ```
+> 17 第3章 基本SELECT查询课后练习
 
 ## 课后练习
 
