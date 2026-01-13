@@ -170,3 +170,33 @@ let obj2 = {
 console.log(obj2); // { name: "孙悟空" }
 console.log(typeof obj2); // object
 ```
+
+> 49 枚举对象中的属性
+
+```javascript
+/*
+    枚举属性: 指将对象中的所有的属性全部获取。
+
+    for-in语句
+        - 语法:
+            for(let propName in 对象) {
+                语句...
+            }
+
+        - for-in的循环体会执行多次，有几个属性就会执行几次。
+            每次执行时，都会将一个属性名赋值给我们所定义的变量。
+
+        - 注意: 并不是所有的属性都可以枚举，比如，使用符号添加的属性。
+*/
+let obj = {
+  name: "孙悟空",
+  age: 18,
+  gender: "男",
+  address: "花果山",
+  [Symbol()]: "测试的属性", // 符号添加的属性是不能枚举的
+};
+
+for (let propName in obj) {
+  console.log(propName, obj[propName]);
+}
+```
