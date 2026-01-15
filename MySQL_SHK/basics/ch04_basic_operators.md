@@ -237,3 +237,156 @@ SELECT 'shkstart' REGEXP '^s',
 SELECT 'atguigu' REGEXP 'gu.gu',
        'atguigu' REGEXP '[ab]';
 ```
+
+> 20 逻辑运算符与位运算符的使用
+
+```mysql
+# 1. 逻辑非运算符 (NOT或!)
+SELECT NOT 1, NOT 0, NOT (1 + 1), NOT !1, NOT NULL;
+
+SELECT last_name, job_id
+FROM employees
+WHERE job_id NOT IN ('IT_PROG', 'ST_CLERK', 'SA_REP');
+
+# 2. 逻辑与运算符 (AND或&&)
+SELECT 1 AND -1, 0 AND 1, 0 AND NULL, 1 AND NULL;
+
+SELECT employee_id, last_name, job_id, salary
+FROM employees
+WHERE salary >= 10000
+  AND job_id LIKE '%MAN%';
+
+# 3. 逻辑或运算符 (OR或||)
+SELECT 1 OR -1, 1 OR 0, 1 OR NULL, 0 || NULL, NULL || NULL;
+
+#查询基本薪资不在9000-12000之间的员工编号和基本薪资
+SELECT employee_id, salary
+FROM employees
+WHERE NOT (salary >= 9000 AND salary <= 12000);
+
+SELECT employee_id, salary
+FROM employees
+WHERE salary < 9000
+   OR salary > 12000;
+
+SELECT employee_id, salary
+FROM employees
+WHERE salary NOT BETWEEN 9000 AND 12000;
+
+# ---
+SELECT employee_id, last_name, job_id, salary
+FROM employees
+WHERE salary >= 10000
+   OR job_id LIKE '%MAN%';
+
+# 4. 逻辑异或运算符 (XOR)
+SELECT 1 XOR -1, 1 XOR 0, 0 XOR 0, 1 XOR NULL, 1 XOR 1 XOR 1, 0 XOR 0 XOR 0;
+
+SELECT last_name, department_id, salary
+FROM employees
+WHERE department_id IN (10, 20) XOR salary > 8000;
+```
+
+## 4. 位运算符
+
+```mysql
+# 1．按位与运算符
+SELECT 1 & 10, 20 & 30;
+
+# 2. 按位或运算符
+SELECT 1 | 10, 20 | 30;
+
+# 3. 按位异或运算符
+SELECT 1 ^ 10, 20 ^ 30;
+
+SELECT 12 & 5, 12 | 5, 12 ^ 5
+FROM DUAL;
+
+# 4. 按位取反运算符 
+SELECT 10 & ~1;
+
+# 5. 按位右移运算符
+SELECT 1 >> 2, 4 >> 2;
+
+# 6. 按位左移运算符
+SELECT 1 << 2, 4 << 2;
+
+# 在一定范围内满足: 每向左移动1位，相当于乘以2; 每向右移动一位，相当于除以2。
+```
+
+## 5. 运算符的优先级
+
+- 只要记住当遇到不确定优先级的时候，只要加上括号就行了。
+
+## 课后练习
+
+```mysql
+# 1.选择工资不在5000到12000的员工的姓名和工资
+SELECT last_name, salary
+FROM employees
+# WHERE salary NOT BETWEEN 5000 AND 12000;
+WHERE salary < 5000
+   OR salary > 12000;
+
+# 2.选择在20或50号部门工作的员工姓名和部门号
+SELECT last_name, department_id
+FROM employees
+# WHERE department_id IN (20, 50);
+WHERE department_id = 20
+   OR department_id = 50;
+
+# 3.选择公司中没有管理者的员工姓名及job_id
+SELECT last_name, job_id, manager_id
+FROM employees
+# WHERE manager_id IS NULL;
+WHERE manager_id <=> NULL;
+
+# 4.选择公司中有奖金的员工姓名，工资和奖金级别
+DESC employees;
+SELECT last_name, salary, commission_pct
+FROM employees
+# WHERE commission_pct IS NOT NULL;
+WHERE NOT commission_pct <=> NULL;
+
+# 5.选择员工姓名的第三个字母是a的员工姓名
+SELECT last_name
+FROM employees
+WHERE last_name LIKE '__a%';
+
+# 6.选择姓名中有字母a和k的员工姓名
+SELECT last_name, salary
+FROM employees
+WHERE last_name LIKE '%a%k%'
+   OR last_name LIKE '%k%a%';
+
+SELECT last_name, salary
+FROM employees
+WHERE last_name LIKE '%a%'
+  AND last_name LIKE '%k%';
+
+# 7.显示出表 employees 表中 first_name 以 'e'结尾的员工信息
+SELECT first_name, last_name, salary
+FROM employees
+# WHERE first_name LIKE '%e';
+WHERE first_name REGEXP 'e$';
+# 以'e'开头的写法: '^e'
+
+# 8.显示出表 employees 部门编号在 80-100 之间的姓名、工种
+SELECT last_name, job_id, department_id
+FROM employees
+# 方式1: 推荐
+# WHERE department_id BETWEEN 80 AND 100;
+# 方式2: 与方式1相同
+# WHERE department_id >= 80
+#   AND department_id <= 100;
+# 方式3: 仅适用于本题
+WHERE department_id IN (80, 90, 100);
+
+SELECT *
+FROM departments;
+
+# 9.显示出表 employees 的 manager_id 是 100,101,110 的员工姓名、工资、管理者id
+SELECT last_name, salary, manager_id
+FROM employees
+WHERE manager_id IN (100, 101, 110);
+```
