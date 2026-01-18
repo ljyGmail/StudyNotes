@@ -521,3 +521,226 @@ true
 */
 }
 ```
+
+> 21 MyBatis Plus 的常用注解`@TableName`
+
+- 目前在没有设置任何`表名`或`字段名`的情况下，MyBatis Plus 可以自动地生成`CRUD`语句，说明它是根据内部的规则生成的`SQL`语句。
+- 现在如果把表名从`user`改成`t_user`，就会报下面的异常:
+
+```text
+==>  Preparing: INSERT INTO user ( id, name, age, email ) VALUES ( ?, ?, ?, ? )
+==> Parameters: 2012856363675422722(Long), Tom(String), 33(Integer), tom@126.com(String)
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@334540a0]
+
+org.springframework.jdbc.BadSqlGrammarException:
+### Error updating database.  Cause: java.sql.SQLSyntaxErrorException: Table 'mybatis_plus.user' doesn't exist
+```
+
+- MyBatis Plus 在生成查询语句中使用的表名是根据`Mapper`接口中`BaseMapper<User>`中的`泛型`来决定的。
+
+- 在实际生产情况中，实体类名和表名大多是不一样的。要想解决这种不一致的问题，可以在实体类名上添加`@TableName("tableName")`。
+
+`src/main/java/com/atguigu/mybatisplus/pojo/User.java`
+
+```java
+@Data
+@AllArgsConstructor
+// 设置实体类所对应的表名
+@TableName("t_user")
+public class User {
+    private Long id;
+    private String name;
+    private Integer age;
+    private String email;
+}
+```
+
+- 此时再次执行测试，可以看到如下语句的生成:
+
+```text
+==>  Preparing: INSERT INTO t_user ( id, name, age, email ) VALUES ( ?, ?, ?, ? )
+==> Parameters: 2012858419446538242(Long), Tom(String), 33(Integer), tom@126.com(String)
+<==    Updates: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@7ef8e623]
+insertResult: 1
+user: User(id=2012858419446538242, name=Tom, age=33, email=tom@126.com)
+```
+
+- 也可以不用在每个实体类上加`@TableName`注解，而是在全局配置文件中添加配置:
+
+`src/main/resources/application.yaml`
+
+```yml
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  # 设置MyBatis-Plus的全局配置
+  global-config:
+    db-config:
+      # 设置实体类所对应的表的统一前缀
+      table-prefix: t_
+```
+
+> 22 MyBatis Plus 的常用注解`@TableId`
+
+- 将目前`User`实体类中的`id`属性，以及数据库表中的`id`字段改成`uid`后，执行测试可以看到如下的异常:
+
+```text
+==>  Preparing: INSERT INTO t_user ( name, age, email ) VALUES ( ?, ?, ? )
+==> Parameters: Tom(String), 34(Integer), tom@126.com(String)
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@510da778]
+
+org.springframework.dao.DataIntegrityViolationException:
+### Error updating database.  Cause: java.sql.SQLException: Field 'uid' doesn't have a default value
+```
+
+- 此异常说明: MyBatis Plus 内部有一个默认的表的主键的名称`id`。
+
+- 如果表的名称不是`id`，那么就需要在实体类的 id 属性上添加`@TableId`注解。
+
+`src/main/java/com/atguigu/mybatisplus/pojo/User.java`
+
+```java
+@Data
+@AllArgsConstructor
+public class User {
+    // 将属性所对应的字段指定为主键
+    @TableId
+    private Long uid;
+    private String name;
+    private Integer age;
+    private String email;
+}
+```
+
+```text
+==>  Preparing: INSERT INTO t_user ( uid, name, age, email ) VALUES ( ?, ?, ?, ? )
+==> Parameters: 2012885207505608706(Long), Cat(String), 35(Integer), cat@qq.com(String)
+<==    Updates: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@6164e137]
+insertResult: 1
+user: User(uid=2012885207505608706, name=Cat, age=35, email=cat@qq.com)
+```
+
+> 23 `@TableId`的`value`属性
+
+- 在目前代码的基础上，如果实体类中的`id`属性名和数据表中的`id`字段的名称不一样，那么 MyBatis Plus 就无法找到数据库中的`id`字段。
+- 将`User`类中的`uid`改成`id`后，执行测试会抛出如下的异常:
+
+```text
+==>  Preparing: INSERT INTO t_user ( id, name, age, email ) VALUES ( ?, ?, ?, ? )
+==> Parameters: 2012886826423042049(Long), Cat(String), 35(Integer), cat@qq.com(String)
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@42aa1324]
+
+org.springframework.jdbc.BadSqlGrammarException:
+### Error updating database.  Cause: java.sql.SQLSyntaxErrorException: Unknown column 'id' in 'field list'
+```
+
+- 要解决这个问题，就需要给`@TableId`注解加上`value`属性:
+
+`src/main/java/com/atguigu/mybatisplus/pojo/User.java`
+
+```java
+@Data
+@AllArgsConstructor
+// 设置实体类所对应的表名
+// @TableName("t_user")
+public class User {
+    // 将属性所对应的字段指定为主键
+    // @TableId注解的value属性用于指定主键的字段
+    @TableId("uid")
+    private Long id;
+    private String name;
+    private Integer age;
+    private String email;
+}
+```
+
+```text
+==>  Preparing: INSERT INTO t_user ( uid, name, age, email ) VALUES ( ?, ?, ?, ? )
+==> Parameters: 2012888146735456257(Long), Cat(String), 36(Integer), cat1@qq.com(String)
+<==    Updates: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@6164e137]
+insertResult: 1
+user: User(id=2012888146735456257, name=Cat, age=36, email=cat1@qq.com)
+```
+
+> 24 `@TableId`的`type`属性
+
+- 从之前的测试可以看到数据库表中的`id`的生成策略使用的是`雪花算法`。
+- 如果想要使用`自动递增id`的策略，那么需要先将数据库表中的`id`字段添加`auto_increment`属性。
+- 此时进行测试，可以看到 MyBatis Plus 还是会使用`雪花算法`生成的`id`。
+- 要解决这个问题，就需要在`@TableId`注解上添加`type`属性，指定其主键的生成策略。
+
+`src/main/java/com/atguigu/mybatisplus/pojo/User.java`
+
+```java
+package com.atguigu.mybatisplus.pojo;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+/**
+ * ClassName: User
+ * Package: com.atguigu.mybatisplus.mybatisplus.pojo
+ * Description:
+ *
+ * @Author ljy
+ * @Create 2026. 1. 9. 오후 10:38
+ * @Version 1.0
+ */
+@Data
+@AllArgsConstructor
+// 设置实体类所对应的表名
+// @TableName("t_user")
+public class User {
+    // 将属性所对应的字段指定为主键
+    // @TableId注解的value属性用于指定主键的字段
+    // @TableId注解的type属性用于指定主键的生成策略
+    @TableId(value = "uid", type = IdType.AUTO)
+    private Long id;
+    private String name;
+    private Integer age;
+    private String email;
+}
+```
+
+```text
+==>  Preparing: INSERT INTO t_user ( name, age, email ) VALUES ( ?, ?, ? )
+==> Parameters: Cat(String), 36(Integer), cat1@qq.com(String)
+<==    Updates: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@c758a2d]
+insertResult: 1
+user: User(id=6, name=Cat, age=36, email=cat1@qq.com)
+```
+
+- 此时可以看到由于使用了自增的`id`生成策略, MyBatis Plus 没有为`id`赋值。
+
+| 值                      | 描述                                                                       |
+| ----------------------- | -------------------------------------------------------------------------- |
+| IdType.ASSIGN_ID (默认) | 基于雪花算法的策略生成数据表`id`，与数据库`id`是否设置自增无关。           |
+| IdType.AUTO             | 使用数据库的自增策略，注意: 该类型需要确保数据库设置了`id`自增，否则无效。 |
+
+- 注意: 如果只是在实体类上的`@TableId`注解上加了`type = IdType.AUTO`属性，而数据库中的`id`字段没有设置为自动递增，那么执行添加操作时，就会报错。
+- 原因是: 添加了`type = IdType.AUTO`属性后，生成`SQL语句`时，将不再有`id`字段，但此时数据库也不会为`id`自动生成主键，因此此时会报错。
+
+> 25 通过全局配置配置主键生成策略
+
+- 可以使用全局配置来配置主键的生成策略
+
+`src/main/resources/application.yaml`
+
+```yaml
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  # 设置MyBatis-Plus的全局配置
+  global-config:
+    db-config:
+      # 设置实体类所对应的表的统一前缀
+      table-prefix: t_
+      # 设置统一的主键生成策略
+      id-type: auto
+```
