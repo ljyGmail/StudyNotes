@@ -48,6 +48,8 @@ class HelloChina {
 
 ## 15 Java语言概述 单行注释和单行注释的使用
 
+## 16 Java语言概述 文档注释的使用与API文档的说明
+
 ```java
 /*
 这是多行注释。
@@ -66,12 +68,32 @@ class HelloChina {
 换句话说，编译以后生成的字节码文件不包含单行注释和多行注释中的信息。
 
 2️⃣  多行注释不能嵌套使用。
-*/
-class CommentTest {
+
+4. 文档注释:
+文档注释的内容可以别JDK提供的工具javadoc所解析，生成一套以网页文件形式体现的该程序的说明文档。
+
+生成文档的命令:
+javadoc -d mydir -author -version CommentTest.java
+ */
+/**
+这是我的第一个Java程序。很开森^_^
+
+@author shkstart
+@version 1.0
+
+ */
+public class CommentTest {
+    /**
+     这是main()方法。格式是固定的。(文档注释)
+     */
+    /*
+     这是main()方法。格式是固定的。(多行注释)
+     */
     public static void main(String[] args) {
         // 这是输出语句
         System.out.println("hello,world!!");
         // System.out.println("hello,world!!");
     }
 }
+
 ```
