@@ -132,3 +132,110 @@ class StarPrintTest {
     }
 }
 ```
+
+## 19 Java语言概述 第01章 复习与企业真题
+
+1. Java基础全称第学习内容
+
+- 第1阶段: Java基本语法
+  > Java概述、关键字、标识符、变量、运算符、流程控制(条件判断、选择结构、循环结构)、IDEA、数组
+- 第2阶段: Java面向对象编程
+  > 类及类的内部成员
+  > 面向对象的三大特征
+  > 其他关键字的使用
+- 第3阶段: Java语言的高级应用
+  > 异常处理、多线程、IO流、集合框架、反射、网络编程、新特性、其它常用的API等
+
+* 神书: `Java核心技术`、`Effective Java`、 `Java编程思想`
+
+2. 软件开发相关内容
+   2.1 计算机的构成
+   硬件+软件
+   2.2 软件
+   软件，即一系列按照`特定顺序组织`的计算机`数据`和`指令`的集合。有`系统软件`和`应用软件`之分。  
+    系统软件: 即操作系统，Windows、Mac OS、Linux、Android、IOS。  
+    应用软件: 即OS之上的应用程序。
+   2.3 人机交互的方式
+   图形化界面(GUI)
+   命令行交互方式(CLI)
+   - 熟悉常用的dos命令: `dir、cd、cd..、cd/、cd\、md、rd`等。
+     2.4 计算机编程语言
+   * 语言的分代:
+     . 第1代: 机器语言
+     . 第2代: 汇编语言
+     . 第3代: 高级语言
+     - 面向过程的语言: C
+     - 面向对象的语言: C++、Java、C#、Python、Go、JavaScript
+   - 没有"最好"的语言，只有在特定场景下相对来说，最合适的语言而已。
+
+3. Java概述
+   3.1 Java发展史
+   几个重要的版本: 1996年，发布JDK1.0;里程碑式的版本: JDK5.0、JDK8.0(2014年发布)
+   JDK11 (LTS)、JDK17(LTS) Long Term Support
+   3.2 Java之父
+   詹姆斯 高斯林
+   3.3 Java具体的平台划分
+   J2SE --> JavaSE
+   J2EE --> JavaEE
+   J2ME --> JavaME
+
+- Java目前主要的应用场景: JavaEE后台开发、Android客户端的开发、大数据的开发
+
+4. Java环境的搭建
+
+- JDK、JRE、JVM三者之间的关系
+- JDK的下载(官网)
+- JDK的安装
+  - 安装JDK8和JDK17
+- 环境变量的配置(重要)
+
+5. HelloWorld的编写和常见问题的解决(重要)
+
+- 第1个程序
+
+```java
+class HelloChina {
+    public static void main(String a[]) {
+        System.out.println("hello,world!!你好，中国！！");
+        System.out.print("123abc");
+        System.out.println(123 + 1);
+    }
+}
+```
+
+- 测试程序
+
+```java
+public class HelloJava {
+    public static void main(String[] args) {
+        System.out.println("hello");
+        System.out.println(10 / 0);
+    }
+}
+
+class HelloShangHai {
+
+}
+
+class HelloBeijing {
+
+}
+
+class Hellojava {
+    public static void main(String[] args) {
+        System.out.println("2222");
+    }
+}
+```
+
+- 总结 (参考14讲)
+
+6. 注释的使用(参考15讲)
+7. API文档
+8. 练习1(参考18讲)
+9. 练习2(参考18讲)
+
+- 企业真题
+  ![alt text](images/image03.png)
+  ![alt text](images/image04.png)
+  ![alt text](images/image05.png)
