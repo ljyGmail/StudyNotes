@@ -97,3 +97,38 @@ public class CommentTest {
 }
 
 ```
+
+## 17 Java语言概述 Java语言的特点和JVM的功能
+
+## 18 Java语言概述 两个案例的代码实现
+
+![alt text](images/image01.png)
+
+```java
+class personalinfo {
+    public static void main(string[] args) {
+        system.out.println("姓名: 康师傅");
+        system.out.println(); // 换行的操作
+        system.out.println("性别: 男");
+        system.out.println("家庭地址: 北京程序员聚集地: 回龙观");
+    }
+}
+```
+
+![alt text](images/image02.png)
+
+```java
+class StarPrintTest {
+    public static void main(String[] args) {
+        System.out.print("\t" + "*" + "\t\t\t\t\t\t\t\t\t\t\t\t" + "*" + "\t" + "\n");
+        System.out.print("*" + "\t\t" + "*" + "\t\t\t\t" + "I love Java" + "\t\t\t\t" + "*" + "\t\t\t" + "*" + "\n");
+        System.out.print("\t" + "*" + "\t\t\t\t\t\t\t\t\t\t\t\t" + "*" + "\n");
+        System.out.print("\t\t" + "*" + "\t\t\t\t\t\t\t\t\t\t" + "*" + "\n");
+        System.out.print("\t\t\t" + "*" + "\t\t\t\t\t\t\t\t" + "*" + "\n");
+        System.out.print("\t\t\t\t" + "*" + "\t\t\t\t\t\t" + "*" + "\n");
+        System.out.print("\t\t\t\t\t" + "*" + "\t\t\t\t" + "*" + "\n");
+        System.out.print("\t\t\t\t\t\t" + "*" + "\t\t" + "*" + "\n");
+        System.out.print("\t\t\t\t\t\t\t" + "*" + "\n");
+    }
+}
+```
