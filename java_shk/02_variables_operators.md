@@ -171,9 +171,9 @@ class VariableTest1 {
         System.out.println("f1 = " + f1);
 
         // 2️⃣  开发中，大家定义浮点型变量时，没有特殊情况的话，通常都声明为double类型，因为精度更高。
-        
+
         // 3️⃣  float类型表数范围要大于long类型的表数范围，但是精度不高。
-        
+
         // 测试浮点型变量的精度
         // 结论: 通过测试发现浮点型变量的精度不高。如果在开发中，需要极高的精度，需要使用BigDecimal类替换浮点型变量。
         // 测试1
@@ -253,4 +253,49 @@ class FloatDoubleExer1 {
 结果:
 华氏度80.0'F 对应的摄氏度为26.666666666666664'C
 */
+```
+
+## 26 变量与运算符 字符类型的使用
+
+```java
+/*
+测试字符类型和布尔类型的使用
+*/
+class VariableTest2 {
+    public static void main(String[] args) {
+
+        // 1. 字符类型: char(2字节)
+
+        // 表示形式1: 使用一对''表示，内部有且只有一个字符。
+        char c1 = 'a';
+        char c2 = '中';
+        char c3 = '1';
+        char c4 = '%';
+        char c5 = '👏';
+
+        // 编译不通过
+        // char c6 = '';
+
+        // char c7 = 'ab';
+
+        // 表示形式2: 直接使用Unicode值来表示字符型常量。
+        char c8 = '\u0036';
+        System.out.println(c8); // 6
+
+        // 表示形式3: 使用转义字符。
+        char c9 = '\n';
+        char c10 = '\t';
+        System.out.println("hello" + c9 + "world"); // hello
+                                                    // world
+        System.out.println("hello" + c10 + "world"); // hello	world
+
+        // 表示形式4: 使用具体字符对应的数值(比如ASCII码)。
+        char c11 = 97;
+        System.out.println(c11);
+
+        char c12 = '1'; // 49
+        char c13 = 1;
+        System.out.println(c12 == c13); // false
+    }
+}
 ```
