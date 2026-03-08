@@ -138,10 +138,11 @@ class VariableTest {
 
 ## 24 变量与运算符 整型数据类型的使用
 
+## 25 变量与运算符 浮点类型的使用及练习
+
 ```java
 /*
 测试整型和浮点型变量的使用
-
 */
 class VariableTest1 {
     public static void main(String[] args) {
@@ -161,6 +162,95 @@ class VariableTest1 {
         long l1 = 123234123L;
 
         // 2️⃣  开发中，大家定义整型变量时，没有特殊情况的话，通常都声明为int类型。
+
+        // 2. 测试浮点类型变量的使用
+        // float / double
+        double d1 = 12.3;
+        // 1️⃣  声明float类型变量时，需要提供后缀。后缀为'f'或'F'。
+        float f1 = 12.3F;
+        System.out.println("f1 = " + f1);
+
+        // 2️⃣  开发中，大家定义浮点型变量时，没有特殊情况的话，通常都声明为double类型，因为精度更高。
+        
+        // 3️⃣  float类型表数范围要大于long类型的表数范围，但是精度不高。
+        
+        // 测试浮点型变量的精度
+        // 结论: 通过测试发现浮点型变量的精度不高。如果在开发中，需要极高的精度，需要使用BigDecimal类替换浮点型变量。
+        // 测试1
+        System.out.println(0.1 + 0.2); // 0.30000000000000004
+                                       //
+        // 测试2
+        float ff1 = 123123123f;
+        float ff2 = ff1 + 1;
+        System.out.println(ff1);
+        System.out.println(ff2);
+        System.out.println(ff1 == ff2);
+
     }
 }
+/*
+结果:
+f1 = 12.3
+0.30000000000000004
+1.2312312E8
+1.2312312E8
+true
+*/
+```
+
+```java
+/*
+案例1: 定义圆周率并赋值为3.14，现有3个圆的半径分别为1.2、2.5、6，求它们的面积。
+*/
+class FloatDoubleExer {
+    public static void main(String[] args) {
+
+        // 定义圆周率变量
+        double pi = 3.14;
+
+        // 定义3个圆的半径
+        double radius1 = 1.2;
+        double radius2 = 2.5;
+        int radius3 = 6;
+
+        // 计算面积
+        double area1 = pi * radius1 * radius1;
+        double area2 = pi * radius2 * radius2;
+        double area3 = pi * radius3 * radius3;
+
+        System.out.println("圆1的半径为: " + radius1 + "，面积为: " + area1);
+        System.out.println("圆2的半径为: " + radius2 + "，面积为: " + area2);
+        System.out.println("圆3的半径为: " + radius3 + "，面积为: " + area3);
+    }
+}
+/*
+结果:
+圆1的半径为: 1.2，面积为: 4.521599999999999
+圆2的半径为: 2.5，面积为: 19.625
+圆3的半径为: 6，面积为: 113.03999999999999
+*/
+```
+
+```java
+/*
+案例2: 小明要到美国旅游，可是那里的温度是以华氏度为单位记录的。
+它需要一个程序将华氏温度(80度)转换为摄氏度，并以华氏度和摄氏度为单位分别显示该温度。
+
+'C = ('F - 32) / 1.8
+*/
+
+class FloatDoubleExer1 {
+    public static void main(String[] args) {
+
+        double hua = 80.0;
+
+        double she = (hua - 32) / 1.8;
+
+        System.out.println("华氏度" + hua + "'F 对应的摄氏度为" + she + "'C");
+    }
+}
+/*
+结果:
+华氏度80.0'F 对应的摄氏度为26.666666666666664'C
+*/
 ```
