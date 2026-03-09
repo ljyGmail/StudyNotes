@@ -404,3 +404,84 @@ class VariableTest3 {
     }
 }
 ```
+
+## 29 变量与运算符 基本数据类型变量间的强转练习转换规则
+
+```java
+/*
+此VariableTest4.java用来测试强制类型转换。
+
+规则:
+1. 如果需要将容量大的变量的类型转换为容量小的变量的类型，需要使用强制类型转换。
+2. 强制类型转换需要使用强转符: ()。在()内指明要转换为的数据类型。
+3. 强制类型转换过程中，可能导致精度损失。
+*/
+class VariableTest4 {
+    public static void main(String[] args) {
+
+        double d1 = 12; // 自动类型提升
+
+        // 编译失败
+        // int i1 = d1;
+
+        int i2 = (int) d1;
+        System.out.println(i2); // 12
+
+        long l1 = 123;
+
+        // 编译失败
+        // short s1 = l1;
+        short s2 = (short) l1;
+        System.out.println(s2); // 123
+
+        // 练习
+        int i3 = 12;
+        float f1 = i3; // 自动类型转换
+        System.out.println(f1); // 12.0
+
+        float f2 = (float) i3; // 编译可以通过。只不过可以省略()而已。
+
+        // 精度损失的例子1:
+        double d2 = 12.9;
+        int i4 = (int) d2;
+        System.out.println(i4); // 12
+
+        // 精度损失的例子1:
+        int i5 = 128;
+        byte b1 = (byte) i5;
+        System.out.println(b1); // -128
+
+        // 实际开发举例:
+        byte b2 = 12;
+        method(b2); // num = 12
+
+        long l2 = 12L;
+        // 编译不通过
+        // method(l2);
+        method((int) l2); // num = 12
+    }
+
+    public static void method(int num) { // int num = b2; 自动类型提升
+        System.out.println("num = " + num);
+    }
+}
+/*
+练习: 判断是否能通过编译?
+
+1) short s = 5;
+s = s - 2;                 // 判断: no
+
+2) byte b = 3;
+b = b + 4;                 // 判断: no
+b = (byte) (b + 4);        // 判断: yes
+
+3) char c = 'a';
+int i = 5;
+float d = .314F;
+double result = c + i + d; // 判断: yes
+
+4) byte b = 5;
+short s = 3;
+short t = s + b;           // 判断: no
+*/
+```
