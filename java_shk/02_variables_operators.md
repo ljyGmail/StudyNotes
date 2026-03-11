@@ -588,3 +588,50 @@ class StringExer1 {
     }
 }
 ```
+
+## 31 变量与运算符 常见进制的理解与二进制转十进制操作
+
+```java
+/*
+测试常用的进制:
+
+- 十进制(decimal)
+    - 数组组成: 0 - 9
+    - 进位规则: 满十进一
+
+- 二进制(binary)
+    - 数组组成: 0 - 1
+    - 进位规则: 满二进一，以'0b'或'0B'开头
+
+- 八进制(octal): 很少使用
+    - 数组组成: 0 - 7
+    - 进位规则: 满八进一，以数字'0'开头
+
+- 十六进制(hexadecimal)
+    - 数组组成: 0 - 7，a-f
+    - 进位规则: 满十六进一，以'0x'或'0X'开头表示。此处的a-f不区分大小写。
+ */
+class BinaryTest {
+    public static void main(String[] args) {
+
+        int num1 = 103; // 十进制
+
+        int num2 = 0b10; // 二进制
+
+        int num3 = 023; // 八进制
+
+        int num4 = 0X23a; // 十六进制
+
+        System.out.println(num1); // 103
+        System.out.println(num2); // 2
+        System.out.println(num3); // 19
+        System.out.println(num4); // 570
+    }
+}
+```
+
+![alt text](images/image06.png)
+
+![alt text](images/image07.png)
+
+![alt text](images/image08.png)
