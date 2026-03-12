@@ -589,7 +589,7 @@ class StringExer1 {
 }
 ```
 
-## 31 变量与运算符 常见进制的理解与二进制转十进制操作
+## 32 变量与运算符 常见进制的理解与二进制转十进制操作
 
 ```java
 /*
@@ -635,3 +635,9 @@ class BinaryTest {
 ![alt text](images/image07.png)
 
 ![alt text](images/image08.png)
+
+## 33 变量与运算符 十进制转二进制 其它进制间的相互转换
+
+![alt text](images/image09.png)
+
+![alt text](images/image10.png)
