@@ -4,7 +4,7 @@
 
 ## 22 变量与运算符 标识符的使用
 
-1. 什么是标识符? Java中变量、方法、类等要素命名时使用的字符序列，成为标识符。
+1. 什么是标识符? Java中变量、方法、类等要素命名时使用的字符序列，称为标识符。
 
 - 技巧: 凡是自己可以起名字的地方都叫标识符。比如: 类名、方法名、变量名、包名、常量名等。
 
@@ -1047,7 +1047,7 @@ class LogicExer {
 }
 ```
 
-## 38 变量与运算符 运算符的使用
+## 38 变量与运算符 位运算符的使用
 
 ```java
 /*
@@ -1114,6 +1114,75 @@ class BitExer {
         m = m ^ n;
 
         System.out.println("m = " + m + ", n = " + n);
+    }
+}
+```
+
+## 39 变量与运算符 条件运算符的使用
+
+```java
+/*
+测试运算符的使用6: 条件运算符
+
+1. (条件表达式) ? 表达式1 : 表达2
+
+2. 说明
+  1️⃣  条件表达式的结果是boolean类型。
+  2️⃣  如果条件表达式的结果是true，则执行表达式1。否则，执行表达式2。
+  3️⃣  表达式1和表达式2需要是相同的类型或能兼容的类型。
+  4️⃣  开发中，凡是可以使用条件运算符的位置，都可以改写为if-else。
+            反之，能使用if-else结构的地方，不一定能改写为条件运算符。
+    建议: 在二者都能使用的情况下，推荐使用条件运算符。因为执行效率稍高。
+
+ */
+class ConditionTest {
+    public static void main(String[] args) {
+
+        String info = (2 > 1) ? "表达式1" : "表达式2";
+        System.out.println(info); // 表达式1
+
+        double result = (2 > 1) ? 1 : 2.0; // 表达式1和表达式2的类型不同的情况
+        System.out.println(result); // 1.0
+
+        // 练习1: 获取两个正数的较大值
+        int m = 10;
+        int n = 20;
+
+        int max = (m > n) ? m : n;
+        System.out.println("较大值为: " + max); // 较大值为: 20
+
+        // 练习2: 获取三个正数的较大值
+        int i = 20;
+        int j = 30;
+        int k = 23;
+
+        int tempMax = (i > j) ? i : j;
+        int finalMax = (tempMax > k) ? tempMax : k;
+        System.out.println("finalMax: " + finalMax); // finalMax: 30
+
+        // 合并以后的写法: 不推荐，可读性极差。
+        int finalMax1 = (((i > j) ? i : j) > k) ? ((i > j) ? i : j) : k;
+        System.out.println("finalMax1: " + finalMax1); // finalMax1: 30
+    }
+}
+```
+
+```java
+/*
+今天是周2，10天以后是周几？
+
+要求: 控制台输出:"今天是周2，10天以后是周x"。
+ */
+class ConditionExer {
+    public static void main(String[] args) {
+
+        int weekday = 2;
+
+        weekday += 10;
+
+        weekday %= 7;
+
+        System.out.println("今天是周2，10天以后是周" + ((weekday == 0) ? "日" : weekday));
     }
 }
 ```
