@@ -936,3 +936,113 @@ class CompareTest {
     }
 }
 ```
+
+## 37 变量与运算符 逻辑运算符的使用
+
+```java
+/*
+测试运算符的使用4: 逻辑运算符
+
+1. & && | || ! ^
+2. 说明
+  1️⃣  逻辑运算符针对的都是boolean类型的变量进行的操作。
+  2️⃣  逻辑运算符运算的结果也是boolean类型。
+  3️⃣  逻辑运算符常使用于条件判断结构、循环结构中。
+ */
+class LogicTest {
+    public static void main(String[] args) {
+        /*
+        区分: & 和 &&
+
+        1. 相同点: 两个符号表达的都是"且"的关系。只有当符号左右两边的类型值均为true时，结果才为true。
+
+        2. 执行过程:
+            1) 如果符号左边是true，则&、&&都会执行符号右边的操作。
+            2) 如果符号左边是false，则&会继续执行符号右边的操作，
+                                    && 不会执行符号右边的操作。
+
+        3. 开发中，推荐使用&&。
+         */
+        boolean b1 = false;
+        int num1 = 10;
+
+        if(b1 & (num1++ > 0)) {
+            System.out.println("床前明月光");
+        } else {
+            System.out.println("我叫郭德纲"); // 输出
+        }
+
+        System.out.println("num1 = " + num1); // num1 = 11
+
+        boolean b2 = false;
+        int num2 = 10;
+
+        if(b2 && (num2++ > 0)) {
+            System.out.println("床前明月光");
+        } else {
+            System.out.println("我叫郭德纲"); // 输出
+        }
+
+        System.out.println("num2 = " + num2); // num2 = 10
+
+        // ******************************
+        /*
+        区分: | 和 ||
+
+        1. 相同点: 两个符号表达的都是"或"的关系。只有符号两边存在true的情况，结果就为true。
+
+        2. 执行过程:
+            1) 如果符号左边是false，则|、||都会执行符号右边的操作。
+            2) 如果符号左边是true，则|会继续执行符号右边的操作，
+                                    || 不会执行符号右边的操作。
+
+        3. 开发中，推荐使用||。
+         */
+        boolean b3 = true;
+        int num3 = 10;
+
+        if(b3 | (num3++ > 0)) {
+            System.out.println("床前明月光"); // 输出
+        } else {
+            System.out.println("我叫郭德纲");
+        }
+
+        System.out.println("num3 = " + num3); // num3 = 11
+
+        boolean b4 = true;
+        int num4 = 10;
+
+        if(b4 || (num4++ > 0)) {
+            System.out.println("床前明月光"); // 输出
+        } else {
+            System.out.println("我叫郭德纲");
+        }
+
+        System.out.println("num4 = " + num4); // num4 = 10
+    }
+}
+```
+
+```java
+/*
+1. 定义类 LogicExer。
+2. 定义main方法。
+3. 定义一个int类型变量a，变量b，都赋值为20。
+4. 定义boolean类型变量bo1，判断++a是否被3整除，并且a++是否被7整除，将结果赋值给bo1。
+5. 输出a的值，bo1的值。
+6. 定义boolean类型变量bo2，判断b++是否被3整除，并且++b是否被7整除，将结果赋值给bo2。
+7. 输出b的值，bo2的值。
+ */
+class LogicExer {
+    public static void main(String[] args) {
+        int a, b;
+        a = b = 20;
+
+        boolean bo1 = (++a % 3 == 0) && (a++ % 7 == 0);
+        System.out.println("a = " + a + ", bo1 = " + bo1); // a = 22, bo1 = true
+
+        boolean bo2 = (b++ % 3 == 0) && (++b % 7 == 0);
+        System.out.println("b = " + b + ", bo2 = " + bo2); // b = 21, bo2 = false
+    }
+}
+```
