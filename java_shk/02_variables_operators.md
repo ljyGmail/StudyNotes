@@ -185,7 +185,6 @@ class VariableTest1 {
         System.out.println(ff1);
         System.out.println(ff2);
         System.out.println(ff1 == ff2);
-
     }
 }
 /*
@@ -1186,3 +1185,5 @@ class ConditionExer {
     }
 }
 ```
+
+## 40 变量与运算符 第02章复习与企业真题
