@@ -355,6 +355,11 @@ switch(表达式) {
   4️⃣  break: 可以使用在switch-case中。一旦执行此break关键字，就跳出当前的switch-case结构。
   5️⃣  default: 类似于if-else中的else结构。
         default是可选的，而且位置是灵活的。
+
+4. switch-case与if-else之间的转换
+  1️⃣  开发中，凡是可以使用switch-case结构的场景，都可以改写为if-else。反之，不成立。
+  2️⃣  开发中，如果一个具体的问题既可以使用switch-case，又可以使用if-else，推荐使用switch-case。
+      为什么? switch-case相较于if-else效率稍高。
  */
 class SwitchCaseTest {
     public static void main(String[] args) {
@@ -415,6 +420,153 @@ class SwitchCaseTest {
                 break;
         }
         */
+    }
+}
+```
+
+## 46 流程控制 `switch case`的课后练习
+
+```java
+/*
+案例3: 使用switch-case实现: 对学生成绩大于60分的，输出"合格"。低于60分的，输出"不合格"。
+ */
+class SwitchCaseTest1 {
+    public static void main(String[] args) {
+
+        // 定义一个学生成绩的变量
+        int score = 78;
+
+        // 根据需求，进行分支。
+        // 方式1:
+        /*
+        switch(score) {
+            case 0:
+                System.out.println("不及格");
+                break;
+            case 1:
+                System.out.println("不及格");
+                break;
+            // ...
+            case 100:
+                System.out.println("及格");
+                break;
+            default:
+                System.out.println("成绩输入有误");
+                break;
+        }
+        */
+        // 方式2: 体会case穿透
+        switch(score / 10) {
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+                System.out.println("不及格");
+                break;
+            case 6:
+            case 7:
+            case 8:
+            case 9:
+            case 10:
+                System.out.println("及格");
+                break;
+            default:
+                System.out.println("成绩输入有误");
+                break;
+        }
+        // 方式3:
+        switch(score / 60) {
+            case 0:
+                System.out.println("不及格");
+                break;
+            case 1:
+                System.out.println("及格");
+                break;
+            default:
+                System.out.println("成绩输入有误");
+                break;
+        }
+    }
+}
+```
+
+```java
+/*
+案例: 编写程序: 从键盘上输入2023年的"month"和"day“，要求通过程序输出输入的日期为2023年的第几天。
+ */
+import java.util.Scanner;
+
+class SwitchCaseTest2 {
+    public static void main(String[] args) {
+        
+        // 1. 使用Scanner，从键盘获取2023年的month和day
+        Scanner input = new Scanner(System.in);
+
+        System.out.println("请输入2023年的月份: ");
+        int month = input.nextInt(); // 阻塞式方法
+        System.out.println("请输入2023年的天: ");
+        int day = input.nextInt(); // 阻塞式方法
+
+        // 假设用户输入的数据是合法的。后期在开发中，使用正则表达式进行校验。
+        // 2. 使用switch-case实现分支结构
+        int sumDays = 0; // 记录总天数
+
+        // 方式1: 不推荐，存在数据的冗余。
+        /*
+        switch(month) {
+            case 1:
+                sumDays = day;
+                break;
+            case 2:
+                sumDays = 31 + day;
+                break;
+            case 3:
+                sumDays = 31 + 28 + day;
+                break;
+            case 4:
+                sumDays = 31 + 28 + 31 + day;
+                break;
+            // ...
+            case 12:
+                sumDays = 31 + 28 + 31 ... + 30 + day;
+                break;
+        }
+        */
+        // 方式2: 利用case的穿透特性
+        switch(month) {
+            case 12:
+                sumDays += 30; // 30: 11月份的总天数
+            case 11:
+                sumDays += 31; // 31: 10月份的总天数
+            case 10:
+                sumDays += 30; // 30: 9月份的总天数
+            case 9:
+                sumDays += 31; // 31: 8月份的总天数
+            case 8:
+                sumDays += 31; // 31: 7月份的总天数
+            case 7:
+                sumDays += 30; // 30: 6月份的总天数
+            case 6:
+                sumDays += 31; // 31: 5月份的总天数
+            case 5:
+                sumDays += 30; // 30: 4月份的总天数
+            case 4:
+                sumDays += 31; // 31: 3月份的总天数
+            case 3:
+                sumDays += 28; // 28: 2月份的总天数
+            case 2:
+                sumDays += 31; // 31: 1月份的总天数
+            case 1:
+                sumDays += day;
+                // break;
+        }
+
+
+        System.out.println("2023年" + month + "月" + day + "日是当前的第" + sumDays + "天");
+
+        input.close(); // 为了防止内存泄漏
     }
 }
 ```
