@@ -722,3 +722,79 @@ class ForTest2 {
     }
 }
 ```
+
+## 49 流程控制 `while`循环的使用及课后练习
+
+```java
+/*
+随机生成一个100以内的数，猜这个随机数是多少?
+
+从键盘输入数，如果大了，提示大了; 如果小了，提示小了。如果对了，就不在猜了，并统计一共猜了多少次。
+
+提示: 生成一个[a, b]范围的随机数的方式: (int) (Math.random() * (b - a + 1)) + a。
+ */
+import java.util.Scanner;
+
+class WhileTest1 {
+    public static void main(String[] args) {
+
+        // 1. 生成一个[1, 100]范围的随机整数。
+        int target = (int) (Math.random() * 100) + 1;
+        // System.out.println("target: " + target);
+
+        // 2. 使用Scanner，从键盘获取数据。
+        Scanner scan = new Scanner(System.in);
+        System.out.print("请输入1~100范围的一个整数: ");
+        int guess = scan.nextInt();
+
+        // 3. 声明一个变量，记录猜的次数。
+        int guessCount = 1;
+
+        // 3. 使用循环结构，进行多次循环的对比和获取数据。
+        while(target != guess) {
+            if(guess > target) {
+                System.out.println("你输入的数据大了");
+            } else if(guess < target) {
+                System.out.println("你输入的数据小了");
+            }
+
+            System.out.print("请输入1~100范围的一个整数: ");
+            guess = scan.nextInt();
+            guessCount++;
+        }
+
+        // 能结束循环，就意味着target和guess相等了。
+        System.out.println("恭喜你!猜对了!");
+        System.out.println("共猜了" + guessCount + "次");
+
+        scan.close();
+    }
+}
+```
+
+```java
+/*
+世界最高山峰是珠穆朗玛峰，它的高度是8848.86米，假如我们有一张足够大的纸，他的厚度是0.1毫米。
+请问，我折叠多少次，可以折成珠穆朗玛峰的高度?
+ */
+class whiletest2 {
+    public static void main(string[] args) {
+
+        // 1. 声明珠峰的高度、纸的默认高度。
+        double paper = 0.1; // 单位: 毫米
+        double zf = 8848860; // 单位: 毫米
+
+        // 2. 定义一个变量，记录折纸的次数
+        int count = 0;
+
+        // 3. 通过循环结构，不断调整纸的厚度。(当纸的厚度超过珠峰高度时，停止循环)
+        while(paper <= zf) {
+            paper *= 2;
+            count++;
+        }
+
+        system.out.println("paper的高度为: " + (paper / 1000) + ", 超过了珠峰的高度: " + (zf / 1000));
+        system.out.println("共折纸" + count + "次");
+    }
+}
+```
