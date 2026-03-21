@@ -938,3 +938,66 @@ class DoWhileTest1 {
     }
 }
 ```
+
+## 51 流程控制 无限循环结构的使用
+
+```java
+/*
+"无限"循环结构的使用
+
+1. 格式: while(true)  或  for(;;)
+
+2. 开发中，有时并不确定需要循环多少次，需要根据循环体内部的某些条件，来控制循环的结束(使用break)。
+
+3 如果此循环结构不能终止，则构成了死循环! 开发中要避免出现死循环。
+ */
+class forwhiletest {
+    public static void main(string[] args) {
+
+        /*
+        for(;;) { // while(true) {
+            system.out.println("i love you!");
+        }
+        */
+
+        // 死循环的后面不能有执行语句
+        // System.out.println("end");
+    }
+}
+```
+
+```java
+/*
+案例: 从键盘读入个数不确定的整数，并判断读入的整数和负数的个数，输入为0时结束程序。
+ */
+import java.util.Scanner;
+
+class ForWhileTest1 {
+    public static void main(String[] args) {
+
+        Scanner scan = new Scanner(System.in);
+
+        int positiveCount = 0; // 记录正数的个数
+        int negativeCount = 0; // 记录负数的个数
+
+        for(;;) {// while(true) {
+            System.out.print("请输入一个整数(输入为0时结束程序): ");
+            int num = scan.nextInt(); // 获取用户输入的整数
+
+            if(num > 0) { // 正数
+                positiveCount++;
+            } else if(num < 0) { // 负数
+                negativeCount++;
+            } else { // 零
+                System.out.println("程序结束!");
+                break;
+            }
+        }
+
+        System.out.println("正数的个数为: " + positiveCount);
+        System.out.println("负数的个数为: " + negativeCount);
+
+        scan.close();
+    }
+}
+```
