@@ -798,3 +798,143 @@ class whiletest2 {
     }
 }
 ```
+
+## 50 流程控制 `do while`循环的使用及课后练习
+
+```java
+/*
+循环结构之一: do-while循环。
+
+1. 凡是循环结构，就一定会有4个要素:
+  1️⃣  初始化条件
+  2️⃣  循环条件 --> 一定是boolean类型的变量或表达式
+  3️⃣  循环体
+  4️⃣  迭代部分
+
+2. do-while循环的格式
+
+1️⃣
+do {
+    3️⃣
+    4️⃣
+} while(2️⃣ );
+
+执行过程: 1️⃣  -  3️⃣  - 4️⃣  - 2️⃣  - 3️⃣  - 4️⃣  - ... - 2️⃣
+
+3. 说明:
+  1️⃣  do-while循环至少执行一次循环体。
+  2️⃣  for、while、do-while循环三者之间是可以相互转换的。
+  3️⃣  do-while循环结构，在开发中，相较于for、while循环来讲，使用的较少。
+ */
+class DoWhileTest {
+    public static void main(String[] args) {
+
+        // 需求: 遍历100以内的偶数，并输出偶数的个数和总和。
+        int i = 1;
+        int count = 0; // 记录偶数的个数
+        int sum = 0; // 记录偶数的总和
+
+        do {
+            if(i % 2 ==0) {
+                System.out.println(i);
+                count++;
+                sum += i;
+            }
+            i++;
+        } while(i <= 100);
+
+        System.out.println("偶数的个数为: " + count);
+        System.out.println("偶数的总和为: " + sum);
+
+        // ******************************
+        int num1 = 10;
+        while(num1 > 10) {
+            System.out.println("while:hello");
+            num1--;
+        }
+
+        int num2 = 10;
+        do {
+            System.out.println("do-while:hello");
+            num2--;
+        } while(num2 > 10);
+    }
+}
+```
+
+```java
+/*
+题目: 模拟ATM取款。
+
+声明变量balance并初始化为0，用以表示银行账户的余额，下面通过ATM机程序实现存款，取款等功能。
+
+========ATM========
+   1、存款
+   2、取款
+   3、显示余额
+   4、退出
+
+请选择(1-4):
+
+ */
+import java.util.Scanner;
+
+class DoWhileTest1 {
+    public static void main(String[] args) {
+
+        // 1. 定义balance变量，记录账户余额。
+        double balance = 0;
+
+        boolean flag = true; // 控制循环的结束
+
+        Scanner scan = new Scanner(System.in); // 实例化Scanner
+
+        do {
+            // 2. 声明ATM取款的界面
+            System.out.println("========ATM========");
+            System.out.println("   1、存款");
+            System.out.println("   2、取款");
+            System.out.println("   3、显示余额");
+            System.out.println("   4、退出");
+            System.out.print("请选择(1-4): ");
+
+            // 3. 使用Scanner获取用户的选择
+            int selection = scan.nextInt();
+
+            // 4. 根据用户的选择，决定执行存款、取款、显示余额、退出的操作
+            switch(selection) {
+                case 1:
+                    System.out.print("请输入存款的金额: ");
+                    double money1 = scan.nextDouble();
+                    if(money1 > 0) {
+                        balance += money1;
+                    }
+                    break;
+                case 2:
+                    System.out.print("请输入取款的金额: ");
+                    double money2 = scan.nextDouble();
+
+                    if(money2 > 0 && money2 <= balance) {
+                        balance -= money2;
+                    } else {
+                        System.out.println("输入的数据有误或余额不足!");
+                    }
+                    break;
+                case 3:
+                    System.out.println("账户余额为: " + balance);
+                    break;
+                case 4:
+                    flag = false;
+                    System.out.println("感谢使用，欢迎下次光临^_^");
+                    break;
+                default:
+                    System.out.println("输入有误，请重新输入。");
+                    // break;
+            }
+        } while(flag);
+
+        // 关闭资源
+        scan.close();
+    }
+}
+```
