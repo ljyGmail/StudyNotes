@@ -1202,3 +1202,136 @@ class BreakContinueTest {
     }
 }
 ```
+
+## 55 流程控制 通过质数的输出体会算法的魅力
+
+```java
+/*
+题目: 找出100以内所有的素数(质数)? 100000以内的呢?
+
+质数: 只能被1和它本身整出的自然数。比如: 2, 3, 5, 7, 11, 13, 17, 19...
+    --> 换句话说，从2开始到这个自然数-1为止，不存在此自然数的约数。
+ */
+class PrimeNumberTest {
+    public static void main(String[] args) {
+
+        // 方式1:
+        /*
+        for(int i = 1; i <= 100; i++) { // 遍历100以内的自然数
+
+            int number = 0; // 记录i的约数的个数(从2开始，到i-1为止)
+            // 判定i是否是质数
+            for(int j = 2; j < i; j++) {
+                if(i % j == 0) {
+                    number++;
+                }
+            }
+
+            if(number == 0) {
+                System.out.println(i);
+            }
+        }
+        */
+
+        boolean isFlag = true;
+        // 方式2:
+        for(int i = 1; i <= 100; i++) { // 遍历100以内的自然数
+
+            // 判定i是否是质数
+            for(int j = 2; j < i; j++) {
+                if(i % j == 0) {
+                    isFlag = false;
+                }
+            }
+
+            if(isFlag) {
+                System.out.println(i);
+            }
+
+            isFlag = true; // 重置isFlag
+        }
+    }
+}
+```
+
+```java
+/*
+遍历100000以内的所有的质数，体会不同的算法实现，其性能的差别。
+
+此PrimeNumberTest1.java是实现方式1。
+ */
+class PrimeNumberTest1 {
+    public static void main(String[] args) {
+
+        // 获取系统当前的时间
+        long start = System.currentTimeMillis();
+
+        boolean isFlag = true;
+
+        int count = 0; // 记录质数的个数
+
+        for(int i = 2; i <= 100000; i++) {
+            for(int j = 2; j < i; j++) {
+                if(i % j == 0) {
+                    isFlag = false;
+                }
+            }
+
+            if(isFlag) {
+                count++;
+            }
+
+            // 重置isFlag
+            isFlag = true;
+        }
+
+        // 获取系统当前的时间
+        long end = System.currentTimeMillis();
+
+        System.out.println("质数的总个数为: " + count); // 9592
+        System.out.println("花费的时间为: " + (end - start)); // 3000多
+    }
+}
+```
+
+```java
+/*
+遍历100000以内的所有的质数，体会不同的算法实现，其性能的差别。
+
+此PrimeNumberTest2.java是实现方式2，是针对于PrimeNumberTest1.java中算法的优化。
+ */
+class PrimeNumberTest2 {
+    public static void main(String[] args) {
+
+        // 获取系统当前的时间
+        long start = System.currentTimeMillis();
+
+        boolean isFlag = true;
+
+        int count = 0; // 记录质数的个数
+
+        for(int i = 2; i <= 100000; i++) {
+            for(int j = 2; j <= Math.sqrt(i); j++) { // 此处Math.sqrt()提高效率
+                if(i % j == 0) {
+                    isFlag = false;
+                    break; // 针对于非质数有效果 // 此处的break提高效率
+                }
+            }
+
+            if(isFlag) {
+                count++;
+            }
+
+            // 重置isFlag
+            isFlag = true;
+        }
+
+        // 获取系统当前的时间
+        long end = System.currentTimeMillis();
+
+        System.out.println("质数的总个数为: " + count); // 9592
+        System.out.println("花费的时间为: " + (end - start)); // 260左右 -> 加上break
+                                                              // 3 -> 加上Math.sqrt()
+    }
+}
+```
