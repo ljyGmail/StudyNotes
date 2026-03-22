@@ -1147,3 +1147,58 @@ class NineNineTable {
     }
 }
 ```
+
+## 54 流程控制 关键字`break`和`continue`的使用
+
+```java
+/*
+1. break和continue关键字的使用
+
+                      使用范围               在循环结构中的作用               相同点
+break:                switch-case
+                      循环结构中             结束(或跳出)当前循环结构         在此关键字的后面不能声明执行语句。
+
+continue:             循环结构中             结束(或跳出)当次循环             在此关键字的后面不能声明执行语句。
+
+2. 了解带标签的break和continue的作用。
+
+3. 开发中，break的使用频率要远高于continue。
+ */
+class BreakContinueTest {
+    public static void main(String[] args) {
+
+        for(int i = 1; i <= 10; i++) {
+            if(i % 4 == 0) {
+                // break;
+                continue;
+
+                // 编译不通过: unreachable statement
+                // System.out.println("haha");
+            }
+            System.out.print(i); // 123567910
+        }
+        System.out.println();
+        // ******************************
+        label:for(int j = 1; j <= 4; j++) {
+            for(int i = 1; i <= 10; i++) {
+                if(i % 4 == 0) {
+                    break;
+                    // continue;
+
+                    // 了解:
+                    // break label; // 123
+                    // continue label; // 123123123123
+                }
+                System.out.print(i);
+            }
+            System.out.println();
+        }
+        /*
+        123
+        123
+        123
+        123
+         */
+    }
+}
+```
