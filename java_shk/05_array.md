@@ -391,3 +391,331 @@ public class ArrayExer03_1 {
     }
 }
 ```
+
+## 66 数组 二维数组的初始化、遍历与元素默认初始化值
+
+## 67 数组 二维数组的内存解析与课后练习1 2 3
+
+```text
+1. 二维数组的理解
+- 对于二维数组的理解，可以看成是一维数组array1又作为另一个一维数组array2的元素而存在。
+- 其实，从数组底层的运行机制来看，其实没有多维数组。
+- 概念: 数组的外层元素; 数组的内层元素。
+
+
+2. 二维数组的使用(6个基本点)
+> 数组的声明和初始化
+> 调用数组的指定元素
+> 数组的属性: length，表示数组的长度
+> 数组的遍历
+> 数组元素的默认初始化值
+> 二维数组的内存解析(难)
+
+
+3. 二维数组元素的默认初始化值
+3.1 动态初始化方式1: (比如: int[][] arr = new int[3][4])
+
+1) 外层元素: 默认存储地址值。
+2) 内存元素: 默认与一维数组元素的不同类型的默认值规定相同。
+    > 整型数组元素的默认初始化值: 0
+    > 浮点型数组元素的默认初始化值: 0.0
+    > 字符型数组元素的默认初始化值: 0 (或理解为'\u0000')
+    > boolean型数组元素的默认初始化值: false
+    > 引用数据类型数组元素的默认初始化值: null
+
+3.2 动态初始化方式2: (比如: int[][] arr = new int[3][])
+1) 外层元素: 默认存储null。
+2) 内存元素: 不存在的。如果调用会报错 (NullPointerException)
+```
+
+```java
+package com.atguigu2.two;
+/**
+ * ClassName: TwoArrayTest
+ * Package: com.atguigu1.one
+ * Description:
+ * 二维数组的基本使用(难点)
+ *
+ * @Author ljy
+ * @Create 2026. 3. 28. 오후 8:57
+ * @Version 1.0
+ */
+public class TwoArrayTest {
+    public static void main(String[] args) {
+        // 1. 数组的声明与初始化
+        // 复习
+        int[] arr1 = new int[]{1, 2, 3};
+
+        // 方式1: 静态初始化: 数组变量的赋值和数组元素的赋值同时进行。
+        int[][] arr2 = new int[][]{{1, 2, 3}, {4, 5}, {6, 7, 8, 9}};
+
+        // 方式2: 动态初始化1: 数组变量的赋值和数组元素的赋值分开进行。
+        String[][] arr3 = new String[3][4];
+        // 方式2: 动态初始化2
+        double[][] arr4 = new double[2][];
+
+        // 其它正确的写法:
+        int arr5[][] = new int[][]{{1, 2, 3}, {4, 5}, {6, 7, 8, 9}};
+        int[] arr6[] = new int[][]{{1, 2, 3}, {4, 5}, {6, 7, 8, 9}};
+        int arr7[][] = {{1, 2, 3}, {4, 5}, {6, 7, 8, 9}};
+        String arr8[][] = new String[3][4];
+
+        // 错误的写法:
+        // int[][] arr9 = new int[3][3]{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+        // int[3][3] arr10 = new int[][]{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+        // int[][] arr11 = new int[][10];
+
+        // 2. 数组元素的调用
+        // 针对于arr2来说，外层元素{1, 2, 3}, {4, 5}, {6, 7, 8, 9}; 内层元素: 1, 2, 3, 4, 5, 6, 7, 8, 9。
+        // 调用内层元素
+        System.out.println(arr2[0][0]); // 1
+        System.out.println(arr2[2][1]); // 7
+
+        // 调用外层元素
+        System.out.println(arr2[0]); // [I@3fee733d
+
+        // 测试arr3和arr4
+        arr3[0][1] = "Tom";
+        System.out.println(arr3[0][1]); // Tom
+        System.out.println(arr3[0]); // [Ljava.lang.String;@5acf9800
+
+        arr4[0] = new double[4];
+        arr4[0][0] = 1.0;
+
+        // 3. 数组的长度
+        System.out.println(arr2.length); // 3
+        System.out.println(arr2[0].length); // 3
+        System.out.println(arr2[1].length); // 2
+        System.out.println(arr2[2].length); // 4
+
+        // 4. 如何遍历数组
+        for (int i = 0; i < arr2.length; i++) {
+            for (int j = 0; j < arr2[i].length; j++) {
+                System.out.print(arr2[i][j] + "\t");
+            }
+            System.out.println();
+        }
+    }
+}
+```
+
+```java
+package com.atguigu2.two;
+/**
+ * ClassName: TwoArrayTest1
+ * Package: com.atguigu2.two
+ * Description:
+ * 二维数组的基本使用(难点) (承接TwoArrayTest.java)
+ *
+ * @Author ljy
+ * @Create 2026. 3. 28. 오후 9:53
+ * @Version 1.0
+ */
+public class TwoArrayTest1 {
+    public static void main(String[] args) {
+
+        // 5. 数组元素的默认初始化值
+        // 以动态初始化方式1说明:
+        int[][] arr1 = new int[3][2];
+        // 外层元素默认值:
+        System.out.println(arr1[0]); // 地址值 [I@3fee733d
+        System.out.println(arr1[1]); // 地址值 [I@5acf9800
+        // 内层元素默认值:
+        System.out.println(arr1[0][0]); // 0
+
+        boolean[][] arr2 = new boolean[3][4];
+        // 外层元素默认值:
+        System.out.println(arr2[0]); // 地址值 [Z@4617c264
+        // 内层元素默认值:
+        System.out.println(arr2[0][1]); // false
+
+        String[][] arr3 = new String[4][2];
+        // 外层元素默认值:
+        System.out.println(arr3[0]); // 地址值 [Ljava.lang.String;@36baf30c
+        // 内层元素默认值:
+        System.out.println(arr3[0][1]); // null
+
+        // ******************************
+        // 以动态初始化方式2说明:
+        int[][] arr4 = new int[4][];
+        // 外层元素默认值:
+        System.out.println(arr4[0]); // null
+        // 内层元素默认值:
+        // System.out.println(arr4[0][0]); // 报错: 空指针异常
+
+        String[][] arr5=new String[5][];
+        // 外层元素默认值:
+        System.out.println(arr5[0]); // null
+        // 内层元素默认值:
+        // System.out.println(arr5[0][0]); // 报错: 空指针异常
+
+        // 6. 数组的内存解析
+    }
+}
+```
+
+![alt text](images/二维数组的内存解析1.png)
+
+![alt text](images/二维数组的内存解析2.png)
+
+- 练习1
+
+```text
+案例1: 获取arr数组中所有元素的和。
+
+提示: 使用for的嵌套循环即可。
+```
+
+![alt text](image.png)
+
+```java
+package com.atguigu2.two.exer1;
+
+public class ArrayExer01 {
+    public static void main(String[] args) {
+        // 初始化数组: 静态初始化
+        int[][] arr = new int[][]{{3, 5, 8}, {12, 9}, {7, 0, 6, 4}};
+
+        /* 这种情况下，动态初始化没有静态初始化方便:
+        int[][] arr = new int[3][];
+        arr[0] = new int[]{3, 5, 8};
+        arr[1] = new int[]{12, 9};
+        arr[2] = new int[]{7, 0, 6, 4};
+         */
+
+        int sum = 0; // 记录元素的总和
+
+        for (int i = 0; i < arr.length; i++) {
+            for (int j = 0; j < arr[i].length; j++) {
+                sum += arr[i][j];
+            }
+        }
+
+        System.out.println("总和为: " + sum);
+    }
+}
+```
+
+- 练习2
+
+```text
+案例: 声明 int[] x,y[]; 在给x, y变量赋值以后，以下选项允许通过编译的是: x: 一维int[], y: 二维int[][]。
+
+a)   x[0] = y;              no
+b)   y[0] = x;              yes
+c)   y[0][0] = x;           no
+d)   x[0][0] = y;           no
+e)   y[0][0] = x[0];        yes
+f)   x = y;                 no
+
+提示:
+一维数组: int[] x 或者 int x[]。
+二维数组: int[][] y 或者 int[] y[] 或者 int y[][]。
+```
+
+```java
+package com.atguigu2.two.exer2;
+
+public class ArryExer02 {
+    public static void main(String[] args) {
+        // =: 赋值符号。
+        int i = 10;
+        int j = i;
+        byte b = (byte) i;// 强制类型转换
+
+        long l = i; // 自动类型提升
+
+
+        // 举例: 数组
+        int[] arr1 = new int[10];
+        byte[] arr2 = new byte[10];
+        // arr1 = arr2; // 编译不通过。原因: int[]和byte[]是两种不同类型的引用变量。
+
+        System.out.println(arr1); // [I@3fee733d
+        System.out.println(arr2); // [B@5acf9800
+
+        int[][] arr3 = new int[3][2];
+        // arr3 = arr1; // 编译不通过。
+
+        arr3[0] = arr1;
+        System.out.println(arr3[0]); // [I@3fee733d
+        System.out.println(arr1); // [I@3fee733d
+
+        System.out.println(arr3); // [[I@4617c264
+    }
+}
+```
+
+- 练习3
+
+```text
+案例：二维数组存储数据，并遍历
+
+String[][] employees = {
+    {"10", "1", "段 誉", "22", "3000"},
+    {"13", "2", "令狐冲", "32", "18000", "15000", "2000"},
+    {"11", "3", "任我行", "23", "7000"},
+    {"11", "4", "张三丰", "24", "7300"},
+    {"12", "5", "周芷若", "28", "10000", "5000"},
+    {"11", "6", "赵 敏", "22", "6800"},
+    {"12", "7", "张无忌", "29", "10800","5200"},
+    {"13", "8", "韦小宝", "30", "19800", "15000", "2500"},
+    {"12", "9", "杨 过", "26", "9800", "5500"},
+    {"11", "10", "小龙女", "21", "6600"},
+    {"11", "11", "郭 靖", "25", "7100"},
+    {"12", "12", "黄 蓉", "27", "9600", "4800"}
+};
+
+其中"10"代表普通职员，"11"代表程序员，"12"代表设计师，"13"代表架构师。显示效果如图。
+```
+
+![alt text](员工列表显示.png)
+
+```java
+package com.atguigu2.two.exer3;
+
+public class ArrayExer03 {
+    public static void main(String[] args) {
+        // 定义二维employees数组:
+        String[][] employees = {
+                {"10", "1", "段 誉", "22", "3000"},
+                {"13", "2", "令狐冲", "32", "18000", "15000", "2000"},
+                {"11", "3", "任我行", "23", "7000"},
+                {"11", "4", "张三丰", "24", "7300"},
+                {"12", "5", "周芷若", "28", "10000", "5000"},
+                {"11", "6", "赵 敏", "22", "6800"},
+                {"12", "7", "张无忌", "29", "10800", "5200"},
+                {"13", "8", "韦小宝", "30", "19800", "15000", "2500"},
+                {"12", "9", "杨 过", "26", "9800", "5500"},
+                {"11", "10", "小龙女", "21", "6600"},
+                {"11", "11", "郭 靖", "25", "7100"},
+                {"12", "12", "黄 蓉", "27", "9600", "4800"}
+        };
+
+        System.out.println("员工类型\t编号\t姓名\t\t年龄\t薪资\t\t奖金\t\t股票");
+
+        for (int i = 0; i < employees.length; i++) {
+            String employeeType = employees[i][0];
+            switch (employeeType){
+                // "10"代表普通职员，"11"代表程序员，"12"代表设计师，"13"代表架构师。显示效果如图。
+                case "10":
+                    System.out.print("普通职员\t");
+                    break;
+                case "11":
+                    System.out.print("程序员\t");
+                    break;
+                case "12":
+                    System.out.print("设计师\t");
+                    break;
+                case "13":
+                    System.out.print("架构师\t");
+                    break;
+            }
+            for (int j = 1; j < employees[i].length; j++) {
+                System.out.print(employees[i][j] + "\t");
+            }
+            System.out.println();
+        }
+    }
+}
+```
