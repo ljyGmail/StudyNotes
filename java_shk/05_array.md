@@ -566,7 +566,7 @@ public class TwoArrayTest1 {
 提示: 使用for的嵌套循环即可。
 ```
 
-![alt text](image.png)
+![alt text](images/image.png)
 
 ```java
 package com.atguigu2.two.exer1;
@@ -669,7 +669,7 @@ String[][] employees = {
 其中"10"代表普通职员，"11"代表程序员，"12"代表设计师，"13"代表架构师。显示效果如图。
 ```
 
-![alt text](员工列表显示.png)
+![alt text](images/员工列表显示.png)
 
 ```java
 package com.atguigu2.two.exer3;
@@ -719,3 +719,246 @@ public class ArrayExer03 {
     }
 }
 ```
+
+## 68 数组 常见算法操作: 特征值计算、数组的赋值与复制
+
+```text
+[数组的常见算法1]
+
+1. 数值型数组特征值统计
+这里的特征值涉及到: 平均值、最大值、最小值、总和等。
+
+2. 数组元素的赋值(实际开发中，遇到的场景比较多)
+
+3. 数组的复制
+
+4. 数组的反转
+```
+
+```text
+案例: 定义一个int型的一维数组，包含10个元素，分别赋一些随机整数，然后求出所有元素的最大值，最小值，总和，平均值，
+并输出出来。
+
+要求: 所有随机数都是两位数: [10, 99]。
+提示: 求[a, b]范围内的随机数: (int) (Math.random() * (b - a + 1)) + a;
+```
+
+```java
+package com.atguigu3.common_algorithm.exer1;
+
+public class ArrayExer01 {
+    public static void main(String[] args) {
+        // 1. 动态初始化方式创建数组
+        int[] arr = new int[10];
+
+        // 2. 通过循环给数组元素赋值
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] = (int) (Math.random() * (99 - 10 + 1)) + 10;
+            System.out.print(arr[i] + "\t");
+        }
+        System.out.println();
+
+        // 3.1 求最大值
+        int max = arr[0];
+        for (int i = 1; i < arr.length; i++) {
+            if (max < arr[i]) {
+                max = arr[i];
+            }
+        }
+        System.out.println("最大值为: " + max);
+
+        // 3.2 求最小值
+        int min = arr[0];
+        for (int i = 1; i < arr.length; i++) {
+            if (min > arr[i]) {
+                min = arr[i];
+            }
+        }
+        System.out.println("最小值为: " + min);
+
+        // 3.3 求总和
+        int sum = 0;
+        for (int i = 0; i < arr.length; i++) {
+            sum += arr[i];
+        }
+        System.out.println("总和为: " + sum);
+
+        // 3.4 求平均值
+        int avgValue = sum / arr.length;
+        System.out.println("平均值为: " + avgValue);
+    }
+}
+```
+
+```text
+案例: 评委打分。
+
+分析一下需求，并用代码实现:
+ (1) 在编程竞赛中，有10位评委为参赛的选手打分，分数分别为: 5, 4, 6, 8, 9, 0, 1, 2, 7, 3。
+ (2) 求选手的最后得分(去掉一个最高分和一个最低分后其余8位评委打分的平均值)。
+```
+
+```java
+package com.atguigu3.common_algorithm.exer2;
+
+public class ArrayExer02 {
+    public static void main(String[] args) {
+
+        int[] scores = {5, 4, 6, 8, 9, 0, 1, 2, 7, 3};
+
+        // 声明3个特征值
+        int sum = 0;
+        int max = scores[0];
+        int min = scores[0];
+
+        for (int i = 0; i < scores.length; i++) {
+            sum += scores[i]; // 累加总分
+            // 用于获取最高分
+            if (max < scores[i]) {
+                max = scores[i];
+            }
+
+            // 用于获取最低分
+            if (min > scores[i]) {
+                min = scores[i];
+            }
+        }
+
+        int avg = (sum - max - min) / (scores.length - 2);
+        System.out.println("最后得分为: " + avg);
+    }
+}
+```
+
+```text
+案例: 使用二维数组打印一个10行杨辉三角。
+
+提示:
+1. 第一行有1个元素，第n行有n个元素。
+2. 每一行的第一个元素和最后一个元素都是1。
+3. 从第三行开始，对于非第一个元素和最后一个元素的元素，它的值是它上面的元素值和左上方元素值的和。即:
+    yanghui[i][j] = yanghui[i-1][j-1] + yanghui[i-1][j];
+```
+
+![alt text](images/杨辉三角.png)
+
+```java
+package com.atguigu3.common_algorithm.exer3;
+
+public class YangHuiTest {
+    public static void main(String[] args) {
+
+        // 1. 创建二维数组
+        int[][] yangHui = new int[10][];
+
+        // 2. 初始化外层数组元素
+        for (int i = 0; i < yangHui.length; i++) {
+            yangHui[i] = new int[i + 1];
+            // 3. 给数组的元素赋值
+            // 3.1 给数组每行的首末元素赋值为1
+            yangHui[i][0] = yangHui[i][i] = 1;
+            // 3.2 给数组每行的非首末元素赋值
+            if (i >= 2) {
+                for (int j = 1; j < yangHui[i].length - 1; j++) { // j从每行的第2个元素开始，到倒数第2个元素结束
+
+                    yangHui[i][j] = yangHui[i - 1][j] + yangHui[i - 1][j - 1];
+                }
+            }
+        }
+
+        // 遍历二维数组
+        for (int i = 0; i < yangHui.length; i++) {
+            for (int j = 0; j < yangHui[i].length; j++) {
+                System.out.print(yangHui[i][j] + "\t");
+            }
+            System.out.println();
+        }
+    }
+}
+```
+
+```text
+案例: 复制、赋值。
+
+使用简单数组
+(1) 创建一个名为ArrayExer04的类，在main()方法中声明array1和array2两个变量，它们是int[]类型的数组。
+(2) 使用大括号{}，把array1初始化为8个素数: 2, 3, 5, 7, 11, 13, 17, 19。
+(3) 显示array1的内容。
+(4) 赋值array2变量等于array1，修改array2中的偶索引元素，使其等于索引值(如array[0]=0, array[2]=2)。
+(5) 打印出array1。
+
+思考: array1和array2是什么关系？
+[answer]: array1和array2是两个变量，共同指向了堆空间中的同一个数组结构。即二者的地址值相同。
+
+拓展: 修改题目，实现array2对array1数组的复制。
+```
+
+```java
+public class ArrayExer04 {
+    public static void main(String[] args) {
+        // (1) 创建一个名为ArrayExer04的类，在main()方法中声明array1和array2两个变量，它们是int[]类型的数组。
+        int[] array1, array2;
+        // (2) 使用大括号{}，把array1初始化为8个素数: 2, 3, 5, 7, 11, 13, 17, 19。
+        array1 = new int[]{2, 3, 5, 7, 11, 13, 17, 19};
+        // (3) 显示array1的内容。
+        for (int i = 0; i < array1.length; i++) {
+            System.out.print(array1[i] + "\t");
+        }
+        // (4) 赋值array2变量等于array1，修改array2中的偶索引元素，使其等于索引值(如array[0]=0, array[2]=2)。
+        array2 = array1;
+        System.out.println();
+        System.out.println(array1);
+        System.out.println(array2);
+
+        for (int i = 0; i < array2.length; i++) {
+            if (i % 2 == 0) {
+                array2[i] = i;
+            }
+        }
+        // (5) 打印出array1。
+        for (int i = 0; i < array1.length; i++) {
+            System.out.print(array1[i] + "\t");
+        }
+    }
+}
+```
+
+![alt text](images/内存解析1.png)
+
+```java
+package com.atguigu3.common_algorithm.exer4;
+
+public class ArrayExer04_1 {
+    public static void main(String[] args) {
+        // (1) 创建一个名为ArrayExer04的类，在main()方法中声明array1和array2两个变量，它们是int[]类型的数组。
+        int[] array1, array2;
+        // (2) 使用大括号{}，把array1初始化为8个素数: 2, 3, 5, 7, 11, 13, 17, 19。
+        array1 = new int[]{2, 3, 5, 7, 11, 13, 17, 19};
+        // (3) 显示array1的内容。
+        for (int i = 0; i < array1.length; i++) {
+            System.out.print(array1[i] + "\t");
+        }
+        // (4) 复制array1给array2，修改array2中的偶索引元素，使其等于索引值(如array[0]=0, array[2]=2)。
+        array2 = new int[array1.length];
+        for (int i = 0; i < array1.length; i++) {
+            array2[i] = array1[i];
+        }
+
+        System.out.println();
+        System.out.println(array1);
+        System.out.println(array2);
+
+        for (int i = 0; i < array2.length; i++) {
+            if (i % 2 == 0) {
+                array2[i] = i;
+            }
+        }
+        // (5) 打印出array1。
+        for (int i = 0; i < array1.length; i++) {
+            System.out.print(array1[i] + "\t");
+        }
+    }
+}
+```
+
+![alt text](images/内存解析2.png)
