@@ -1340,3 +1340,95 @@ public class QuickSort {
     }
 }
 ```
+
+## 71 数组 Arrays工具类的使用与数组中的常见异常
+
+```text
+数组工具类Arrays的使用 (熟悉)
+
+1. Arrays类所在位置: 处在java.util包下。
+
+2. 作用:
+java.util.Arrays类即为操作数组的工具类，包含了用来操作数组(比如排序和搜索)的各种方法。
+```
+
+```java
+package com.atguigu5.arrays;
+
+import java.util.Arrays;
+
+public class ArraysTest {
+    public static void main(String[] args) {
+        // 1. boolean equals(int[] a, int[] b): 比较两个数组的元素是否依次相等。
+        int[] arr1 = new int[]{1, 2, 3, 4, 5};
+        int[] arr2 = new int[]{1, 2, 3, 4, 5};
+        arr2 = new int[]{1, 2, 3, 5, 4};
+
+        System.out.println(arr1 == arr2); // false
+        boolean isEquals = Arrays.equals(arr1, arr2);
+        System.out.println(isEquals); // true
+
+        // 2. String toString(int[] a): 输出数组元素的信息。
+        System.out.println(arr1); // [I@3fee733d
+        System.out.println(Arrays.toString(arr1)); // [1, 2, 3, 4, 5]
+
+        // 3. void fill(int[] a, int val): 将指定值填充到数组之中。
+        Arrays.fill(arr1, 10);
+        System.out.println(Arrays.toString(arr1)); // [10, 10, 10, 10, 10]
+
+        // 4. void sort(int[] a): 使用快速排序算法实现的排序。
+        int[] arr3 = new int[]{34, 54, 3, 2, 65, 7, 34, 5, 76, 34, 67};
+        Arrays.sort(arr3);
+        System.out.println(Arrays.toString(arr3)); // [2, 3, 5, 7, 34, 34, 34, 54, 65, 67, 76]
+
+        // 5. void binarySearch(int[] a, int key): 二分查找
+        // 使用前提: 当前数组必须是有序的。
+        int index = Arrays.binarySearch(arr3, 5);
+        if (index >= 0) {
+            System.out.println("找到了，索引位置为: " + index);
+        } else {
+            System.out.println("未找到");
+        }
+    }
+}
+```
+
+```text
+1. 数组的使用中常见的异常小结
+
+> 数组角标越界的异常: ArrayIndexOutOfBoundsException
+> 空指针的异常: NullPointerException
+
+2. 出现异常会怎样? 如何处理?
+> 一旦程序执行中出现了异常，程序就会终止执行。
+> 针对于异常提供的信息，修改对应的代码，避免异常再次出现。
+```
+
+```java
+package com.atguigu6.exception;
+
+public class ArrayExceptionTest {
+    public static void main(String[] args) {
+        // 1. 数组角标越界的异常:
+        int[] arr = new int[10];
+        // 角标的有效范围: 0, 1, 2....9
+        // System.out.println(arr[10]);
+        // System.out.println(arr[-1]);
+
+        // 2. 空指针异常:
+        // 情况1:
+        int[] arr1 = new int[10];
+        arr1 = null;
+        // System.out.println(arr1[0]); // NullPointerException
+
+        // 情况2:
+        int[][] arr2 = new int[3][];
+        // arr2[0] = new int[10]; // 此行代码不存在时，下一行代码出现NullPointerException
+        // System.out.println(arr2[0][1]); // NullPointerException
+
+        // 情况3:
+        String[] arr3 = new String[4];
+        System.out.println(arr3[0].toString()); // NullPointerException
+    }
+}
+```
