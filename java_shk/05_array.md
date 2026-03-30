@@ -566,7 +566,7 @@ public class TwoArrayTest1 {
 提示: 使用for的嵌套循环即可。
 ```
 
-![alt text](images/image.png)
+![alt text](images/image15.png)
 
 ```java
 package com.atguigu2.two.exer1;
@@ -962,3 +962,381 @@ public class ArrayExer04_1 {
 ```
 
 ![alt text](images/内存解析2.png)
+
+## 69 数组 常见算法操作: 数组的反转、扩容与缩容
+
+## 70 数组 常见算法操作: 查找、冒泡排序、快速排序
+
+```text
+案例:
+定义数组: int[] arr = new int[]{34, 54, 3, 2, 65, 7, 34, 5, 76, 34, 67};
+如何实现数组元素的反转存储？你有几种方法？
+```
+
+![alt text](images/数组反转参考图示.png)
+
+```java
+package com.atguigu3.common_algorithm.exer5;
+
+public class ArrayExer05 {
+    public static void main(String[] args) {
+        int[] arr = new int[]{34, 54, 3, 2, 65, 7, 34, 5, 76, 34, 67};
+
+        // 遍历
+        for (int i = 0; i < arr.length; i++) {
+            System.out.print(arr[i] + "\t");
+        }
+        System.out.println();
+
+        // 反转操作
+        // 方式1: 交换元素的位置
+        /*
+        for (int i = 0; i < arr.length / 2; i++) {
+            // 交换arr[i] 与 arr[arr.length - 1 - i]位置的元素
+            int temp = arr[i];
+            arr[i] = arr[arr.length - 1 - i];
+            arr[arr.length - 1 - i] = temp;
+        }
+         */
+        // 方式2: 同样是交换元素的位置，不同的是声明两个参与遍历的变量。
+        for (int i = 0, j = arr.length - 1; i < j; i++, j--) {
+            // 交换arr[i] 与 arr[j]位置的元素
+            int temp = arr[i];
+            arr[i] = arr[j];
+            arr[j] = temp;
+        }
+
+        // 方式3: 创建一个新的数组，不推荐。
+        /*
+        int[] newArr = new int[arr.length];
+        for (int i = 0; i < arr.length; i++) {
+            newArr[arr.length - 1 - i] = arr[i];
+        }
+        arr = newArr;
+         */
+
+        // 遍历
+        for (int i = 0; i < arr.length; i++) {
+            System.out.print(arr[i] + "\t");
+        }
+    }
+}
+```
+
+![alt text](images/拓展:对称数组.png)
+
+```text
+[数组的常见算法2]
+
+1. 数组的扩容和缩容
+
+2. 数组元素的查找
+顺序查找:
+    > 优点: 算法简单;
+    > 缺点: 执行效率低。执行的时间复杂度为O(n)。
+
+二分法查找:
+    > 优点: 执行效率高。执行的时间复杂度为O(logN)。
+    > 缺点: 算法相较于顺序查找难一点。前提: 数组必须有序。
+
+3. 数组的排序
+
+排序算法的衡量标准: 1. 时间复杂度 2. 空间复杂度 3. 稳定性
+
+排序的分类: 内部排序; 外部排序(外部存储设备 + 内存)
+
+内部排序的具体算法: 10种。
+
+我们需要关注的几个排序算法:
+> 冒泡排序: 最简单，需要会手写。时间复杂度: O(n^2)。
+> 快速排序: 最快的，开发中默认选择的排序方式; 掌握快速排序的实现思路; 时间复杂度: O(nlogn)
+```
+
+```text
+案例1: 数组的扩容:
+
+现有数组 int[] arr = new int[] {1, 2, 3, 4, 5};
+现将数组长度扩容1倍，并将10, 20, 30三个数据添加到arr数组中，如何操作？
+```
+
+```java
+package com.atguigu4.search_sort.exer1;
+
+public class ArrayExer01_1 {
+    public static void main(String[] args) {
+        int[] arr = new int[]{1, 2, 3, 4, 5};
+
+        // 扩容1倍容量
+        // int[] newArr = new int[arr.length * 2];
+        int[] newArr = new int[arr.length << 1];
+
+        // 将原有数组中元素复制到新的数组中
+        for (int i = 0; i < arr.length; i++) {
+            newArr[i] = arr[i];
+        }
+
+        // 将10, 20, 30三个数据添加到新数组中
+        newArr[arr.length] = 10;
+        newArr[arr.length + 1] = 20;
+        newArr[arr.length + 2] = 30;
+
+        // 将新的数组的地址赋值给原有的数组变量
+        arr = newArr;
+
+        // 遍历arr
+        for (int i = 0; i < arr.length; i++) {
+            System.out.print(arr[i] + "\t");
+        }
+    }
+}
+```
+
+```text
+案例: 数组的缩容:
+
+现有数组 int[] arr = {1, 2, 3, 4, 5, 6, 7}。现需删除数组中索引为4的元素。
+```
+
+```java
+package com.atguigu4.search_sort.exer1;
+
+public class ArrayExer01_2 {
+    public static void main(String[] args) {
+        int[] arr = {1, 2, 3, 4, 5, 6, 7};
+
+        int deleteIndex = 4;
+
+        // 方式1: 不新建数组
+        // for (int i = deleteIndex; i < arr.length - 1; i++) {
+        //     arr[i] = arr[i + 1];
+        // }
+
+        // 修改最后的元素，设置为默认值。
+        // arr[arr.length - 1] = 0;
+        // 1	2	3	4	6	7	0
+
+        // 方式2: 新建数组。新的数组的长度比原有数组的长度少1个。
+        int[] newArr = new int[arr.length - 1];
+
+        for (int i = 0; i < deleteIndex; i++) {
+            newArr[i] = arr[i];
+        }
+
+        for (int i = deleteIndex; i < arr.length - 1; i++) {
+            newArr[i] = arr[i + 1];
+        }
+
+        arr = newArr;
+        // 1	2	3	4	6	7
+
+        // 遍历arr数组
+        for (int i = 0; i < arr.length; i++) {
+            System.out.print(arr[i] + "\t");
+        }
+    }
+}
+```
+
+```text
+案例1: 线性查找
+
+定义数组: int[] arr1 = new int[] {34, 54, 3, 2, 65, 7, 34, 5, 76, 34, 67};
+查找元素5是否在上述数组中出现过？如果出现，输出对于的索引值。
+
+案例2: 二分法查找
+
+定义数组: int[] arr2 = new int[] {2, 4, 5, 8, 12, 15, 19, 26, 37, 49, 51, 66, 89, 100};
+查找元素5是否在上述数组中出现过？如果出现，输出对应的索引值。
+```
+
+```java
+package com.atguigu4.search_sort.exer2;
+
+public class LinearSearchTest {
+    public static void main(String[] args) {
+        int[] arr1 = new int[]{34, 54, 3, 2, 65, 7, 34, 5, 76, 34, 67};
+
+        int target = 5;
+        target = 15;
+
+        // 查找方式: 线性查找
+        // 方式1:
+        /*
+        boolean isFlag = true;
+        for (int i = 0; i < arr1.length; i++) {
+            if (target == arr1[i]) {
+                System.out.println("找到了" + target + "，对应的位置为: " + i);
+                isFlag = false;
+                break;
+            }
+        }
+
+        if (isFlag) {
+            System.out.println("不好意思，没有找到此元素。");
+        }
+         */
+        // 方式2:
+        int i = 0;
+        for (; i < arr1.length; i++) {
+            if (target == arr1[i]) {
+                System.out.println("找到了" + target + "，对应的位置为: " + i);
+                break;
+            }
+        }
+
+        // 如果i的值达到了arr1.length，则说明上面的循环不是因为break结束的，而是循环到了循环条件不成立才结束的。
+        if (i == arr1.length) {
+            System.out.println("不好意思，没有找到此元素。");
+        }
+    }
+}
+```
+
+```java
+package com.atguigu4.search_sort.exer2;
+
+public class BinarySearchTest {
+    public static void main(String[] args) {
+        int[] arr2 = new int[]{2, 4, 5, 8, 12, 15, 19, 26, 37, 49, 51, 66, 89, 100};
+
+        int target = 5;
+        // target = 17;
+
+        int head = 0;// 默认的首索引
+        int end = arr2.length - 1;// 默认的尾索引
+
+        boolean isFlag = false;// 判断是否找到了指定的元素
+        int times = 0; // 记录是第几次执行循环
+        while (head <= end) {
+            times++;
+            int middle = (head + end) / 2;
+            System.out.println("第" + times + "次执行循环, head: " + head + ", end: " + end + ", middle: " + middle);
+
+            if (target == arr2[middle]) {
+                System.out.println("找到了" + target + "，对应的位置为: " + middle);
+                isFlag = true;
+                break;
+            } else if (target > arr2[middle]) {
+                head = middle + 1;
+            } else { // target < arr2[middle]
+                end = middle - 1;
+            }
+        }
+
+        if (!isFlag) {
+            System.out.println("不好意思，未找到。");
+        }
+    }
+}
+```
+
+```text
+案例1: 使用冒泡排序，实现整型数组元素的排序操作。
+
+比如: int[] arr = new int[]{34, 54, 3, 2, 65, 7, 34, 5, 76, 34, 67};
+```
+
+```java
+package com.atguigu4.search_sort.exer3;
+
+public class BubbleSortTest {
+    public static void main(String[] args) {
+        int[] arr = new int[]{34, 54, 3, 2, 65, 7, 34, 5, 76, 34, 67};
+
+        // 遍历
+        for (int i = 0; i < arr.length; i++) {
+            System.out.print(arr[i] + "\t");
+        }
+
+        // 冒泡排序，实现数组元素从小到大的排序。
+        for (int i = 0; i < arr.length - 1; i++) {
+            for (int j = 0; j < arr.length - 1 - j; j++) {
+                if (arr[j] > arr[j + 1]) {
+                    // 交换arr[i] 和 arr[i+1]
+                    int temp = arr[j];
+                    arr[j] = arr[j + 1];
+                    arr[j + 1] = temp;
+                }
+            }
+        }
+
+        System.out.println();
+        for (int i = 0; i < arr.length; i++) {
+            System.out.print(arr[i] + "\t");
+        }
+    }
+}
+```
+
+```text
+案例：使用快速排序，实现整型数组元素的排序操作
+
+比如：int[] data = { 9, -16, 30, 23, -30, -49, 25, 21, 30 };
+```
+
+```java
+package com.atguigu4.search_sort.exer3;
+
+/**
+ * 快速排序
+ * 通过一趟排序将待排序记录分割成独立的两部分，其中一部分记录的关键字均比另一部分关键字小，
+ * 则分别对这两部分继续进行排序，直到整个序列有序。
+ *
+ * @author 尚硅谷-宋红康
+ */
+public class QuickSort {
+    public static void main(String[] args) {
+        int[] data = {9, -16, 30, 23, -30, -49, 25, 21, 30};
+        System.out.println("排序之前：");
+        for (int i = 0; i < data.length; i++) {
+            System.out.print(data[i] + " ");
+        }
+
+        quickSort(data);//调用实现快排的方法
+
+        System.out.println("\n排序之后：");
+        for (int i = 0; i < data.length; i++) {
+            System.out.print(data[i] + " ");
+        }
+    }
+
+    public static void quickSort(int[] data) {
+        subSort(data, 0, data.length - 1);
+    }
+
+    private static void subSort(int[] data, int start, int end) {
+        if (start < end) {
+            int base = data[start];
+            int low = start;
+            int high = end + 1;
+            while (true) {
+                while (low < end && data[++low] - base <= 0)
+                    ;
+                while (high > start && data[--high] - base >= 0)
+                    ;
+                if (low < high) {
+                    //交换data数组[low]与[high]位置的元素
+                    swap(data, low, high);
+                } else {
+                    break;
+                }
+            }
+            //交换data数组[start]与[high]位置的元素
+            swap(data, start, high);
+
+            //经过代码[start, high)部分的元素 比[high, end]都小
+
+            //通过递归调用，对data数组[start, high-1]部分的元素重复刚才的过程
+            subSort(data, start, high - 1);
+            //通过递归调用，对data数组[high+1,end]部分的元素重复刚才的过程
+            subSort(data, high + 1, end);
+        }
+    }
+
+    private static void swap(int[] data, int i, int j) {
+        int temp = data[i];
+        data[i] = data[j];
+        data[j] = temp;
+    }
+}
+```
