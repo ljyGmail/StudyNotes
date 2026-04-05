@@ -1432,3 +1432,151 @@ public class ArrayExceptionTest {
     }
 }
 ```
+
+## 76 面向对象基础 方法的作用与方法的声明
+
+```text
+类的成员之二: 方法(method)
+
+1. 使用方法的好处
+方法的理解: '方法'是类或对象行为特征的抽象，用来完成某个功能操作。
+方法的好处: 实现代码重用，减少冗余，简化代码。
+
+2. 使用举例
+- Math.random()的random()方法
+- Math.sqrt(x)的sqrt(x)方法
+- System.out.println(x)的println(x)方法
+- new Scanner(System.in).nextInt()的nextInt()方法
+- Arrays类中的binarySearch()方法、sort()方法、equals()方法
+
+3. 声明举例
+public void eat()
+public void sleep(int hour)
+public String interests(String hobby)
+public int getAge()
+
+4. 方法声明的格式 (重要)
+
+权限修饰符 [其它修饰符] 返回值类型 方法名(形参列表) [throws 异常类型] { // 方法头
+    // 方法体
+}
+
+注: []中的内容不是必须的，以后再讲。
+
+5. 具体的方法声明的细节
+5.1 权限修饰符
+    1) Java规定了哪些权限修饰符呢？ 有四种，private \ 缺省 \ protected \ public (放到封装性讲)
+       声明方法时，暂时先都写成public。
+
+5.2 返回值类型: 描述当调用完此方法时，是否需要返回一个结果。
+    分类:
+    > 无返回值类型: 使用void表示即可。比如: System.out.println(x)的println(x)方法、Arrays的sort()。
+    > 有具体的返回值类型: 需要指明返回的数据的类型。可以是基本数据类型，也可以是引用数据类型。
+        > 需要在方法内部配合使用"return + 返回值类型的变量或常量"。
+        比如: Math.random()、new Scanner(System.in).nextInt()等。
+
+    [经验] 我们在声明方法时，要不要提供返回值类型呢？
+        > 根据方法具体实现的功能来决定。换句话说，具体问题具体分析。
+        > 根据题目要求。
+
+5.3 方法名: 属于标识符。需要满足标识符的规定和规范。"见名知意"
+
+5.4 形参列表: 形参，属于局部变量，且可以声明多个。
+    格式: (形参类型1 形参1, 形参类型2 形参2, ...)
+    分类: 无形参列表、有形参列表
+        > 无形参列表: 不能省略一对()。比如: Math.random()、new Scanner(System.in).nextInt()。
+        > 有形参列表: 根据方法调用时，需要的不确定的变量的类型和个数，确定形参的类型和个数。
+        比如: Arrays类中binarySearch()方法、sort()方法、equals()方法。
+
+    [经验] 我们在声明方法时，是否需要形参列表呢？
+        > 根据方法具体实现的功能来决定。换句话说，具体问题具体分析。
+        > 根据题目要求。
+
+5.5 方法体: 当我们调用一个方法时，真正执行的代码。体现了此方法的功能。
+
+6. 注意点
+> Java里的方法'不能独立存在'，所有的方法必须定义在类里。
+> 方法内可以调用本类中的(其它)方法或属性。
+> 方法内不能定义方法。
+
+7. 关键字: return
+7.1 return的作用
+    - 作用1: 结束一个方法。
+    - 作用2: 结束一个方法的同时，可以返回数据给方法的调用者。(方法声明中如果有返回值类型，则方法内需要搭配return使用)
+
+7.2 使用注意点
+    return后面不能声明执行语句。
+
+8. 方法调用的内存解析:
+- 形参:
+- 实参:
+```
+
+```java
+package com.atguigu03.field_method.method;
+
+public class MethodTest {
+    public static void main(String[] args) {
+        Person p1 = new Person();
+        p1.eat();
+
+        p1.info();
+    }
+}
+
+
+class Person {
+    // 属性
+    String name;
+    int age;
+    char gender;
+
+    // 方法
+    public void eat() {
+        System.out.println("人吃饭");
+
+        sleep(8);
+
+        System.out.println("name = " + name);
+    }
+
+    public void sleep(int hour) {
+        System.out.println("人至少每天睡眠" + hour + "小时");
+    }
+
+    public String interests(String hobby) {
+        String info = "我的爱好" + hobby;
+        System.out.println("我的爱好是" + hobby);
+        // return info;
+        return "abc";
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void info() {
+        System.out.println("Person info()");
+        // info();
+
+        // 方法内不能定义方法
+        /*
+        public void show() {
+
+        }
+         */
+    }
+
+    public void printNumber(int targetNumber) { // 10
+        for (int i = 0; i < targetNumber; i++) {
+            if (i == 4) {
+                return; // 用于结束方法
+
+                // return后面不能声明执行语句。
+                // System.out.println("xxx");
+            }
+            System.out.println(i);
+        }
+    }
+}
+```
