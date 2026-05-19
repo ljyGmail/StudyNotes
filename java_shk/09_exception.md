@@ -202,6 +202,7 @@ try {
     2) printStackTrace(): 打印异常的详细信息。(推荐)
     3) getMessage(): 获取发生异常的原因。
 > try中声明的变量，出了try结构之后，就不可以进行调用了。
+> try-catch结构是可以嵌套使用的。
 
 4. 开发体会:
     > 对于运行时异常:
@@ -280,6 +281,205 @@ public class ExceptionHandleTest {
         }
 
         System.out.println("读取数据结束...");
+    }
+}
+```
+
+## 126 异常处理 finally的使用
+
+```text
+5. finally的使用说明:
+5.1 finally的理解
+> 我们将一定要被执行的代码声明在finally结构中。
+> 更深刻的理解: 无论try中或catch中是否存在仍未被处理的异常，无论try中或catch中是否存在return语句等，
+    finally中声明的语句都一定要被执行。
+
+> finally语句和catch语句是可选的，但finally不能单独使用。
+
+5.2 什么样的代码我们一定要声明在finally中呢？
+> 我们在开发中，有一些资源(比如: 输入流，输出流，数据库连接，Socket连接等资源)，在使用完以后，必须显式地进行
+    关闭操作，否则，GC不会自动地回收这些资源，进而导致内存等泄漏。
+    为了保证这些资源在使用完以后，不管是否出现了未被处理的异常的情况下，这些资源能被关闭。我们必须将这些操作声明在finally中！
+
+6. 面试题
+final、finally、finalize的区别
+```
+
+```java
+package com.atguigu02.trycatchfinally;
+
+import org.junit.Test;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
+public class FinallyTest {
+
+    @Test
+    public void test1() {
+        try {
+            String str = "123";
+            str = "abc";
+            int i = Integer.parseInt(str);
+            System.out.println(i);
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+
+            System.out.println(10 / 0);// 在catch中存在异常
+        }
+        System.out.println("程序结束");
+    }
+
+    @Test
+    public void test2() {
+        try {
+            String str = "123";
+            str = "abc";
+            int i = Integer.parseInt(str);
+            System.out.println(i);
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+
+            System.out.println(10 / 0);// 在catch中存在异常
+        } finally {
+            System.out.println("程序结束");
+        }
+    }
+
+    @Test
+    public void test3() {
+        try {
+            String str = "123";
+            str = "abc";
+            int i = Integer.parseInt(str);
+            System.out.println(i);
+        } finally {
+            System.out.println("程序结束");
+        }
+    }
+
+    // 实际开发中，finally的使用。
+    @Test
+    public void test4() {
+        FileInputStream fis = null;
+        try {
+            File file = new File("hello.txt");
+
+            fis = new FileInputStream(file); // 可能报FileNotFoundException
+
+            int data = fis.read(); // 可能报IOException
+            while (data != -1) {
+                System.out.print((char) data);
+                data = fis.read(); // 可能报IOException
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            // 重点: 将流资源的关闭操作声明于finally中
+            try {
+                if (fis != null)
+                    fis.close(); // 可能报IOException
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+}
+```
+
+- 面试题
+
+```java
+package com.atguigu02.trycatchfinally.interview;
+
+public class FinallyTest1 {
+    public static void main(String[] args) {
+        int result = test("12");
+        System.out.println(result);
+    }
+
+    public static int test(String str) {
+        try {
+            Integer.parseInt(str);
+            return 1;
+        } catch (NumberFormatException e) {
+            return -1;
+        } finally {
+            System.out.println("test结束");
+        }
+    }
+}
+```
+
+```java
+package com.atguigu02.trycatchfinally.interview;
+
+public class FinallyTest2 {
+    public static void main(String[] args) {
+        int result = test("a");
+        System.out.println(result);
+    }
+
+    public static int test(String str) {
+        try {
+            Integer.parseInt(str);
+            return 1;
+        } catch (NumberFormatException e) {
+            return -1;
+        } finally {
+            System.out.println("test结束");
+        }
+    }
+}
+```
+
+```java
+package com.atguigu02.trycatchfinally.interview;
+
+public class FinallyTest3 {
+    public static void main(String[] args) {
+        int result = test("a");
+        System.out.println(result);
+    }
+
+    public static int test(String str) {
+        try {
+            Integer.parseInt(str);
+            return 1;
+        } catch (NumberFormatException e) {
+            return -1;
+        } finally {
+            System.out.println("test结束");
+            return 0;
+        }
+    }
+}
+```
+
+```java
+package com.atguigu02.trycatchfinally.interview;
+
+public class FinallyTest4 {
+    public static void main(String[] args) {
+        int result = test(10);
+        System.out.println(result);
+    }
+
+    public static int test(int num) {
+        try {
+            return num;
+        } catch (NumberFormatException e) {
+            return num--;
+        } finally {
+            System.out.println("test结束");
+            // return ++num; // 11
+            ++num; // 10
+        }
     }
 }
 ```
