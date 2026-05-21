@@ -484,7 +484,7 @@ public class FinallyTest4 {
 }
 ```
 
-## 127 异常处理 异常处理方式二: thorws
+## 127 异常处理 异常处理方式二: throws
 
 ```text
 异常处理的方式2: throws
@@ -606,6 +606,186 @@ class Son extends Father {
 
     public Integer method4() {
         return null;
+    }
+}
+```
+
+## 128 异常处理 使用throw手动抛出异常对象
+
+```text
+1. 为什么需要手动抛出异常对象？
+
+在实际开发中，如果出现不满足具体场景的代码问题，我们就有必要手动地抛出一个指定类型的异常对象。
+
+2. 如何理解"自动 vs 手动"抛出异常对象？
+
+过程1: "抛"
+    "自动抛": 程序在执行的过程当中，一旦出现异常，就会在出现异常的代码处，自动生成对应异常类的对象，并将此对象抛出。
+
+    "手动抛": 程序在执行的过程当中，不满足指定条件的情况下，我们主动地使用"throw + 异常类的对象"的方式抛出异常对象。
+
+过程2: "抓"
+    狭义上讲: try-catch的方式捕获异常，并处理。
+    广义上讲: 把"抓"理解为"处理"。则此时对应着异常处理的两种方式: 1) try-catch-finally 2) throws。
+
+3. 如何实现手动抛出异常？
+在方法内部，满足指定条件的情况下，使用"throw 异常类的对象"的方式抛出。
+
+4. 注意点: throw后的代码不能被执行，编译不通过。
+
+5. 面试题: throw 和 throws的区别？ "上有排污，下游治污"
+```
+
+```java
+package com.atguigu04._throw;
+
+public class ThrowTest {
+    public static void main(String[] args) {
+        Student s1 = new Student();
+
+        try {
+            s1.regist(10);
+            s1.regist(-10);
+            System.out.println(s1);
+        } catch (Exception e) {
+            // e.printStackTrace();
+            System.out.println(e.getMessage());
+        }
+    }
+}
+
+class Student {
+    int id;
+
+    /*
+    public void regist(int id) {
+        if (id > 0) {
+            this.id = id;
+        } else {
+            // System.out.println("输入的id非法");
+            // 手动抛出异常类的对象
+            throw new RuntimeException("输入的id非法");
+        }
+    }
+     */
+
+    public void regist(int id) throws Exception {
+        if (id > 0) {
+            this.id = id;
+        } else {
+            // System.out.println("输入的id非法");
+            // 手动抛出异常类的对象
+            throw new Exception("输入的id非法");
+            // System.out.println("此语句不能被执行");
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "Student{" +
+                "id=" + id +
+                '}';
+    }
+}
+```
+
+- 练习题
+
+```text
+修改chapter08_oop3中接口部分的exer2，在ComparableCircle接口的compareTo()中抛出异常。
+```
+
+```java
+package com.atguigu05.exer;
+
+public class Circle {
+    private double radius; // 半径
+
+    public Circle() {
+    }
+
+    public Circle(double radius) {
+        this.radius = radius;
+    }
+
+    public double getRadius() {
+        return radius;
+    }
+
+    public void setRadius(double radius) {
+        this.radius = radius;
+    }
+
+    @Override
+    public String toString() {
+        return "Circle{" +
+                "radius=" + radius +
+                '}';
+    }
+}
+```
+
+```java
+package com.atguigu05.exer;
+
+public interface CompareObject {
+    // 若返回值是0，代表相等; 若为正数，代表当前对象大; 负数代表当前对象小。
+    public int compareTo(Object o) throws Exception;
+}
+```
+
+```java
+package com.atguigu05.exer;
+
+public class ComparableCircle extends Circle implements CompareObject {
+
+    public ComparableCircle() {
+    }
+
+    public ComparableCircle(double radius) {
+        super(radius);
+    }
+
+    // 根据对象的半径的大小，比较对象的大小。
+    @Override
+    public int compareTo(Object o) throws Exception {
+        if (this == o) {
+            return 0;
+        }
+
+        if (o instanceof ComparableCircle) {
+            ComparableCircle c = (ComparableCircle) o;
+            return Double.compare(this.getRadius(), c.getRadius());
+        } else {
+            // throw new RuntimeException("输入的类型不匹配");
+            throw new Exception("输入的类型不匹配");
+        }
+    }
+}
+```
+
+```java
+package com.atguigu05.exer;
+
+public class InterfaceTest {
+    public static void main(String[] args) {
+
+        ComparableCircle c1 = new ComparableCircle(2.3);
+        ComparableCircle c2 = new ComparableCircle(5.3);
+
+        try {
+            int compareValue = c1.compareTo(c2);
+
+            if (compareValue > 0) {
+                System.out.println("c1对象大");
+            } else if (compareValue < 0) {
+                System.out.println("c2对象大");
+            } else {
+                System.out.println("c1和c2一样大");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
 ```
