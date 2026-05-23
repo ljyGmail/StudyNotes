@@ -789,3 +789,271 @@ public class InterfaceTest {
     }
 }
 ```
+
+## 129 异常处理 如何自定义异常类及课后练习
+
+```text
+1. 如何自定义异常类？
+1) 继承于现有的异常体系。通常继承于RuntimeException \ Exception。
+2) 通常提供几个重载的构造器。
+3) 提供一个全局常量，声明为: static final long serialVersionUID;
+
+2. 如何使用自定义异常类？
+> 在具体的代码中，满足指定条件的情况下，需要手动地使用"throw + 自定义异常类的对象"的方式，将异常对象抛出。
+> 如何自定义异常类是非运行时异常，则必须考虑如何处理此异常类的对象。(具体的: [1] try-catch-finally [2] throws)
+
+3. 为什么需要自定义异常类？
+我们其实更关心的是，通过异常的名称就能直接判断此异常出现的原因。既然如此，我们就有必要在实际的开发场景中，
+不满足我们指定的条件时，指明我们自己特有的异常类。通过此异常类的名称，就能判断出具体出现的问题。
+```
+
+```java
+package com.atguigu04._throw;
+
+public class BelowZeroException extends Exception {
+
+    static final long serialVersionUID = -3387516999948L;
+
+    public BelowZeroException() {
+    }
+
+    public BelowZeroException(String message) {
+        super(message);
+    }
+
+    public BelowZeroException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}
+```
+
+- 练习题
+
+```java
+package com.atguigu05.exer.exer2;
+
+/**
+ * ClassName: ReturnExceptionDemo
+ * Package: com.atguigu05.exer.exer2
+ * Description:
+ *
+ * @Author: ljy
+ * @Create: 2026. 5. 23. 오전 9:23
+ * @Version 1.0
+ */
+public class ReturnExceptionDemo {
+
+    static void methodA() throws Exception {
+        try {
+            System.out.println("进入方法A");
+            throw new Exception("制造异常");
+        } finally {
+            System.out.println("调用A方法的finally");
+        }
+    }
+
+    static void methodB() {
+        try {
+            System.out.println("进入方法B");
+            return;
+        } finally {
+            System.out.println("调用B方法的finally");
+        }
+    }
+
+    public static void main(String[] args) {
+        try {
+            methodA();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+
+        methodB();
+    }
+}
+/*
+进入方法A
+调用A方法的finally
+制造异常
+进入方法B
+调用B方法的finally
+*/
+```
+
+```text
+案例：游戏角色
+
+在一款角色扮演游戏中，每一个人都会有名字和生命值，角色的生命值不能为负数。
+
+要求：当一个人物的生命值为负数的时候需要抛出自定义的异常
+
+操作步骤描述：
+（1）自定义异常类NoLifeValueException继承RuntimeException
+①提供空参和有参构造
+②在有参构造中，需要调用父类的有参构造，把异常信息传入
+
+（2）定义Person类
+①属性：名称(name)和生命值(lifeValue)
+②提供setter和getter方法：
+在setLifeValue(int lifeValue)方法中，首先判断，如果 lifeValue为负数,就抛出NoLifeValueException，
+异常信息为：生命值不能为负数：xx；
+然后再给成员lifeValue赋值。
+
+③提供空参构造
+
+④提供有参构造：使用setXxx方法给name和lifeValue赋值
+
+
+（3）定义测试类Exer3
+
+① 使用满参构造方法创建Person对象，生命值传入一个负数
+
+由于一旦遇到异常,后面的代码的将不在执行,所以需要注释掉上面的代码
+
+② 使用空参构造创建Person对象
+
+调用setLifeValue(int lifeValue)方法,传入一个正数,运行程序
+
+调用setLifeValue(int lifeValue)方法,传入一个负数,运行程序
+
+③ 分别对①和②处理异常和不处理异常进行运行看效果
+```
+
+```java
+package com.atguigu05.exer.exer3;
+
+public class Person {
+
+    private String name;
+    private int lifeValue;
+
+    public Person() {
+    }
+
+    public Person(String name, int lifeValue) {
+        // this.name = name;
+        setName(name);
+        setLifeValue(lifeValue);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getLifeValue() {
+        return lifeValue;
+    }
+
+    public void setLifeValue(int lifeValue) {
+        if (lifeValue < 0) {
+            throw new NoLifeValueException("生命值不能为负数: " + lifeValue);
+        }
+        this.lifeValue = lifeValue;
+    }
+
+    @Override
+    public String toString() {
+        return "Person{" +
+                "name='" + name + '\'' +
+                ", lifeValue=" + lifeValue +
+                '}';
+    }
+}
+```
+
+```java
+package com.atguigu05.exer.exer3;
+
+public class NoLifeValueException extends RuntimeException {
+
+    static final long serialVersionUID = -70348971934506939L;
+
+    public NoLifeValueException() {
+    }
+
+    public NoLifeValueException(String message) {
+        super(message);
+    }
+}
+```
+
+```java
+package com.atguigu05.exer.exer3;
+
+public class NoLifeValueException extends RuntimeException {
+
+    static final long serialVersionUID = -70348971934506939L;
+
+    public NoLifeValueException() {
+    }
+
+    public NoLifeValueException(String message) {
+        super(message);
+    }
+}
+```
+
+```text
+编写应用程序DivisionDemo.java，接收命令行的两个参数，要求不能输入负数，计算两数相除。
+    对数据类型不一致(NumberFormatException)、缺少命令行参数(ArrayIndexOutOfBoundsException)、
+    除0(ArithmeticException)及输入负数(BelowZeroException: 自定义异常)进行异常处理。
+
+提示:
+    (1) 在主类(DivisionDemo)中定义异常方法(divide)完成两数相除的功能。
+    (2) 在main()方法中调用divide方法，使用异常处理语句进行异常处理。
+    (3) 在程序中，自定义对应输入负数的异常类(BelowZeroException)。
+    (4) 运行时接受参数 java DivisionDemo 20 10 // args[0]="20" args[1]="10"
+    (5) Integer类的static方法parseInt(String s)将s转换成对应的int值。
+        如: int a = Integer.parseInt("314"); // a = 314
+```
+
+```java
+package com.atguigu05.exer.exer4;
+
+public class BelowZeroException extends Exception {
+
+    static final long serialVersionUID = -3381283129039931222L;
+
+    public BelowZeroException() {
+    }
+
+    public BelowZeroException(String message) {
+        super(message);
+    }
+}
+```
+
+```java
+package com.atguigu05.exer.exer4;
+
+public class DivisionDemo {
+    public static void main(String[] args) {
+        try {
+            int m = Integer.parseInt(args[0]);
+            int n = Integer.parseInt(args[1]);
+            int result = divide(m, n);
+            System.out.println("结果为: " + result);
+        } catch (BelowZeroException e) {
+            System.out.println(e.getMessage());
+        } catch (NumberFormatException e) {
+            System.out.println("数据类型不一致");
+        } catch (ArrayIndexOutOfBoundsException e) {
+            System.out.println("缺少命令行参数");
+        } catch (ArithmeticException e) {
+            System.out.println("除数不能为0");
+        }
+    }
+
+    public static int divide(int m, int n) throws BelowZeroException {
+        if (m < 0 || n < 0) {
+            // 手动抛出异常类的对象
+            throw new BelowZeroException("输入负数了");
+        }
+        return m / n;
+    }
+}
+```
