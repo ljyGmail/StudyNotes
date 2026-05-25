@@ -61,3 +61,42 @@ hello
 $ unset NAME
 $ echo $NAME
 ```
+
+## 6. 变量-局部变量
+
+```bash
+$ name=hello
+$ name='hello'
+$ name="hello"
+
+# 使用变量的值给其它的变量赋值
+$ value2=$value
+$ echo $value2
+10
+
+# 加单引号输出，会原样输出，不会解析变量
+$ echo 'my name is $name'
+my name is $name
+
+# 使用双引号时，默认解析变量，如果不想解析变量，就在$前加反斜杠
+$ echo "my name is \$name"
+my name is $name
+
+# 将命令的结果作为值赋给变量
+# 方式1:
+$ myls=`ls`
+$ echo $myls
+a.txt b.txt c.txt
+
+# 方式2:
+$ myls2=$(ls)
+$ echo $myls2
+a.txt b.txt c.txt
+
+# 变量后面连接其它字符时需要加上大括号
+$ echo $name_pc
+# No result
+
+$ echo ${name}_pc
+hello_pc
+```
