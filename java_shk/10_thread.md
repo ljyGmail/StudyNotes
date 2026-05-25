@@ -18,3 +18,155 @@
 抢占式调度: 让优先级高的线程以较大的概率优先使用CPU。
         如果线程的优先级相同，那么会随机选择一个(线程随机性)，Java使用的是抢占式调度。
 ```
+
+## 133 多线程 线程创建方式1: 继承Thread类
+
+```java
+1. 线程的创建方式一: 继承Thread类。
+1.1 步骤:
+1) 创建一个继承于Thread类的子类。
+2) 重写Thread类的run() --> 将此线程要执行的操作，声明在此方法体中。
+3) 创建当前Thread的子类的对象。
+4) 通过对象调用start()。1. 启动线程 2. 调用当前线程的run()。
+
+1.2 例题: 创建一个分线程1，用于遍历100以内的偶数。
+[拓展]再创建一个分线程2，用于遍历100以内的偶数。
+```
+
+```java
+package com.atguigu01.create;
+
+// 单线程
+public class SingleThread {
+
+    public void method1(String str) {
+        System.out.println(str);
+    }
+
+    public void method2(String str) {
+        method1(str);
+    }
+
+    public static void main(String[] args) {
+        SingleThread s = new SingleThread();
+        s.method2("hello!");
+    }
+}
+```
+
+```java
+package com.atguigu01.create.thread;
+
+/**
+ * 例题: 创建一个分线程1，用于遍历100以内的偶数。
+ */
+
+// 1) 创建一个继承于Thread类的子类
+class PrintNumber extends Thread {
+
+    // 2) 重写Thread类的run() --> 将此线程要执行的操作，声明在此方法体中。
+    @Override
+    public void run() {
+        for (int i = 1; i <= 100; i++) {
+            if (i % 2 == 0) {
+                System.out.println(Thread.currentThread().getName() + ": " + i);
+            }
+        }
+    }
+}
+
+public class EvenNumberTest {
+    public static void main(String[] args) {
+        // 3) 创建当前Thread的子类的对象。
+        PrintNumber t1 = new PrintNumber();
+        // 4) 通过对象调用start()。
+        t1.start();
+        // t1.run();
+
+        /*
+        问题1: 能否使用t1.run()替换t1.start()的调用，实现分线程的创建和调用？
+        不能！如果直接调用run()方法，那么该方法会在当前线程中执行，而不是创建新的线程。
+         */
+
+        /*
+        问题2: 再提供一个分线程，用于100以内偶数的变量。
+        注意: 不能让已经start()的线程，再次执行start()方法，否则报异常IllegalThreadStateException。
+         */
+        // t1.start();
+
+        PrintNumber t2 = new PrintNumber();
+        t2.start();
+
+        // main()所在的线程执行的操作
+        for (int i = 1; i <= 100; i++) {
+            if (i % 2 == 0) {
+                System.out.println(Thread.currentThread().getName() + ": " + i);
+            }
+        }
+    }
+}
+```
+
+```text
+练习: 创建两个分线程，其中一个线程遍历100以内的偶数，另一个线程遍历100以内的奇数。
+```
+
+```java
+package com.atguigu01.create.exer1;
+
+class EvenNumberPrint extends Thread {
+    @Override
+    public void run() {
+        for (int i = 1; i <= 100; i++) {
+            if (i % 2 == 0) {
+                System.out.println(Thread.currentThread().getName() + ": " + i);
+            }
+        }
+    }
+}
+
+class OddNumberPrint extends Thread {
+    @Override
+    public void run() {
+        for (int i = 1; i <= 100; i++) {
+            if (i % 2 != 0) {
+                System.out.println(Thread.currentThread().getName() + "--> " + i);
+            }
+        }
+    }
+}
+
+public class PrintNumberTest {
+    public static void main(String[] args) {
+        // 方式1:
+        // EvenNumberPrint t1 = new EvenNumberPrint();
+        // OddNumberPrint t2 = new OddNumberPrint();
+
+        // t1.start();
+        // t2.start();
+
+        // 方式2: 创建Thread类的匿名子类的匿名对象。
+        new Thread() {
+            @Override
+            public void run() {
+                for (int i = 1; i <= 100; i++) {
+                    if (i % 2 == 0) {
+                        System.out.println(Thread.currentThread().getName() + ": " + i);
+                    }
+                }
+            }
+        }.start();
+
+        new Thread() {
+            @Override
+            public void run() {
+                for (int i = 1; i <= 100; i++) {
+                    if (i % 2 != 0) {
+                        System.out.println(Thread.currentThread().getName() + "--> " + i);
+                    }
+                }
+            }
+        }.start();
+    }
+}
+```
