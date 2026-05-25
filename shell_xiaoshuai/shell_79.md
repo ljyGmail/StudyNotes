@@ -185,3 +185,15 @@ do
     echo $item
 done
 ```
+
+## 10. Shell脚本以及重定向
+
+```bash
+# 内联输入重定向
+$ cat << qqq || wc -l
+> aaa
+> bbb
+> ccc
+> qqq
+3
+```
