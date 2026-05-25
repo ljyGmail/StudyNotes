@@ -197,3 +197,37 @@ $ cat << qqq || wc -l
 > qqq
 3
 ```
+
+## 11. 初级部分总结
+
+## 12. 数学运算符
+
+```text
+expr命令: 对数字做比较时，假为0，真为1，特殊符号需要转义。
+只支持整数运算，注意运算符的两边要有空格。
+```
+
+```bash
+#!/bin/bash
+
+num1=5
+num2=3
+
+echo "num1: $num1, num2: $num2"
+echo '******************************'
+echo 'expr $num1 \| $num2:' $(expr $num1 \| $num2) # num1不为空且非0，返回num1;否则返回num2
+echo 'expr $num1 \& $num2:' $(expr $num1 \& $num2) # num1不为空且非0，返回num1;否则返回0
+echo '******************************'
+echo 'expr $num1 \< $num2:' $(expr $num1 \< $num2)
+echo 'expr $num1 \<= $num2:' $(expr $num1 \<= $num2)
+echo 'expr $num1 \> $num2:' $(expr $num1 \> $num2)
+echo 'expr $num1 \>= $num2:' $(expr $num1 \>= $num2)
+echo 'expr $num1 = $num2:' $(expr $num1 = $num2)
+echo 'expr $num1 != $num2:' $(expr $num1 != $num2)
+echo '******************************'
+echo 'expr $num1 + $num2:' $(expr $num1 + $num2)
+echo 'expr $num1 - $num2:' $(expr $num1 - $num2)
+echo 'expr $num1 \* $num2:' $(expr $num1 \* $num2)
+echo 'expr $num1 / $num2:' $(expr $num1 / $num2)
+echo 'expr $num1 % $num2:' $(expr $num1 % $num2)
+```
