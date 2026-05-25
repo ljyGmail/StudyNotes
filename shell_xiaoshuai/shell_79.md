@@ -1,3 +1,8 @@
+```bash
+# 玩Linux脚本命令时使用的Docker命令
+$ docker run -it nicolaka/netshoot /bin/bash
+```
+
 ## 4. 变量-全局变量
 
 - env命令查看全局变量
@@ -150,4 +155,33 @@ $$ 这个脚本的进程ID: 109
 /tmp/a.txt &
 $! 上一个后台脚本的PID: 110
 $? 上一个脚本执行的结果: 0
+```
+
+## 9. Shell特殊变量 (数组变量)
+
+```bash
+# 定义数组
+$ myarray=(one two three four five)
+
+# 输出数组内容
+$ echo ${myarray[@]}
+# 或者
+$ echo ${myarray[*]}
+
+# 输出数组的长度
+echo ${#myarray[@]}
+
+# [@] → 每个元素独立处理（推荐）
+# [*] → 整个数组当成一个字符串
+
+# 使用索引访问数组元素
+$ echo ${myarray[0]}
+$ echo ${myarray[1]}
+$ echo ${myarray[2]}
+
+# 遍历数组
+for item in "${myarray[@]}"
+do
+    echo $item
+done
 ```
