@@ -170,3 +170,139 @@ public class PrintNumberTest {
     }
 }
 ```
+
+## 134 多线程 线程创建方式2: 实现Runnable接口
+
+```text
+2. 线程的创建方式二: 实现Runnable接口
+2.1 步骤:
+1) 创建一个实现Runnable接口的类。
+2) 实现接口中的run() --> 将此线程要执行的操作，声明在此方法中。
+3) 创建当前实现类的对象。
+4) 将此对象作为参数传递到Thread类的构造器中，创建Thread类的实例。
+5) Thread类的实例调用start(): 1. 启动线程 2. 调用当前线程的run()
+
+2.2 例题: 创建分线程遍历100以内的偶数
+
+3. 对比两种方式？
+    共同点: 1) 启动线程，使用的都是Thread类中定义的start()方法。
+          2) 创建的线程对象，都是Thread类或其子类的实例。
+
+    不同点: 一个是类的继承，一个是接口的实现。
+        建议: 建议使用实现Runnable接口的方式。
+        Runnable方式的好处: 1) 实现的方式，避免类的单继承的局限性。
+                        2) 更适合处理有共享数据的问题。
+                        3) 实现了代码和数据的分离。
+
+    联系: public class Thread implements Runnable (代理模式)
+```
+
+```java
+package com.atguigu01.create.runnable;
+
+// 1) 创建一个实现Runnable接口的类。
+class EvenNumberPrint implements Runnable {
+    // 2) 实现接口中的run() --> 将此线程要执行的操作，声明在此方法中。
+    @Override
+    public void run() {
+        for (int i = 0; i <= 100; i++) {
+            if (i % 2 == 0) {
+                System.out.println(Thread.currentThread().getName() + ": " + i);
+            }
+        }
+    }
+}
+
+public class EvenNumberTest {
+    public static void main(String[] args) {
+        // 3) 创建当前实现类的对象。
+        EvenNumberPrint p = new EvenNumberPrint();
+        // 4) 将此对象作为参数传递到Thread类的构造器中，创建Thread类的实例。
+        Thread t1 = new Thread(p);
+        // 5) Thread类的实例调用start(): 1. 启动线程 2. 调用当前线程的run()
+        t1.start();
+
+        // main()方法对应的主线程执行的操作
+        for (int i = 0; i <= 100; i++) {
+            if (i % 2 == 0) {
+                System.out.println(Thread.currentThread().getName() + ": " + i);
+            }
+        }
+
+        /*
+        拓展: 再创建一个线程，用于遍历100以内的偶数。
+         */
+        Thread t2 = new Thread(p);
+        t2.start();
+    }
+}
+```
+
+```java
+package com.atguigu01.create.exer2;
+
+public class Exer {
+    public static void main(String[] args) {
+        A a = new A();
+        a.start(); // 线程A的run()...
+
+        B b = new B(a);
+        b.start(); // 线程B的run()...
+    }
+}
+
+// 创建线程类A
+class A extends Thread {
+    @Override
+    public void run() {
+        System.out.println("线程A的run()...");
+    }
+}
+
+// 创建线程类B
+class B extends Thread {
+    private A a;
+
+    public B(A a) {
+        this.a = a;
+    }
+
+    @Override
+    public void run() {
+        System.out.println("线程B的run()...");
+    }
+}
+```
+
+```java
+package com.atguigu01.create.exer2;
+
+public class Exer_1 {
+    public static void main(String[] args) {
+        BB b = new BB();
+        new Thread(b) {
+            @Override
+            public void run() {
+                System.out.println("CC");
+            }
+        }.start(); // CC
+
+        new Thread() {
+        }.start(); // 无输出
+    }
+}
+
+class AA extends Thread {
+    @Override
+    public void run() {
+        System.out.println("线程AA的run()...");
+    }
+}
+
+class BB implements Runnable {
+    @Override
+    public void run() {
+        System.out.println("线程BB的run()...");
+    }
+}
+```
