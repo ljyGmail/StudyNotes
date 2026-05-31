@@ -418,3 +418,232 @@ public class EvenNumberTest {
 ```
 
 ![alt text](images/线程的执行周期-jdk5zh之前.png)
+
+## 136 多线程 同步代码块解决两种线程创建方式的线程安全问题
+
+```text
+线程的安全问题与线程的同步机制
+
+1. 多线程卖票，出现的问题: 出现了重票和错票的问题。
+
+2. 什么原因导致的？线程1操作ticker的过程中，尚未结束的情况下，其它线程也参与进来，对ticket进行操作。
+
+3. 如何解决？必须保证一个线程在操作ticket的过程中，其它线程必须等待，直到线程a操作ticket结束以后，其它线程才可以进来继续操作ticket。
+
+4. Java是如何解决线程的安全问题的？
+
+方式1: 同步代码块
+
+synchronized(同步监视器) {
+    // 需要被同步的代码
+}
+
+说明:
+> 需要被同步的代码，即为操作共享数据的代码。
+> 共享数据: 即多个线程都需要操作的数据。比如: ticketNum。
+> 需要被同步的代码，在被synchronized包裹以后，就使得一个线程在操作这些代码的过程中，其它线程必须等待。
+> 同步监视器，俗称锁。哪个线程获取了锁，哪个线程就能执行需要被同步的代码。
+> 同步监视器，可以使用任何一个类的对象充当。但是，多个线程必须共用同一个同步监视器。
+
+注意: 在实现Runnable接口的方式中，同步监视器可以考虑使用: this。
+    在继承Thread类的方式中，同步监视器要慎用this，可以考虑使用: 当前类.class。
+```
+
+```java
+package com.atguigu03.thread_safe.not_safe;
+
+/**
+ * 使用实现Runnable接口的方式，实现卖票。
+ */
+
+class SaleTicker implements Runnable {
+    private int ticketNum = 100;
+
+    @Override
+    public void run() {
+        while (true) {
+            if (ticketNum > 0) {
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                System.out.println(Thread.currentThread().getName() + " is selling ticket " + ticketNum);
+                ticketNum--;
+            } else {
+                break;
+            }
+        }
+    }
+}
+
+public class WindowTest {
+    public static void main(String[] args) {
+        SaleTicker saleTicker = new SaleTicker();
+        Thread thread1 = new Thread(saleTicker, "Window 1");
+        Thread thread2 = new Thread(saleTicker, "Window 2");
+        Thread thread3 = new Thread(saleTicker, "Window 3");
+
+        thread1.start();
+        thread2.start();
+        thread3.start();
+    }
+}
+```
+
+```java
+package com.atguigu03.thread_safe.not_safe;
+
+/**
+ * 使用继承Thread类的方式，实现卖票。
+ */
+class Window extends Thread {
+    static int ticketNum = 100;
+
+    @Override
+    public void run() {
+        while (true) {
+            if (ticketNum > 0) {
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                System.out.println(Thread.currentThread().getName() + " is selling ticket " + ticketNum);
+                ticketNum--;
+            } else {
+                break;
+            }
+        }
+    }
+}
+
+public class WindowTest1 {
+    public static void main(String[] args) {
+        Window w1 = new Window();
+        Window w2 = new Window();
+        Window w3 = new Window();
+
+        w1.setName("窗口1");
+        w2.setName("窗口2");
+        w3.setName("窗口3");
+
+        w1.start();
+        w2.start();
+        w3.start();
+    }
+}
+```
+
+- 解决多线程问题
+
+```java
+package com.atguigu03.thread_safe.runnable_safe;
+
+/**
+ * 使用实现Runnable接口的方式，实现卖票。 --> 存在线程安全问题。
+ * 使用同步代码块解决上述卖票中的线程安全问题。
+ */
+
+class SaleTicker implements Runnable {
+    private int ticketNum = 100;
+
+    Object obj = new Object();
+    Dog dog = new Dog();
+
+    @Override
+    public void run() {
+        // synchronized (this) { // this: 是唯一的？ yes，就是题目中的saleTicker
+        while (true) {
+            try {
+                Thread.sleep(5);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            // synchronized (obj) { // obj: 是唯一的？ yes
+            // synchronized (dog) { // dog: 是唯一的？ yes
+            synchronized (this) { // this: 是唯一的？ yes，就是题目中的saleTicker
+                if (ticketNum > 0) {
+                    try {
+                        Thread.sleep(10);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    System.out.println(Thread.currentThread().getName() + " is selling ticket " + ticketNum);
+                    ticketNum--;
+                } else {
+                    break;
+                }
+            }
+        }
+    }
+}
+
+public class WindowTest {
+    public static void main(String[] args) {
+        SaleTicker saleTicker = new SaleTicker();
+        Thread thread1 = new Thread(saleTicker, "Window 1");
+        Thread thread2 = new Thread(saleTicker, "Window 2");
+        Thread thread3 = new Thread(saleTicker, "Window 3");
+
+        thread1.start();
+        thread2.start();
+        thread3.start();
+    }
+}
+
+class Dog {
+
+}
+```
+
+```java
+package com.atguigu03.thread_safe.thread_safe;
+
+/**
+ * 使用继承Thread类的方式，实现卖票。
+ * 使用同步代码块的方式解决线程安全问题。
+ */
+class Window extends Thread {
+    static int ticketNum = 100;
+
+    static Object obj = new Object();
+
+    @Override
+    public void run() {
+        while (true) {
+            // synchronized (this) { // this: 此时表示w1，w2，w3。不能保证锁的唯一性。
+            // synchronized (obj) { // obj: 使用static修饰以后，就能保证其唯一性。
+            synchronized (Window.class) { // 结构: Class clazz = Window.class;是唯一的。
+                if (ticketNum > 0) {
+                    try {
+                        Thread.sleep(10);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    System.out.println(Thread.currentThread().getName() + " is selling ticket " + ticketNum);
+                    ticketNum--;
+                } else {
+                    break;
+                }
+            }
+        }
+    }
+}
+
+public class WindowTest {
+    public static void main(String[] args) {
+        Window w1 = new Window();
+        Window w2 = new Window();
+        Window w3 = new Window();
+
+        w1.setName("窗口1");
+        w2.setName("窗口2");
+        w3.setName("窗口3");
+
+        w1.start();
+        w2.start();
+        w3.start();
+    }
+}
+```
